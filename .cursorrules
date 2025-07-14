@@ -1,0 +1,103 @@
+# Cursor Rules for Leadminton Project
+
+## Database Migration Guidelines
+
+### Migration File Management
+- **NEVER mention running database migration commands** - the developer handles migrations manually outside of this chat
+- **Always check existing migration files first** before creating new ones
+- **Prefer updating or appending to existing migration files** rather than creating new ones
+- When modifications are needed, update the most recent relevant migration file
+- Only create new migration files when the changes are substantial enough to warrant a separate migration
+
+### Database Function Guidelines
+- **Avoid creating database functions when possible** - they are difficult to maintain
+- **Only create database functions when two or more transactions must be executed atomically**
+- **Prefer handling business logic in JavaScript/TypeScript** rather than creating Supabase database functions
+- When database functions are necessary, ensure proper error handling and documentation
+
+### Migration Best Practices
+- Use descriptive migration names with timestamps
+- Include rollback functionality when possible
+- Add comments explaining complex database logic
+- Use proper PostgreSQL/Supabase syntax and security practices
+- Always use `SECURITY DEFINER` for functions that need elevated privileges
+
+## Code Architecture Guidelines
+
+### Modular Design Principles
+- **Keep modular design but avoid excessive file fragmentation**
+- Group related functionality into logical modules
+- Prefer fewer, well-organized files over many small files
+- Balance modularity with maintainability
+
+### File Organization
+- Database functions should be grouped by functionality (tournament management, match execution, user management, etc.)
+- Frontend components should be organized by feature/domain
+- Shared utilities should be centralized
+- Keep related types, interfaces, and functions together
+
+## Development Guidelines
+
+### Database Functions
+- Use proper error handling with meaningful error messages
+- Include comprehensive input validation
+- Use transactions where appropriate
+- Follow consistent naming conventions (snake_case for database, camelCase for frontend)
+- Add proper logging for debugging
+
+### Frontend Development
+- Use TypeScript for type safety
+- Implement proper error boundaries
+- Follow React best practices
+- Use consistent state management patterns
+- Implement proper loading and error states
+- Add console log for main point to get insight about potential issues
+
+### API Integration
+- Use Supabase client consistently
+- Implement proper authentication checks
+- Handle network errors gracefully
+- Use proper typing for database responses
+
+## Security Considerations
+- Always validate user inputs
+- Use RLS (Row Level Security) policies appropriately
+- Sanitize data before database operations
+- Implement proper authentication and authorization
+- Follow principle of least privilege
+
+## Performance Guidelines
+- Use database indexes appropriately
+- Implement pagination for large datasets
+- Optimize queries to avoid N+1 problems
+- Use proper caching strategies
+- Monitor and optimize slow queries
+
+## Leadminton System Specific Rules
+- Maintain tournament state consistency
+- Handle concurrent match executions properly
+- Ensure proper player assignment and advancement
+- Implement proper bracket generation logic
+- Handle edge cases (byes, withdrawals, etc.)
+- Maintain consistency across all system modules (tournaments, user management, resources, etc.)
+
+## Code Quality
+- Write self-documenting code with clear variable names
+- Add comments for complex business logic
+- Use consistent error handling patterns
+- Implement proper validation at all levels
+- Follow DRY principles but don't over-abstract
+
+## Testing Considerations
+- **Do not create test files automatically** - tests will be written when specifically requested
+- Write testable functions with clear interfaces
+- Separate business logic from database operations where possible
+- Consider edge cases in tournament progression
+- Test tournament state transitions thoroughly
+
+## Documentation
+- **Do not create documentation files automatically** - documentation will be added when specifically requested
+- Update README when adding new features
+- Document complex database functions
+- Maintain API documentation
+- Keep migration notes up to date 
