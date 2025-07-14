@@ -315,8 +315,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
         courtDefense: 0,
         mentalToughness: 0,
         selfConfidence: 0
-      },
-      best: []
+      }
     });
     setShowCreateForm(true);
   };
@@ -506,66 +505,130 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
     setLoading(true);
 
     try {
+      const { stats, strategy, ...playerData } = playerFormData;
+
       if (editingPlayer) {
-        // Update existing player
-        const { error } = await supabase
+        const { error: playerError } = await supabase
           .from('players')
           .update({
-            name: playerFormData.name,
-            gender: playerFormData.gender,
-            level: playerFormData.level,
-            rank: playerFormData.rank,
-            max_level: playerFormData.maxLevel,
-            stats: playerFormData.stats,
-            stat_levels: playerFormData.statLevels,
-            equipment: playerFormData.equipment,
-            injuries: playerFormData.injuries,
-            strategy: playerFormData.strategy,
-            best: playerFormData.best,
+            name: playerData.name,
+            gender: playerData.gender,
+            level: playerData.level,
+            rank: playerData.rank,
+            max_level: playerData.maxLevel,
+            equipment: playerData.equipment,
+            injuries: playerData.injuries,
+            best: playerData.best,
             updated_at: new Date().toISOString()
           })
           .eq('id', editingPlayer.id);
 
-        if (error) {
-          console.error('Error updating CPU player:', error);
-          return;
-        }
+        if (playerError) throw playerError;
+
+        // Update stats
+        await supabase
+          .from('player_levels')
+          .update({
+            endurance: stats.endurance,
+            strength: stats.strength,
+            agility: stats.agility,
+            speed: stats.speed,
+            explosiveness: stats.explosiveness,
+            injury_prevention: stats.injuryPrevention,
+            smash: stats.smash,
+            defense: stats.defense,
+            serve: stats.serve,
+            stick: stats.stick,
+            slice: stats.slice,
+            drop: stats.drop
+          })
+          .eq('player_id', editingPlayer.id);
+
+
+        const strategy = playerFormData.strategy!;
+          await supabase
+            .from('player_strategy')
+            .update({
+              physical_commitment: strategy.physicalCommitment,
+              play_style: strategy.playStyle,
+              movement_speed: strategy.movementSpeed,
+              fatigue_management: strategy.fatigueManagement,
+              rally_consistency: strategy.rallyConsistency,
+              risk_taking: strategy.riskTaking,
+              attack: strategy.attack,
+              soft_attack: strategy.softAttack,
+              serving: strategy.serving,
+              court_defense: strategy.courtDefense,
+              mental_toughness: strategy.mentalToughness,
+              self_confidence: strategy.selfConfidence
+            })
+            .eq('player_id', editingPlayer.id);
 
         await logActivity('cpu_player_updated', 'player', editingPlayer.id);
         toast.success('CPU player updated successfully');
       } else {
-        // Create new player
+        // Get current user
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          throw new Error('No authenticated user found');
-        }
+        if (!user) throw new Error('No authenticated user');
 
-        const { data, error } = await supabase
+        // Insert player
+        const { data: player, error: playerError } = await supabase
           .from('players')
           .insert({
-            name: playerFormData.name,
-            gender: playerFormData.gender,
-            level: playerFormData.level,
-            rank: playerFormData.rank,
-            max_level: playerFormData.maxLevel,
-            stats: playerFormData.stats,
-            stat_levels: playerFormData.statLevels,
-            equipment: playerFormData.equipment,
-            injuries: playerFormData.injuries,
-            strategy: playerFormData.strategy,
-            best: playerFormData.best,
+            name: playerData.name,
+            gender: playerData.gender,
+            level: playerData.level,
+            rank: playerData.rank,
+            max_level: playerData.maxLevel,
+            injuries: playerData.injuries,
             is_cpu: true,
             user_id: user.id
           })
           .select()
           .single();
 
-        if (error) {
-          console.error('Error creating CPU player:', error);
-          return;
-        }
+        if (playerError || !player) throw playerError;
 
-        await logActivity('cpu_player_created', 'player', data.id);
+        // Insert stats
+        await supabase
+          .from('player_levels')
+          .insert({
+            player_id : player.id,
+            endurance: stats.endurance,
+            strength: stats.strength,
+            agility: stats.agility,
+            speed: stats.speed,
+            explosiveness: stats.explosiveness,
+            injury_prevention: stats.injuryPrevention,
+            smash: stats.smash,
+            defense: stats.defense,
+            serve: stats.serve,
+            stick: stats.stick,
+            slice: stats.slice,
+            drop: stats.drop
+          })
+
+
+        const strategy = playerFormData.strategy!;
+          await supabase
+            .from('player_strategy')
+            .insert({
+              player_id : player.id,
+              physical_commitment: strategy.physicalCommitment,
+              play_style: strategy.playStyle,
+              movement_speed: strategy.movementSpeed,
+              fatigue_management: strategy.fatigueManagement,
+              rally_consistency: strategy.rallyConsistency,
+              risk_taking: strategy.riskTaking,
+              attack: strategy.attack,
+              soft_attack: strategy.softAttack,
+              serving: strategy.serving,
+              court_defense: strategy.courtDefense,
+              mental_toughness: strategy.mentalToughness,
+              self_confidence: strategy.selfConfidence
+            })
+
+        await logActivity('cpu_player_created', 'player', player.id);
         toast.success('CPU player created successfully');
       }
 
@@ -989,12 +1052,6 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
                         <div className="flex items-center">
                           <span className="mr-1">{getGenderIcon(player.gender ?? 'male')}</span>
                           {(player.gender ?? 'male').charAt(0).toUpperCase() + (player.gender ?? 'male').slice(1)}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <div className="flex items-center">
-                          <span className="text-yellow-500 mr-1">⛁</span>
-                          {player.meals}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">

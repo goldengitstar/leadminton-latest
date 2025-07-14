@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAdmin } from '../../contexts/AdminContext';
 import { supabase } from '../../lib/supabase';
-import { X, AlertTriangle} from 'lucide-react';
+import { X, AlertTriangle, Coins, Diamond, Feather, UtensilsCrossed, Trophy} from 'lucide-react';
 import TournamentForm from '../../components/admin/TournamentForm';
 import { Tournament } from '../../types/tournament';
 import { toast } from 'sonner';
@@ -168,8 +168,50 @@ const AdminDashboard: React.FC = () => {
     end_date: '',
     registration_deadline: '',
     max_teams_per_group: 8,
-    status: 'draft' as 'draft' | 'registration_open' | 'registration_closed' | 'active' | 'completed'
+    status: 'draft' as 'draft' | 'registration_open' | 'registration_closed' | 'active' | 'completed',
+    entry_fee: {
+      coins: 0,
+      shuttlecocks: 0,
+      meals: 0,
+      diamonds: 0
+    },
+    prize_pool: {
+      first: {
+        coins: 0,
+        shuttlecocks: 0,
+        meals: 0,
+        diamonds: 0
+      },
+      second: {
+        coins: 0,
+        shuttlecocks: 0,
+        meals: 0,
+        diamonds: 0
+      },
+      third: {
+        coins: 0,
+        shuttlecocks: 0,
+        meals: 0,
+        diamonds: 0
+      }
+    }
   });
+
+  const handleResourceChange = (section: 'entry_fee' | 'prize_pool', position: string | null, resource: keyof { coins: number; shuttlecocks: number; meals: number; diamonds: number }, value: number) => {
+    setSeasonForm(prev => ({
+      ...prev,
+      [section]: position ? {
+        ...prev[section],
+        [position]: {
+          ...(prev[section] as any)[position],
+          [resource]: value
+        }
+      } : {
+        ...prev[section],
+        [resource]: value
+      }
+    }));
+  };
 
   const loadDashboardStats = async () => {
     try {
@@ -215,7 +257,9 @@ const AdminDashboard: React.FC = () => {
       end_date: '',
       registration_deadline: '',
       max_teams_per_group: 8,
-      status: 'draft'
+      status: 'draft',
+      entry_fee: { coins: 0, shuttlecocks: 0, meals: 0, diamonds: 0},
+      prize_pool: { first: {coins: 0, shuttlecocks: 0, meals: 0, diamonds: 0}, second: {coins: 0, shuttlecocks: 0, meals: 0, diamonds: 0}, third: {coins: 0, shuttlecocks: 0, meals: 0, diamonds: 0} }
     });
     setShowSeasonForm(true);
   };
@@ -424,8 +468,8 @@ const AdminDashboard: React.FC = () => {
       )}
       {/* Enhanced Season Creation Modal */}
       {showSeasonForm && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 h-[500px]">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-[50vw] max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">New Interclub Season</h2>
             
             <form onSubmit={handleSubmitSeason} className="space-y-4">
@@ -510,6 +554,218 @@ const AdminDashboard: React.FC = () => {
                   <option value="draft">Draft</option>
                   <option value="registration_open">Registration Open</option>
                 </select>
+              </div>
+
+
+              {/* Entry Fee */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                  <Coins className="w-5 h-5 mr-2" />
+                  Entry Fee
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <Coins className="w-4 h-4 inline mr-1 text-yellow-500" />
+                      Coins
+                    </label>
+                    <input
+                      type="number"
+                      value={seasonForm.entry_fee.coins}
+                      onChange={(e) => handleResourceChange('entry_fee', null, 'coins', parseInt(e.target.value) || 0)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      min="0"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <Feather className="w-4 h-4 inline mr-1 text-blue-500" />
+                      Shuttlecocks
+                    </label>
+                    <input
+                      type="number"
+                      value={seasonForm.entry_fee.shuttlecocks}
+                      onChange={(e) => handleResourceChange('entry_fee', null, 'shuttlecocks', parseInt(e.target.value) || 0)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      min="0"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <UtensilsCrossed className="w-4 h-4 inline mr-1 text-green-500" />
+                      Meals
+                    </label>
+                    <input
+                      type="number"
+                      value={seasonForm.entry_fee.meals}
+                      onChange={(e) => handleResourceChange('entry_fee', null, 'meals', parseInt(e.target.value) || 0)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      min="0"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <Diamond className="w-4 h-4 inline mr-1 text-purple-500" />
+                      Diamonds
+                    </label>
+                    <input
+                      type="number"
+                      value={seasonForm.entry_fee.diamonds}
+                      onChange={(e) => handleResourceChange('entry_fee', null, 'diamonds', parseInt(e.target.value) || 0)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      min="0"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Prize Pool */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                  <Trophy className="w-5 h-5 mr-2" />
+                  Prize Pool
+                </h3>
+                
+                {/* First Place */}
+                <div className="mb-6">
+                  <h4 className="text-md font-medium text-gray-800 mb-3">🥇 First Place</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div>
+                      <input
+                        type="number"
+                        value={seasonForm.prize_pool.first.coins}
+                        onChange={(e) => handleResourceChange('prize_pool', 'first', 'coins', parseInt(e.target.value) || 0)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Coins"
+                        min="0"
+                      />
+                    </div>
+                    <div>
+                      <input
+                        type="number"
+                        value={seasonForm.prize_pool.first.shuttlecocks}
+                        onChange={(e) => handleResourceChange('prize_pool', 'first', 'shuttlecocks', parseInt(e.target.value) || 0)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Shuttlecocks"
+                        min="0"
+                      />
+                    </div>
+                    <div>
+                      <input
+                        type="number"
+                        value={seasonForm.prize_pool.first.meals}
+                        onChange={(e) => handleResourceChange('prize_pool', 'first', 'meals', parseInt(e.target.value) || 0)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Meals"
+                        min="0"
+                      />
+                    </div>
+                    <div>
+                      <input
+                        type="number"
+                        value={seasonForm.prize_pool.first.diamonds}
+                        onChange={(e) => handleResourceChange('prize_pool', 'first', 'diamonds', parseInt(e.target.value) || 0)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Diamonds"
+                        min="0"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Second Place */}
+                <div className="mb-6">
+                  <h4 className="text-md font-medium text-gray-800 mb-3">🥈 Second Place</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div>
+                      <input
+                        type="number"
+                        value={seasonForm.prize_pool.second.coins}
+                        onChange={(e) => handleResourceChange('prize_pool', 'second', 'coins', parseInt(e.target.value) || 0)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Coins"
+                        min="0"
+                      />
+                    </div>
+                    <div>
+                      <input
+                        type="number"
+                        value={seasonForm.prize_pool.second.shuttlecocks}
+                        onChange={(e) => handleResourceChange('prize_pool', 'second', 'shuttlecocks', parseInt(e.target.value) || 0)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Shuttlecocks"
+                        min="0"
+                      />
+                    </div>
+                    <div>
+                      <input
+                        type="number"
+                        value={seasonForm.prize_pool.second.meals}
+                        onChange={(e) => handleResourceChange('prize_pool', 'second', 'meals', parseInt(e.target.value) || 0)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Meals"
+                        min="0"
+                      />
+                    </div>
+                    <div>
+                      <input
+                        type="number"
+                        value={seasonForm.prize_pool.second.diamonds}
+                        onChange={(e) => handleResourceChange('prize_pool', 'second', 'diamonds', parseInt(e.target.value) || 0)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Diamonds"
+                        min="0"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Third Place */}
+                <div className="mb-6">
+                  <h4 className="text-md font-medium text-gray-800 mb-3">🥉 Third Place</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div>
+                      <input
+                        type="number"
+                        value={seasonForm.prize_pool.third.coins}
+                        onChange={(e) => handleResourceChange('prize_pool', 'third', 'coins', parseInt(e.target.value) || 0)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Coins"
+                        min="0"
+                      />
+                    </div>
+                    <div>
+                      <input
+                        type="number"
+                        value={seasonForm.prize_pool.third.shuttlecocks}
+                        onChange={(e) => handleResourceChange('prize_pool', 'third', 'shuttlecocks', parseInt(e.target.value) || 0)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Shuttlecocks"
+                        min="0"
+                      />
+                    </div>
+                    <div>
+                      <input
+                        type="number"
+                        value={seasonForm.prize_pool.third.meals}
+                        onChange={(e) => handleResourceChange('prize_pool', 'third', 'meals', parseInt(e.target.value) || 0)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Meals"
+                        min="0"
+                      />
+                    </div>
+                    <div>
+                      <input
+                        type="number"
+                        value={seasonForm.prize_pool.third.diamonds}
+                        onChange={(e) => handleResourceChange('prize_pool', 'third', 'diamonds', parseInt(e.target.value) || 0)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Diamonds"
+                        min="0"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
               
               <div className="flex justify-end space-x-3">

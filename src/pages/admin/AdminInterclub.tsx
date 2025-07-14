@@ -67,6 +67,7 @@ interface MatchData {
 }
 
 interface ClubData {
+  user_id: string;
   manager_id: string;
   manager_name: string;
   resources: {
@@ -159,7 +160,8 @@ const AdminInterclub: React.FC = () => {
       // Fetch all players who are club managers
       const { data: managers } = await supabase
         .from('players')
-        .select('id, name');
+        .select('id, name, user_id')
+        .eq('is_cpu', false);
       
       if (!managers) return;
       
@@ -168,7 +170,7 @@ const AdminInterclub: React.FC = () => {
         const { data: transactions } = await supabase
           .from('resource_transactions')
           .select('resource_type, amount')
-          .eq('player_id', manager.id);
+          .eq('user_id', manager.user_id);
         
         // Calculate total resources
         const resources = {
@@ -179,13 +181,14 @@ const AdminInterclub: React.FC = () => {
         };
         
         transactions?.forEach(t => {
-          if (t.resource_type === 'diamonds') resources.diamonds = t.amount;
-          if (t.resource_type === 'meals') resources.meals = t.amount;
-          if (t.resource_type === 'shuttlecocks') resources.shuttlecocks = t.amount;
-          if (t.resource_type === 'coins') resources.coins = t.amount;
+          if (t.resource_type === 'diamonds') resources.diamonds += t.amount;
+          if (t.resource_type === 'meals') resources.meals += t.amount;
+          if (t.resource_type === 'shuttlecocks') resources.shuttlecocks += t.amount;
+          if (t.resource_type === 'coins') resources.coins += t.amount;
         });
         
         return {
+          user_id: manager.user_id,
           manager_id: manager.id,
           manager_name: manager.name,
           resources
@@ -248,37 +251,29 @@ const AdminInterclub: React.FC = () => {
 
   const updateClubResources = async () => {
     if (!editingClub) return;
-    
+
     try {
       setLoading(true);
-      
-      const updates = Object.entries(resourceForm).map(async ([type, amount]) => {
-        const { data: existing } = await supabase
-          .from('resource_transactions')
-          .select('id')
-          .eq('player_id', editingClub.manager_id)
-          .eq('resource_type', type)
-          .single();
-        
-        if (existing) {
-          return supabase
-            .from('resource_transactions')
-            .update({ amount })
-            .eq('id', existing.id);
-        } else {
-          return supabase
+      console.log(editingClub.user_id)
+      await Promise.all(
+        Object.entries(resourceForm).map(async ([type, amount]) => {
+          console.log(type, amount)
+          const { error } = await supabase
             .from('resource_transactions')
             .insert({
-              player_id: editingClub.manager_id,
+              user_id: editingClub.user_id,
+              source: "manual_adjustment",
               resource_type: type,
-              amount
+              amount: Number(amount)
             });
-        }
-      });
-      
-      await Promise.all(updates);
-      
-      logActivity('club_resources_updated', 'player', editingClub.manager_id);
+
+          if (error) {
+            throw new Error(`Failed to insert ${type}: ${error.message}`);
+          }
+        })
+      );
+
+      await logActivity('club_resources_updated', 'player', editingClub.user_id);
       setEditingClub(null);
       await loadClubs();
     } catch (error) {
