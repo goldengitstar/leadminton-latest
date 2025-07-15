@@ -83,66 +83,152 @@ export function generateRandomName(gender: any): string {
   return `${firstName} ${lastName}`;
 }
 
+function rand(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+type Rarity = 'common' | 'rare' | 'epic' | 'premium' | 'legendary';
+
+function chooseRarity(): { rarity: Rarity; totalStats: number; level: number; max_level: number } {
+  const roll = Math.random() * 100;
+  if (roll < 0.5) {
+    return {
+      rarity: 'legendary',
+      totalStats: rand(921, 999),
+      level: rand(30, 40),
+      max_level: rand(400, 500),
+    };
+  } else if (roll < 2.0) {
+    return {
+      rarity: 'premium',
+      totalStats: rand(801, 920),
+      level: rand(20, 30),
+      max_level: rand(300, 400),
+    };
+  } else if (roll < 7.0) {
+    return {
+      rarity: 'epic',
+      totalStats: rand(451, 800),
+      level: rand(10, 20),
+      max_level: rand(220, 300),
+    };
+  } else if (roll < 25.0) {
+    return {
+      rarity: 'rare',
+      totalStats: rand(201, 450),
+      level: rand(5, 10),
+      max_level: rand(180, 220),
+    };
+  } else {
+    return {
+      rarity: 'common',
+      totalStats: rand(151, 200),
+      level: rand(1, 5),
+      max_level: rand(150, 180),
+    };
+  }
+}
+
+function distributeStatPoints<T extends string>(
+  total: number,
+  keys: readonly T[]
+): Record<T, number> {
+  const weights = keys.map(() => Math.random());
+  const sumW = weights.reduce((a, b) => a + b, 0);
+
+  const stats = {} as Record<T, number>;
+
+  keys.forEach((k, i) => {
+    stats[k] = Math.round((weights[i] / sumW) * total);
+  });
+
+  const drift = total - (Object.values(stats) as number[]).reduce((a, b) => a + b, 0);
+  const randomKey = keys[Math.floor(Math.random() * keys.length)];
+  stats[randomKey] += drift;
+
+  return stats;
+}
+
 export class PlayerService {
   private supabase: SupabaseClient;
 
   constructor(supabaseClient: SupabaseClient) {
     this.supabase = supabaseClient;
   }
-
-  /**
-   * Update player rank - JavaScript replacement for update_player_rank() function
-   */
+  
   async updatePlayerRank(playerId: string): Promise<{ success: boolean; error?: string }> {
     try {
-      // Get player's match history
+      const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+
       const { data: matches, error: matchError } = await this.supabase
         .from('player_play_history')
         .select('*')
         .or(`player1_id.eq.${playerId},player2_id.eq.${playerId}`)
-        .order('created_at', { ascending: false })
-        .limit(50); // Consider last 50 matches for ranking
+        .gte('created_at', ninetyDaysAgo)
+        .order('created_at', { ascending: false });
 
       if (matchError) {
-        console.error('Error fetching player matches:', matchError);
+        console.error('Error fetching match history:', matchError);
         return { success: false, error: matchError.message };
       }
 
-      // Calculate new rank based on match results
-      let rank = 10; // Starting rank
-      let wins = 0;
-      let losses = 0;
+      const pointTable: Record<string, number> = {
+        P12: 5,
+        P11: 7.67,
+        P10: 12.67,
+        D9: 17.67,
+        D8: 22.67,
+        D7: 27.67,
+        R6: 34.33,
+        R5: 42.67,
+        R4: 51,
+        N3: 62.67,
+        N2: 77,
+        N1: 93,
+      };
 
-      matches?.forEach(match => {
+      const rankFromPoints = (points: number): string => {
+        if (points >= 451) return 'N1';
+        if (points >= 371) return 'N2';
+        if (points >= 301) return 'N3';
+        if (points >= 251) return 'R4';
+        if (points >= 201) return 'R5';
+        if (points >= 161) return 'R6';
+        if (points >= 131) return 'D7';
+        if (points >= 101) return 'D8';
+        if (points >= 71) return 'D9';
+        if (points >= 41) return 'P10';
+        if (points >= 21) return 'P11';
+        return 'P12';
+      };
+
+      const winPoints: number[] = [];
+
+      for (const match of matches || []) {
         const isPlayer1 = match.player1_id === playerId;
-        const won = isPlayer1 ? match.result : !match.result;
-        
-        if (won) {
-          wins++;
-          rank += 5; // Gain points for win
-        } else {
-          losses++;
-          rank -= 5; // Lose points for loss
-        }
-      });
+        const won = isPlayer1 ? match.result === true : match.result === false;
 
-      // Apply win rate bonus/penalty
-      const totalMatches = wins + losses;
-      if (totalMatches > 0) {
-        const winRate = wins / totalMatches;
-        if (winRate > 0.6) {
-          rank += 10; // Bonus for high win rate
-        } else if (winRate < 0.4) {
-          rank -= 10; // Penalty for low win rate
-        }
+        if (!won) continue;
+
+        const defeatedRankValue = isPlayer1 ? match.player2_rank : match.player1_rank;
+        if (typeof defeatedRankValue !== 'number') continue;
+
+        const defeatedRankLabel = rankFromPoints(defeatedRankValue);
+        const earnedPoints = pointTable[defeatedRankLabel] || 0;
+        winPoints.push(earnedPoints);
       }
 
-      // Update player rank in database
+      // Take top 6 performances only
+      const top6Points = winPoints.sort((a, b) => b - a).slice(0, 6);
+      const totalRankPoints = Number(top6Points.reduce((a, b) => a + b, 0).toFixed(2));
+      const finalRank = rankFromPoints(totalRankPoints);
+
       const { error: updateError } = await this.supabase
         .from('players')
-        .update({ 
-          rank: rank,
-          updated_at: new Date().toISOString()
+        .update({
+          rank: totalRankPoints,
+          rank_label: finalRank, // optional: add this column
+          updated_at: new Date().toISOString(),
         })
         .eq('id', playerId);
 
@@ -218,138 +304,86 @@ export class PlayerService {
   /**
    * Create new real player with initial stats
    */
-  async createPlayer(userId: string, name?: string, gender: string = 'male') {
-    try {
-      // Generate random name if not provided
-      const playerName = name || generateRandomName(gender as 'male' | 'female');
-      
-      // Generate initial stats using the existing utility
-      const initialStats = generateInitialStats();
-      const initialStatLevels = generateInitialStatLevels();
-      const initialStrategy = generateInitialStrategy();
+    async createPlayer(userId: string, name?: string, gender: 'male'|'female' = 'male') {
+      try {
+        // 1) decide rarity, totalStats, level, max_level
+        const { rarity, totalStats, level, max_level } = chooseRarity();
 
-      const getRank = (skillLevel: string) => {
-        switch (skillLevel) {
-          case 'beginner': return Math.floor(Math.random() * 50); // 0-50
-          case 'intermediate': return Math.floor(Math.random() * 100) + 50; // 50-150
-          case 'advanced': return Math.floor(Math.random() * 100) + 150; // 150-250
-          case 'expert': return Math.floor(Math.random() * 150) + 250; // 250-400
-          case 'master': return Math.floor(Math.random() * 150) + 400; // 400-550
-          default: return 0;
-        }
-      };
+        // 2) split totalStats across your 12 attributes
+        const statKeys = [
+          'endurance','strength','agility','speed','explosiveness',
+          'injuryPrevention','smash','defense','serve','stick','slice','drop'
+        ] as const;
 
-      // Create player record
-      const { data: player, error: playerError } = await this.supabase
-        .from('players')
-        .insert({
-          user_id: userId,
-          name: playerName,
-          level: 1,
-          max_level: Math.floor(Math.random() * 50) + 150,
-          rank: 1,
-          gender,
-          is_cpu: false,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .select()
-        .single();
+        const initialStats = distributeStatPoints(totalStats, statKeys);
+        const initialStatLevels = generateInitialStatLevels();       // still zeros
+        const initialStrategy = generateInitialStrategy();
 
-      if (playerError) {
-        console.error('Error creating player:', playerError);
-        return { success: false, error: playerError.message };
-      }
+        // 3) insert player row with rarity, level & max_level
+        const { data: player, error: playerError } = await this.supabase
+          .from('players')
+          .insert({
+            user_id: userId,
+            name: name || generateRandomName(gender),
+            gender,
+            is_cpu: false,
+            rarity,
+            level,
+            max_level,
+            rank: 1,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .select()
+          .single();
 
-      // Create initial stats
-      const { error: statsError } = await this.supabase
-        .from('player_stats')
-        .insert({
+        if (playerError) throw playerError;
+
+        // 4) insert stats, levels, strategy (same as before)...
+        await this.supabase.from('player_stats').insert({
           player_id: player.id,
-          endurance: initialStats.endurance,
-          strength: initialStats.strength,
-          agility: initialStats.agility,
-          speed: initialStats.speed,
-          explosiveness: initialStats.explosiveness,
-          injury_prevention: initialStats.injuryPrevention,
-          smash: initialStats.smash,
-          defense: initialStats.defense,
-          serve: initialStats.serve,
-          stick: initialStats.stick,
-          slice: initialStats.slice,
-          drop: initialStats.drop,
+          ...initialStats,
           created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         });
-
-      if (statsError) {
-        console.error('Error creating player stats:', statsError);
-        return { success: false, error: statsError.message };
-      }
-
-      // Create initial levels
-      const { error: levelsError } = await this.supabase
-        .from('player_levels')
-        .insert({
+        await this.supabase.from('player_levels').insert({
           player_id: player.id,
-          endurance: initialStatLevels.endurance,
-          strength: initialStatLevels.strength,
-          agility: initialStatLevels.agility,
-          speed: initialStatLevels.speed,
-          explosiveness: initialStatLevels.explosiveness,
-          injury_prevention: initialStatLevels.injuryPrevention,
-          smash: initialStatLevels.smash,
-          defense: initialStatLevels.defense,
-          serve: initialStatLevels.serve,
-          stick: initialStatLevels.stick,
-          slice: initialStatLevels.slice,
-          drop: initialStatLevels.drop,
+          ...initialStatLevels,
           created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         });
-
-      if (levelsError) {
-        console.error('Error creating player levels:', levelsError);
-        return { success: false, error: levelsError.message };
-      }
-
-      // Create initial strategy
-      const { error: strategyError } = await this.supabase
-        .from('player_strategy')
-        .insert({
+        await this.supabase.from('player_strategy').insert({
           player_id: player.id,
           physical_commitment: initialStrategy.physicalCommitment,
-          play_style: initialStrategy.playStyle,
-          movement_speed: initialStrategy.movementSpeed,
+          play_style:       initialStrategy.playStyle,
+          movement_speed:   initialStrategy.movementSpeed,
           fatigue_management: initialStrategy.fatigueManagement,
           rally_consistency: initialStrategy.rallyConsistency,
-          risk_taking: initialStrategy.riskTaking,
-          attack: initialStrategy.attack,
-          soft_attack: initialStrategy.softAttack,
-          serving: initialStrategy.serving,
-          court_defense: initialStrategy.courtDefense,
+          risk_taking:      initialStrategy.riskTaking,
+          attack:           initialStrategy.attack,
+          soft_attack:      initialStrategy.softAttack,
+          serving:          initialStrategy.serving,
+          court_defense:    initialStrategy.courtDefense,
           mental_toughness: initialStrategy.mentalToughness,
-          self_confidence: initialStrategy.selfConfidence,
+          self_confidence:  initialStrategy.selfConfidence,
           created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         });
 
-      if (strategyError) {
-        console.error('Error creating player strategy:', strategyError);
-        return { success: false, error: strategyError.message };
+        return {
+          success: true,
+          player: {
+            ...player,
+            stats: initialStats,
+            levels: initialStatLevels,
+            strategy: initialStrategy,
+            equipment: [],
+          }
+        };
+      } catch (error: any) {
+        console.error('Error in createPlayer:', error);
+        return { success: false, error: error.message || 'Failed to create player' };
       }
-
-      return { success: true, player: {
-        ...player,
-        stats: initialStats,
-        levels: initialStatLevels,
-        strategy: initialStrategy,
-        equipment: []
-      } };
-    } catch (error) {
-      console.error('Error in createPlayer:', error);
-      return { success: false, error: 'Failed to create player' };
-    }
   }
 
   /**

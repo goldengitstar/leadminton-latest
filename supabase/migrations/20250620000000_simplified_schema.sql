@@ -149,6 +149,7 @@ CREATE TABLE public.players (
   created_at timestamp with time zone NULL DEFAULT now(),
   updated_at timestamp with time zone NOT NULL DEFAULT now(),
   rank double precision NULL,
+  rank_label text NULL,
   gender gender_enum NULL DEFAULT 'male'::gender_enum,
   is_cpu boolean DEFAULT false,
   training json NULL,

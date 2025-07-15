@@ -117,6 +117,33 @@ export class InterclubService {
     }
   }
 
+
+  private validatePlayerUsageLimit(lineup: LineupSubmission['lineup']): { valid: boolean; error?: string } {
+    const allPlayerIds = [
+      lineup.mens_singles,
+      lineup.womens_singles,
+      ...lineup.mens_doubles,
+      ...lineup.womens_doubles,
+      ...lineup.mixed_doubles
+    ];
+
+    const usage: Record<string, number> = {};
+    allPlayerIds.forEach(id => {
+      usage[id] = (usage[id] || 0) + 1;
+    });
+
+    const overused = Object.entries(usage).filter(([_, count]) => count > 3);
+    if (overused.length > 0) {
+      const overusedList = overused.map(([id]) => id).join(', ');
+      return {
+        valid: false,
+        error: `Players used more than 3 times: ${overusedList}`
+      };
+    }
+
+    return { valid: true };
+  }
+
   /**
    * Get next tier in progression
    */
@@ -344,6 +371,11 @@ export class InterclubService {
         return { success: false, error: validationResult.error };
       }
 
+      const validation = this.validatePlayerUsageLimit(submission.lineup);
+      if (!validation.valid) {
+        return { success: false, error: validation.error };
+      }
+
       // Get encounter details
       const { data: encounter, error: encounterError } = await this.supabase
         .from('interclub_matches')
@@ -392,6 +424,34 @@ export class InterclubService {
       console.error('Error in submitLineup:', error);
       return { success: false, error: 'Failed to submit lineup' };
     }
+  }
+
+  private generateMatchSchedule(teamIds: string[]): {
+    home_team_id: string;
+    away_team_id: string;
+    matchday_number: number;
+  }[] {
+    const fixtures: any[] = [];
+    const numTeams = teamIds.length;
+
+    // Round-robin pairing (home & away)
+    let matchday = 1;
+    for (let i = 0; i < numTeams; i++) {
+      for (let j = i + 1; j < numTeams; j++) {
+        fixtures.push({
+          home_team_id: teamIds[i],
+          away_team_id: teamIds[j],
+          matchday_number: matchday++
+        });
+        fixtures.push({
+          home_team_id: teamIds[j],
+          away_team_id: teamIds[i],
+          matchday_number: matchday++
+        });
+      }
+    }
+
+    return fixtures;
   }
 
   /**
@@ -596,6 +656,11 @@ export class InterclubService {
         womens_doubles: [femalePlayers[1].id, femalePlayers[2]?.id || femalePlayers[0].id] as [string, string],
         mixed_doubles: [malePlayers[3]?.id || malePlayers[0].id, femalePlayers[1]?.id || femalePlayers[0].id] as [string, string]
       };
+
+      const validation = this.validatePlayerUsageLimit(autoLineup);
+      if (!validation.valid) {
+        return { success: false, error: validation.error };
+      }
 
       // Submit the auto-generated lineup
       const submission: LineupSubmission = {

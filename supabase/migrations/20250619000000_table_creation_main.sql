@@ -92,6 +92,7 @@ create table public.players (
   created_at timestamp with time zone null default now(),
   rank double precision null,
   gender gender_enum null default 'male'::gender_enum,
+  rarity text null,
   training json null,
   equipment json null,
   injuries json null,

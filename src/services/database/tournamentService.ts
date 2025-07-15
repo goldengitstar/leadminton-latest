@@ -313,13 +313,17 @@ export class TournamentService {
         return { success: false, error: playerError.message };
       }
 
-      // Check player level requirement
       if (tournament.min_player_level && player.level < tournament.min_player_level) {
         return { success: false, error: 'Player level too low for this tournament' };
       }
 
-      // Check if player is already registered
       const registeredPlayers = tournament.registered_players || [];
+      
+      const userRegistrations = registeredPlayers.filter((p) => p.user_id === player.user_id);
+      if (userRegistrations.length >= 2) {
+        return { success: false, error: 'Max 2 players per user per tournament' };
+      }
+
       const isAlreadyRegistered = registeredPlayers.some((reg: any) => 
         reg.player_id === playerId || reg.playerId === playerId
       );
@@ -328,7 +332,6 @@ export class TournamentService {
         return { success: false, error: 'Player already registered for this tournament' };
       }
 
-      // Check if user has sufficient resources for entry fee
       if (tournament.entry_fee) {
         const userId = player.user_id;
         const hasResources = await this.resourceService.hasSufficientResources(userId, tournament.entry_fee);
