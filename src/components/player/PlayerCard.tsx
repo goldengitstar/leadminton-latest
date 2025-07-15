@@ -81,18 +81,18 @@ export default function PlayerCard({
   );
   const [time, setTime] = useState(Date.now()); // State to trigger updates
   const rankNames = [
-    "P12",
-    "P11",
-    "P10",
-    "D9",
-    "D8",
-    "D7",
-    "R6",
-    "R5",
-    "R4",
-    "N3",
-    "N2",
     "N1",
+    "N2",
+    "N3",
+    "R4",
+    "R5",
+    "R6",
+    "D7",
+    "D8",
+    "D9",
+    "P10",
+    "P11",
+    "P12"
   ];
 
   const getRank = (rankPoint: number) => {
@@ -199,7 +199,9 @@ export default function PlayerCard({
                   </button>
                 </div>
               )}
-              <span className={`badge-rank-${getRank(player.rank)}`}></span>
+              <span className={`badge-rank-${getRank(
+                Object.values(player.stats).reduce((sum, val) => sum + val, 0)
+              )}`}></span>
             </div>
             <div className="flex items-center space-x-4 mt-2">
               <div className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
@@ -317,8 +319,7 @@ export default function PlayerCard({
                   best={player?.best}
                 />
                 <div className="flex justify-between w-full">
-                  <span>{rankNames[12 - getRank(player.rank)]}</span>
-                  <span>{rankNames[13 - getRank(player.rank)]}</span>
+                  <span>{rankNames[getRank(Object.values(player.stats).reduce((sum, val) => sum + val, 0)) - 1]}</span>
                 </div>
                 {Object.keys(playerScore.details.equipmentBonuses).length >
                   0 && (
