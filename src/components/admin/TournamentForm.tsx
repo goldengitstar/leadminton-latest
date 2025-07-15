@@ -136,7 +136,8 @@ const TournamentForm: React.FC<TournamentFormProps> = ({
       setLoading(false);
       return;
     }
-
+    console.log("Form data status", formData.status)
+    console.log("Index", ['upcoming', 'ongoing', 'completed'].indexOf(formData.status))
     try {
       const tournamentData = {
         name: formData.name,

@@ -536,6 +536,7 @@ export class UserService {
    * Load complete game state for a user
    */
   async loadGameState(userId?: string): Promise<any> {
+    console.log("Loading game state")
     const state: any = {
       players: [],
       facilities: [],
@@ -755,7 +756,7 @@ export class UserService {
       state.players = players;
       return state;
     } catch (error) {
-      console.error('Error in loadGameState:', error);
+      console.log('Error in loadGameState:', error);
       return state;
     }
   }

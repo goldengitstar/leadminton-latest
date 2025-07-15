@@ -16,6 +16,7 @@ import {
 import { useAuth } from "./AuthContext";
 import { UserService } from "@/services/database/userService";
 import { ResourceService } from "@/services/database/resourceService";
+import { PlayerService } from "@/services/database/playerService";
 import { TournamentService } from "@/services/database/tournamentService";
 import { Equipment } from "@/types/equipment";
 import { Tournament } from "@/types/tournament";
@@ -51,9 +52,11 @@ interface GameContextType {
 const GameContext = createContext<GameContextType | undefined>(undefined);
 const resourceService = new ResourceService(supabase);
 const tournamentService = new TournamentService(supabase);
+const playerService = new PlayerService(supabase);
 const userService = new UserService(supabase);
 
 export function GameProvider({ children }: { children: React.ReactNode }) {
+  console.log('[GameProvider] mounted');
   const [gameState, dispatch] = useReducer(rootReducer, initialState);
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const { isLogin, user } = useAuth();
@@ -117,6 +120,24 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     const state = await userService.loadGameState(user.id);
     console.log('[GameContext] Game state loaded:', state);
     dispatch({ type: "SET_GAME_STATE", payload: { state: state } });
+    console.log('[GameContext] Game state loaded:', JSON.stringify(state, null, 2));
+    // Clean up expired injuries for each player
+    const now = Date.now();
+    const cleanedPlayers = await Promise.all(
+      state.players.map(async (player:any) => {
+        if (!player.injuries || player.injuries.length === 0) return player;
+
+        await playerService.removeHealedInjuries(player.id, player.injuries);
+        const activeInjuries = player.injuries.filter(
+          (injury:any) => injury.recoveryEndTime > now
+        );
+
+        return { ...player, injuries: activeInjuries };
+      })
+    );
+    console.log("GameContext cleaned up players version")
+    // Replace players with cleaned version
+    state.players = cleanedPlayers;
     await loadTournaments();
   };
 
@@ -142,7 +163,9 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   }, [user?.id]);
 
   useEffect(() => {
+    console.log("Running use effect one")
     if (!user) return;
+    console.log("User found continuing")
 
     const loadResource = async () => {
       console.log('[GameContext] Loading resources for user:', user.id);
@@ -170,6 +193,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     };
 
     // Load everything immediately when user changes
+    console.log("Triggering load everything")
     loadEverything();
     
     // Set up periodic refresh every 15 seconds (faster for better UX)

@@ -148,7 +148,7 @@ export default function ClubPage() {
     }
   };
 
-  const handleHeal = (
+  const handleHeal = async (
     playerId: string,
     itemId: string,
     recoveryReduction: number
@@ -162,36 +162,43 @@ export default function ClubPage() {
     const cost = HEALING_ITEMS[itemId as keyof typeof HEALING_ITEMS];
     if (!cost || resources.diamonds < cost) return;
 
+    // Deduct diamond cost
     updateResources("manual_adjustment", {
       diamonds: -cost,
     });
 
+    const player = gameState.players.find((p) => p.id === playerId);
+    if (!player || !player.injuries || player.injuries.length === 0) return;
+
+    const now = Date.now();
+
+    // Step 1: Remove healed injuries from DB
+    await playerService.removeHealedInjuries(playerId, player.injuries);
+
+    // Step 2: Work only with currently active injuries
+    const activeInjuries = player.injuries.filter(
+      (injury) => injury.recoveryEndTime > now
+    );
+
+    // Step 3: Apply recovery reduction
+    const updatedInjuries = activeInjuries.map((injury) => {
+      const remainingTime = injury.recoveryEndTime - now;
+      const reducedTime = remainingTime * (1 - recoveryReduction);
+      return {
+        ...injury,
+        recoveryEndTime: now + reducedTime,
+      };
+    });
+
+    // Step 4: Record the updated injuries to DB
+    await recordInjuriesChange(player, updatedInjuries);
+
+    // Step 5: Update game state (pure sync)
     setGameState((prev) => ({
       ...prev,
-      players: prev.players.map((player) => {
-        if (player.id === playerId && player.injuries) {
-          const now = Date.now();
-          // Appliquer la réduction à toutes les blessures actives
-          const updatedInjuries = player.injuries
-            .filter((injury) => injury.recoveryEndTime > now)
-            .map((injury) => {
-              const remainingTime = injury.recoveryEndTime - now;
-              const reducedTime = remainingTime * (1 - recoveryReduction);
-              return {
-                ...injury,
-                recoveryEndTime: now + reducedTime,
-              };
-            });
-
-          recordInjuriesChange(player, updatedInjuries);
-
-          return {
-            ...player,
-            injuries: updatedInjuries,
-          };
-        }
-        return player;
-      }),
+      players: prev.players.map((p) =>
+        p.id === playerId ? { ...p, injuries: updatedInjuries } : p
+      ),
     }));
   };
 

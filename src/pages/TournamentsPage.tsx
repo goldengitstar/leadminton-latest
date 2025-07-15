@@ -193,7 +193,8 @@ export default function TournamentsPage() {
     if (tournament.current_participants >= tournament.max_participants) {
       return 'Tournament Full';
     }
-
+    console.log("Min player level", tournament.min_player_level)
+    
     const eligiblePlayers = gameState.players.filter(
       player => player.level >= tournament.min_player_level && !player.injuries?.length
     );

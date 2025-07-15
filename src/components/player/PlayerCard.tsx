@@ -21,8 +21,12 @@ import HealingModal from "./HealingModal";
 import { calculateTotalInjuryEffect } from "../../utils/injuryUtils";
 import PlayerStrategyModal from "./PlayerStrategyModal";
 import { formatTime } from "@/utils/dateFormatter";
+import { PlayerService } from "@/services/database/playerService";
 import RankBar from "../common/RankBar";
 import PlayerDeleteModal from "./PlayerDeleteModal";
+import { supabase } from "@/lib/supabase";
+
+const playerService = new PlayerService(supabase);
 
 interface PlayerCardProps {
   player: Player;
@@ -81,18 +85,18 @@ export default function PlayerCard({
   );
   const [time, setTime] = useState(Date.now()); // State to trigger updates
   const rankNames = [
-    "N1",
-    "N2",
-    "N3",
-    "R4",
-    "R5",
-    "R6",
-    "D7",
-    "D8",
-    "D9",
-    "P10",
+    "P12",
     "P11",
-    "P12"
+    "P10",
+    "D9",
+    "D8",
+    "D7",
+    "R6",
+    "R5",
+    "R4",
+    "N3",
+    "N2",
+    "N1",
   ];
 
   const getRank = (rankPoint: number) => {
@@ -131,6 +135,28 @@ export default function PlayerCard({
   );
   const isInjured = useMemo(() => activeInjuries.length > 0, [activeInjuries]);
 
+  if (activeInjuries.length > 0) {
+    activeInjuries.forEach(async (injury) => {
+      const now = Date.now();
+      const remainingMs = injury.recoveryEndTime - now;
+
+      if (remainingMs <= 1000) {
+        const updatedInjuries = player.injuries.filter((i) => i.id !== injury.id);
+        
+        const { error } = await supabase
+          .from("players")
+          .update({ injuries: updatedInjuries })
+          .eq("id", player.id);
+
+        if (error) {
+          console.error(`Failed to remove healed injury: ${injury.id}`, error.message);
+        } else {
+          console.log(`Healed injury removed: ${injury.id}`);
+        }
+      }
+    });
+  }
+
   const genderDetails = useMemo(
     () => ({
       emoji: player.gender === "male" ? "♂️" : "♀️",
@@ -163,6 +189,11 @@ export default function PlayerCard({
   };
 
   console.log('player =>', player);
+
+  
+  useEffect(() => {
+    playerService.updatePlayerRank(player.id)
+  })
 
   return (
     <>
@@ -199,9 +230,7 @@ export default function PlayerCard({
                   </button>
                 </div>
               )}
-              <span className={`badge-rank-${getRank(
-                Object.values(player.stats).reduce((sum, val) => sum + val, 0)
-              )}`}></span>
+              <span className={`badge-rank-${getRank(player.rank)}`}></span>
             </div>
             <div className="flex items-center space-x-4 mt-2">
               <div className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
@@ -319,7 +348,8 @@ export default function PlayerCard({
                   best={player?.best}
                 />
                 <div className="flex justify-between w-full">
-                  <span>{rankNames[getRank(Object.values(player.stats).reduce((sum, val) => sum + val, 0)) - 1]}</span>
+                  <span>{rankNames[12 - getRank(player.rank)]}</span>
+                  <span>{rankNames[13 - getRank(player.rank)]}</span>
                 </div>
                 {Object.keys(playerScore.details.equipmentBonuses).length >
                   0 && (

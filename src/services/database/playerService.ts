@@ -222,12 +222,12 @@ export class PlayerService {
       const top6Points = winPoints.sort((a, b) => b - a).slice(0, 6);
       const totalRankPoints = Number(top6Points.reduce((a, b) => a + b, 0).toFixed(2));
       const finalRank = rankFromPoints(totalRankPoints);
-
+      console.log(finalRank)
       const { error: updateError } = await this.supabase
         .from('players')
         .update({
           rank: totalRankPoints,
-          rank_label: finalRank, // optional: add this column
+          rank_label: finalRank,
           updated_at: new Date().toISOString(),
         })
         .eq('id', playerId);
@@ -241,6 +241,25 @@ export class PlayerService {
     } catch (error) {
       console.error('Error in updatePlayerRank:', error);
       return { success: false, error: 'Failed to update player rank' };
+    }
+  }
+
+  async removeHealedInjuries(playerId: string, currentInjuries: any[]) {
+    const now = Date.now();
+
+    const activeInjuries = currentInjuries.filter(
+      (injury) => injury.recoveryEndTime > now
+    );
+
+    if (activeInjuries.length === currentInjuries.length) return;
+
+    const { error } = await this.supabase
+      .from("players")
+      .update({ injuries: activeInjuries })
+      .eq("id", playerId);
+
+    if (error) {
+      console.error("Failed to update injuries:", error.message);
     }
   }
 
