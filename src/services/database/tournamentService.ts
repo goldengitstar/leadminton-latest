@@ -319,7 +319,7 @@ export class TournamentService {
 
       const registeredPlayers = tournament.registered_players || [];
       
-      const userRegistrations = registeredPlayers.filter((p) => p.user_id === player.user_id);
+      const userRegistrations = registeredPlayers.filter((p:any) => p.user_id === player.user_id);
       if (userRegistrations.length >= 2) {
         return { success: false, error: 'Max 2 players per user per tournament' };
       }
