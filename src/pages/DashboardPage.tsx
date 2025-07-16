@@ -69,7 +69,7 @@ export default function DashboardPage() {
           <div className="bg-white rounded-xl shadow-md p-6">
             <h3 className="text-lg font-semibold mb-4">Statistiques</h3>
             <div className="space-y-2">
-              <p>Joueurs totaux: {gameState.players.length}/{gameState.facilities.find(f => f.id === 'training-center')?.maxPlayers || 1}</p>
+              <p>Joueurs totaux: {gameState.players.length}/{gameState.facilities.find(f => f.type === 'training-center')?.maxPlayers || 1}</p>
               <p>Installations totales: {gameState.facilities.length}</p>
             </div>
           </div>
