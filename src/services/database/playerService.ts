@@ -369,13 +369,35 @@ export class PlayerService {
         // 4) insert stats, levels, strategy (same as before)...
         await this.supabase.from('player_stats').insert({
           player_id: player.id,
-          ...initialStats,
+          endurance: initialStats.endurance,
+          strength: initialStats.strength,
+          agility: initialStats.agility,
+          speed: initialStats.speed,
+          explosiveness: initialStats.explosiveness,
+          injury_prevention: initialStats.injury_prevention,
+          smash: initialStats.smash,
+          defense: initialStats.defense,
+          serve: initialStats.serve,
+          stick: initialStats.stick,
+          slice: initialStats.slice,
+          drop: initialStats.drop,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         });
         await this.supabase.from('player_levels').insert({
           player_id: player.id,
-          ...initialStatLevels,
+          endurance: initialStatLevels.endurance,
+          strength: initialStatLevels.strength,
+          agility: initialStatLevels.agility,
+          speed: initialStatLevels.speed,
+          explosiveness: initialStatLevels.explosiveness,
+          injury_prevention: initialStatLevels.injury_prevention,
+          smash: initialStatLevels.smash,
+          defense: initialStatLevels.defense,
+          serve: initialStatLevels.serve,
+          stick: initialStatLevels.stick,
+          slice: initialStatLevels.slice,
+          drop: initialStatLevels.drop,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         });
@@ -667,7 +689,18 @@ export class PlayerService {
       const { error } = await this.supabase
         .from('player_stats')
         .update({
-          ...stats,
+          endurance: stats.endurance,
+          strength: stats.strength,
+          agility: stats.agility,
+          speed: stats.speed,
+          explosiveness: stats.explosiveness,
+          injury_prevention: stats.injury_prevention,
+          smash: stats.smash,
+          defense: stats.defense,
+          serve: stats.serve,
+          stick: stats.stick,
+          slice: stats.slice,
+          drop: stats.drop,
           updated_at: new Date().toISOString()
         })
         .eq('player_id', playerId);
@@ -692,7 +725,18 @@ export class PlayerService {
       const { error } = await this.supabase
         .from('player_levels')
         .update({
-          ...levels,
+          endurance: levels.endurance,
+          strength: levels.strength,
+          agility: levels.agility,
+          speed: levels.speed,
+          explosiveness: levels.explosiveness,
+          injury_prevention: levels.injury_prevention,
+          smash: levels.smash,
+          defense: levels.defense,
+          serve: levels.serve,
+          stick: levels.stick,
+          slice: levels.slice,
+          drop: levels.drop,
           updated_at: new Date().toISOString()
         })
         .eq('player_id', playerId);
