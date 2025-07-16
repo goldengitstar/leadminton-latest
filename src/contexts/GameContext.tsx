@@ -196,12 +196,10 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     console.log("Triggering load everything")
     loadEverything();
     
-    // Set up periodic refresh every 15 seconds (faster for better UX)
-    // This ensures new users see their facilities quickly
-    // const timer = setInterval(async () => {
-    //   console.log('[GameContext] Periodic refresh triggered');
-    //   await loadEverything();
-    // }, 60000);
+    const timer = setInterval(async () => {
+       console.log('[GameContext] Periodic refresh triggered');
+       await loadEverything();
+    }, 60000);
 
     // return () => clearInterval(timer);
   }, [isLogin, user?.id]);
