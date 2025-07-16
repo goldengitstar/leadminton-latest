@@ -35,6 +35,14 @@ export function generateInitialStatLevels() {
   };
 }
 
+export function generateInitialStatLevelsFromStats(stats: Record<string, number>) {
+  const levels: Record<string, number> = {};
+  for (const key in stats) {
+    const stat = stats[key];
+    levels[key] = Math.floor(stat / 10); // e.g., stat 60 → level 6
+  }
+  return levels;
+}
 
 function generateInitialStrategy(): any {
   return {
@@ -335,7 +343,7 @@ export class PlayerService {
         ] as const;
 
         const initialStats = distributeStatPoints(totalStats, statKeys);
-        const initialStatLevels = generateInitialStatLevels();       // still zeros
+        const initialStatLevels = generateInitialStatLevelsFromStats(initialStats);
         const initialStrategy = generateInitialStrategy();
 
         // 3) insert player row with rarity, level & max_level
@@ -497,7 +505,7 @@ export class PlayerService {
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         });
-
+      console.log(statsError)
       if (statsError) {
         console.error('Error creating CPU player stats:', statsError);
         return { success: false, error: statsError.message };
