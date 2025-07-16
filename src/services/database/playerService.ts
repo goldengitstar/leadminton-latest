@@ -7,7 +7,7 @@ function generateInitialStats() {
     agility: Math.floor(Math.random() * 20) + 40,
     speed: Math.floor(Math.random() * 20) + 40,
     explosiveness: Math.floor(Math.random() * 20) + 40,
-    injuryPrevention: Math.floor(Math.random() * 20) + 40,
+    injury_prevention: Math.floor(Math.random() * 20) + 40,
     smash: Math.floor(Math.random() * 20) + 40,
     defense: Math.floor(Math.random() * 20) + 40,
     serve: Math.floor(Math.random() * 20) + 40,
@@ -339,7 +339,7 @@ export class PlayerService {
         // 2) split totalStats across your 12 attributes
         const statKeys = [
           'endurance','strength','agility','speed','explosiveness',
-          'injuryPrevention','smash','defense','serve','stick','slice','drop'
+          'injury_prevention','smash','defense','serve','stick','slice','drop'
         ] as const;
 
         const initialStats = distributeStatPoints(totalStats, statKeys);
