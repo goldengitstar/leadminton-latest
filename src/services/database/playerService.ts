@@ -344,9 +344,8 @@ export class PlayerService {
 
         const initialStats = distributeStatPoints(totalStats, statKeys);
         const initialStatLevels = generateInitialStatLevelsFromStats(initialStats);
-        const initialStrategy = generateInitialStrategy();
+        const computedLevel = Object.values(initialStatLevels).reduce((sum, lvl) => sum + lvl, 0);
 
-        // 3) insert player row with rarity, level & max_level
         const { data: player, error: playerError } = await this.supabase
           .from('players')
           .insert({
@@ -355,7 +354,7 @@ export class PlayerService {
             gender,
             is_cpu: false,
             rarity,
-            level,
+            level: computedLevel,
             max_level,
             rank: 1,
             created_at: new Date().toISOString(),
@@ -366,7 +365,6 @@ export class PlayerService {
 
         if (playerError) throw playerError;
 
-        // 4) insert stats, levels, strategy (same as before)...
         await this.supabase.from('player_stats').insert({
           player_id: player.id,
           endurance: initialStats.endurance,
@@ -722,7 +720,7 @@ export class PlayerService {
    */
   async updatePlayerLevels(playerId: string, levels: Record<string, number>) {
     try {
-      const { error } = await this.supabase
+      const { error: levelsError } = await this.supabase
         .from('player_levels')
         .update({
           endurance: levels.endurance,
@@ -741,14 +739,28 @@ export class PlayerService {
         })
         .eq('player_id', playerId);
 
-      if (error) {
-        console.error('Error updating player levels:', error);
-        return { success: false, error: error.message };
+      if (levelsError) {
+        console.error('Error updating player levels:', levelsError);
+        return { success: false, error: levelsError.message };
+      }
+
+      // 2) Recompute the player's overall level as the sum of all stat‐levels
+      const totalLevel = Object.values(levels).reduce((sum, lvl) => sum + lvl, 0);
+
+      // 3) Persist the new total into players.level
+      const { error: playerError } = await this.supabase
+        .from('players')
+        .update({ level: totalLevel, updated_at: new Date().toISOString() })
+        .eq('id', playerId);
+
+      if (playerError) {
+        console.error('Error syncing player.level:', playerError);
+        return { success: false, error: playerError.message };
       }
 
       return { success: true };
-    } catch (error) {
-      console.error('Error in updatePlayerLevels:', error);
+    } catch (err) {
+      console.error('Unexpected error in updatePlayerLevels:', err);
       return { success: false, error: 'Failed to update player levels' };
     }
   }
