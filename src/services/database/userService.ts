@@ -46,6 +46,8 @@ export class UserService {
         // Don't fail user creation for this
       }
 
+      console.log("Created user profiles")
+
       // Give initial resources to new user
       const initialResources = [
         { resource_type: 'coins', amount: 1000, source: 'initial_resources' },
@@ -57,7 +59,6 @@ export class UserService {
       const resourceResult = await this.resourceService.batchResourceTransactions(userId, initialResources);
       if (!resourceResult.success) {
         console.warn('Failed to give initial resources:', resourceResult.error);
-        // Don't fail user creation for this
       }
 
       // Create initial facilities
@@ -116,9 +117,10 @@ export class UserService {
         .from('facilities')
         .insert(initialFacilities);
 
+      console.log("Created initial facilities")
+
       if (facilitiesError) {
         console.warn('Failed to create initial facilities:', facilitiesError);
-        // Don't fail user creation for this
       }
 
       // Create initial managers
@@ -161,6 +163,8 @@ export class UserService {
       const { error: managersError } = await this.supabase
         .from('managers')
         .insert(initialManagers);
+
+      console.log("Created initial managers")
 
       if (managersError) {
         console.warn('Failed to create initial managers:', managersError);

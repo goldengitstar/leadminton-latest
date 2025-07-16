@@ -16,6 +16,8 @@ import {
 import { useAuth } from "./AuthContext";
 import { UserService } from "@/services/database/userService";
 import { ResourceService } from "@/services/database/resourceService";
+import { FacilityService } from "@/services/database/facilityService";
+import { ManagerService } from "@/services/database/managerService";
 import { PlayerService } from "@/services/database/playerService";
 import { TournamentService } from "@/services/database/tournamentService";
 import { Equipment } from "@/types/equipment";
@@ -51,6 +53,8 @@ interface GameContextType {
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 const resourceService = new ResourceService(supabase);
+const managerService = new ManagerService();
+const facilityService = new FacilityService();
 const tournamentService = new TournamentService(supabase);
 const playerService = new PlayerService(supabase);
 const userService = new UserService(supabase);
@@ -117,27 +121,23 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     }
 
     console.log('[GameContext] Loading game state for user:', user.id);
-    const state = await userService.loadGameState(user.id);
+    const [state, facilities, managers] = await Promise.all([
+      userService.loadGameState(user.id),
+      facilityService.getFacilities(user.id),
+      managerService.getManagersByUser(user.id),
+    ]);
+    
     console.log('[GameContext] Game state loaded:', state);
-    dispatch({ type: "SET_GAME_STATE", payload: { state: state } });
-    console.log('[GameContext] Game state loaded:', JSON.stringify(state, null, 2));
-    // Clean up expired injuries for each player
-    const now = Date.now();
-    const cleanedPlayers = await Promise.all(
-      state.players.map(async (player:any) => {
-        if (!player.injuries || player.injuries.length === 0) return player;
+    console.log('[GameContext] Facilities:', facilities);
+    console.log('[GameContext] Managers:', managers);
 
-        await playerService.removeHealedInjuries(player.id, player.injuries);
-        const activeInjuries = player.injuries.filter(
-          (injury:any) => injury.recoveryEndTime > now
-        );
+    const fullState = {
+      ...state,
+      facilities,
+      managers,
+    };
 
-        return { ...player, injuries: activeInjuries };
-      })
-    );
-    console.log("GameContext cleaned up players version")
-    // Replace players with cleaned version
-    state.players = cleanedPlayers;
+    dispatch({ type: "SET_GAME_STATE", payload: { state: fullState } });
     await loadTournaments();
   };
 

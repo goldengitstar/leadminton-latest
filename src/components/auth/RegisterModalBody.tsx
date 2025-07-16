@@ -6,9 +6,7 @@ import { UserService } from "../../services/database/userService";
 
 const userService = new UserService(supabase);
 
-function RegisterModalBody({onClose}: {
-  onClose: () => void
-}) {
+function RegisterModalBody({ onClose }: { onClose: () => void }) {
   const [errorText, setErrorText] = useState('');
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
@@ -73,7 +71,6 @@ function RegisterModalBody({onClose}: {
     }
 
     try {
-      // Register the user
       const { data, error } = await supabase.auth.signUp({
         email: email,
         password: pw,
@@ -84,7 +81,7 @@ function RegisterModalBody({onClose}: {
             surname: surname,
             team_name: teamName.trim()
           },
-          emailRedirectTo: undefined // Skip email confirmation
+          emailRedirectTo: undefined
         }
       });
 
@@ -97,11 +94,16 @@ function RegisterModalBody({onClose}: {
       }
 
       if (data.user) {
-        // Create user profile and initial game data
+        if (!data.user.email_confirmed_at) {
+          console.log("[handleRegister] Email not confirmed, prompting for code...");
+          setStep(1);
+          return;
+        }
+
         console.log("[handleRegister] Creating user profile and game data...");
         const setupResult = await userService.handleNewUser(
-          data.user.id, 
-          email, 
+          data.user.id,
+          email,
           teamName.trim()
         );
 
@@ -111,7 +113,6 @@ function RegisterModalBody({onClose}: {
           return;
         }
 
-        // Immediately sign in the user after registration
         const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
           email: email,
           password: pw,
@@ -123,16 +124,14 @@ function RegisterModalBody({onClose}: {
           console.error("Auto-login Error:", signInError.message);
           setErrorText("Registration successful, but auto-login failed. Please try logging in manually.");
         } else {
-          // Successfully registered and logged in
           console.log("[handleRegister] Registration and setup completed successfully");
-          
-          // Force refresh game state to load new user's facilities and managers
+
           console.log("[handleRegister] Triggering game state refresh...");
           setTimeout(async () => {
             await refreshGameState();
             console.log("[handleRegister] Game state refresh completed");
-          }, 1000); // Small delay to ensure auth state is fully updated
-          
+          }, 1000);
+
           onClose();
         }
       }
@@ -242,7 +241,7 @@ function RegisterModalBody({onClose}: {
           {errorText && (
             <div className="error text-red-500 text-sm">{errorText}</div>
           )}
-          
+
           <button className="btn w-full"
             onClick={async () => {
               await handleRegister();
