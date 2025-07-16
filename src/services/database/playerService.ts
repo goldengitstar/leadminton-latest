@@ -25,7 +25,7 @@ export function generateInitialStatLevels() {
     agility: 0,
     speed: 0,
     explosiveness: 0,
-    injuryPrevention: 0,
+    injury_prevention: 0,
     smash: 0,
     defense: 0,
     serve: 0,
@@ -39,7 +39,7 @@ export function generateInitialStatLevelsFromStats(stats: Record<string, number>
   const levels: Record<string, number> = {};
   for (const key in stats) {
     const stat = stats[key];
-    levels[key] = Math.floor(stat / 10); // e.g., stat 60 → level 6
+    levels[key] = Math.floor(stat / 10);
   }
   return levels;
 }
