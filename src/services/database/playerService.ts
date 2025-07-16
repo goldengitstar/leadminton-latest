@@ -17,7 +17,6 @@ function generateInitialStats() {
   };
 }
 
-
 export function generateInitialStatLevels() {
   return {
     endurance: 0,
@@ -97,41 +96,36 @@ function rand(min: number, max: number): number {
 
 type Rarity = 'common' | 'rare' | 'epic' | 'premium' | 'legendary';
 
-function chooseRarity(): { rarity: Rarity; totalStats: number; level: number; max_level: number } {
+function chooseRarity(): { rarity: Rarity; totalStats: number; max_level: number } {
   const roll = Math.random() * 100;
   if (roll < 0.5) {
     return {
       rarity: 'legendary',
       totalStats: rand(921, 999),
-      level: rand(30, 40),
       max_level: rand(400, 500),
     };
   } else if (roll < 2.0) {
     return {
       rarity: 'premium',
       totalStats: rand(801, 920),
-      level: rand(20, 30),
       max_level: rand(300, 400),
     };
   } else if (roll < 7.0) {
     return {
       rarity: 'epic',
       totalStats: rand(451, 800),
-      level: rand(10, 20),
       max_level: rand(220, 300),
     };
   } else if (roll < 25.0) {
     return {
       rarity: 'rare',
       totalStats: rand(201, 450),
-      level: rand(5, 10),
       max_level: rand(180, 220),
     };
   } else {
     return {
       rarity: 'common',
       totalStats: rand(151, 200),
-      level: rand(1, 5),
       max_level: rand(150, 180),
     };
   }
@@ -333,16 +327,15 @@ export class PlayerService {
    */
     async createPlayer(userId: string, name?: string, gender: 'male'|'female' = 'male') {
       try {
-        // 1) decide rarity, totalStats, level, max_level
-        const { rarity, totalStats, level, max_level } = chooseRarity();
+        const { rarity, totalStats, max_level } = chooseRarity();
 
-        // 2) split totalStats across your 12 attributes
         const statKeys = [
           'endurance','strength','agility','speed','explosiveness',
           'injury_prevention','smash','defense','serve','stick','slice','drop'
         ] as const;
 
         const initialStats = distributeStatPoints(totalStats, statKeys);
+        const initialStrategy = generateInitialStrategy();
         const initialStatLevels = generateInitialStatLevelsFromStats(initialStats);
         const computedLevel = Object.values(initialStatLevels).reduce((sum, lvl) => sum + lvl, 0);
 
