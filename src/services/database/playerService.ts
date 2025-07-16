@@ -529,7 +529,7 @@ export class PlayerService {
         });
       console.log(statsError)
       if (statsError) {
-        console.error('Error creating CPU player stats:', statsError);
+        console.log('Error creating CPU player stats:', statsError);
         return { success: false, error: statsError.message };
       }
 
@@ -555,7 +555,7 @@ export class PlayerService {
         });
 
       if (levelsError) {
-        console.error('Error creating CPU player levels:', levelsError);
+        console.log('Error creating CPU player levels:', levelsError);
         return { success: false, error: levelsError.message };
       }
 
@@ -592,7 +592,7 @@ export class PlayerService {
         });
 
       if (strategyError) {
-        console.error('Error creating CPU player strategy:', strategyError);
+        console.log('Error creating CPU player strategy:', strategyError);
         return { success: false, error: strategyError.message };
       }
 
