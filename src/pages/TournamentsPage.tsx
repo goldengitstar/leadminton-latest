@@ -324,9 +324,9 @@ export default function TournamentsPage() {
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     
-    if (days > 0) return `${days}d ${hours}h`;
-    if (hours > 0) return `${hours}h ${minutes}m`;
-    return `${minutes}m`;
+    if (days > 0) return `Starts in ${days}d ${hours}h`;
+    if (hours > 0) return `Starts in ${hours}h ${minutes}m`;
+    return `Starts in ${minutes}m`;
   }, []);
 
   const handleTournamentClick = useCallback((tournament: Tournament) => {
@@ -598,7 +598,7 @@ export default function TournamentsPage() {
                 {tournament.status === 'upcoming' && (
                   <div className="flex items-center text-sm text-blue-600">
                     <Clock className="w-4 h-4 mr-2" />
-                    Starts in {getTimeUntilStart(tournament.start_date)}
+                    {getTimeUntilStart(tournament.start_date)}
                   </div>
                 )}
               </div>
