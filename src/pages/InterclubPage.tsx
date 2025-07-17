@@ -41,6 +41,7 @@ const InterclubPage: React.FC = () => {
   // State management
   const [currentView, setCurrentView] = useState<PageView>('selection');
   const [loading, setLoading] = useState(true);
+  const [meetsGenderReqs, setMeetsGenderReqs] = useState(true);
   const [availableSeasons, setAvailableSeasons] = useState<InterclubSeason[]>([]);
   const [unlockedTiers, setUnlockedTiers] = useState<InterclubTier[]>(['departmental']);
   const [selectedSeason, setSelectedSeason] = useState<InterclubSeason | null>(null);
@@ -93,6 +94,11 @@ const InterclubPage: React.FC = () => {
   const handleSeasonRegistration = async () => {
     if (!user?.id || !selectedSeason || selectedPlayers.length < 5 || !teamName.trim()) {
       setRegistrationError('Please complete all registration requirements');
+      return;
+    }
+
+    if (!meetsGenderReqs) {
+      setRegistrationError('Team must have at least 4 men and 3 women.');
       return;
     }
 
@@ -326,7 +332,11 @@ const InterclubPage: React.FC = () => {
   // Registration View
   if (currentView === 'registration' && selectedSeason) {
     const tierInfo = getTierInfo(selectedSeason.tier);
-    
+    const selectedPlayerObjs = gameState.players.filter(p => selectedPlayers.includes(p.id));
+    const maleCount   = selectedPlayerObjs.filter(p => p.gender === 'male').length;
+    const femaleCount = selectedPlayerObjs.filter(p => p.gender === 'female').length;
+    setMeetsGenderReqs(maleCount >= 4 && femaleCount >= 3)
+
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center space-x-3 mb-8">
@@ -448,7 +458,7 @@ const InterclubPage: React.FC = () => {
 
                 <button
                   onClick={handleSeasonRegistration}
-                  disabled={loading || selectedPlayers.length < 5 || !teamName.trim()}
+                  disabled={loading || selectedPlayers.length < 5 || !teamName.trim() || !meetsGenderReqs}
                   className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? 'Registering...' : 'Register for Season'}

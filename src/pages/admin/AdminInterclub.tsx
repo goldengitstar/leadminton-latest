@@ -1932,6 +1932,8 @@ const AdminInterclub: React.FC = () => {
                 >
                   <option value="draft">Draft</option>
                   <option value="registration_open">Registration Open</option>
+                  <option value="registration_closed">Registration Closed</option>
+                  <option value="active">Active</option>
                 </select>
               </div>
 
