@@ -325,7 +325,7 @@ export class PlayerService {
   /**
    * Create new real player with initial stats
    */
-    async createPlayer(userId: string, name?: string, gender: 'male'|'female' = 'male') {
+    async createPlayer(userId: string, name?: string, gender?: 'male'|'female') {
       try {
         const { rarity, totalStats, max_level } = chooseRarity();
 

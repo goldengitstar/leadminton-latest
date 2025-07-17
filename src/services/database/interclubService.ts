@@ -43,7 +43,7 @@ export class InterclubService {
     try {
       // Get user's unlocked tiers based on their past performance
       const unlockedTiers = await this.getUserUnlockedTiers(userId);
-
+      console.log("Unlocked tiers", unlockedTiers)
       // Get seasons for unlocked tiers
       const { data: seasons, error } = await this.supabase
         .from('interclub_seasons')
@@ -56,6 +56,8 @@ export class InterclubService {
         console.error('Error fetching available seasons:', error);
         throw error;
       }
+
+      console.log(seasons)
 
       const parsedSeasons = (seasons || []).map(season => ({
         ...season,
@@ -80,7 +82,6 @@ export class InterclubService {
     try {
       // Always unlock departmental
       let unlockedTiers: InterclubTier[] = ['departmental'];
-
       // Check past season results to unlock higher tiers
       const { data: pastRegistrations, error } = await this.supabase
         .from('interclub_registrations')
@@ -109,7 +110,6 @@ export class InterclubService {
           }
         }
       }
-
       return unlockedTiers;
     } catch (error) {
       console.error('Error in getUserUnlockedTiers:', error);

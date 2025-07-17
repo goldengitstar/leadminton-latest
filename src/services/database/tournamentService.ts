@@ -397,6 +397,7 @@ export class TournamentService {
    */
   async startTournament(tournamentId: string): Promise<{ success: boolean; matches?: any[]; error?: string;  }> {
     try {
+      console.log("starting tournament")
       // Get tournament details
       const { data: tournament, error: tournamentError } = await this.supabase
         .from('tournament_list')
@@ -417,10 +418,20 @@ export class TournamentService {
         return { success: false, error: 'any already started or completed' };
       }
 
-      const registeredPlayers = tournament.registered_players || [];
-      if (registeredPlayers.length < 2) {
-        return { success: false, error: 'Not enough players to start tournament' };
+      let registeredPlayers = tournament.registered_players || [];
+      const missing = tournament.max_participants - registeredPlayers.length;
+      if (missing > 0) {
+        const { data: cpuPlayers } = await this.supabase.from("players").select("id, name, user_id").eq("is_cpu", true).limit(missing);
+        const cpuRegistrations = (cpuPlayers ?? []).map((cpu) => ({
+          player_id: cpu.id,
+          player_name: cpu.name,
+          user_id: cpu.user_id,
+          team_name: "CPU",
+          registered_at: new Date().toISOString(),
+        }));
+        registeredPlayers.push(...cpuRegistrations);
       }
+      registeredPlayers = [...registeredPlayers].sort(() => Math.random() - 0.5);
 
       // Update tournament status to started
       const { error: updateError } = await this.supabase
@@ -430,6 +441,8 @@ export class TournamentService {
           updated_at: new Date().toISOString()
         })
         .eq('id', tournamentId);
+      
+      console.log("Tournament list updated with status code")
 
       if (updateError) {
         console.error('Error updating tournament status:', updateError);
@@ -437,6 +450,7 @@ export class TournamentService {
       }
 
       // Create first round
+      console.log("Generating matches")
       const result = await this.generateMatches(tournamentId, tournament.round_interval_minutes, 1, registeredPlayers);
       if (!result.success) {
         return { success: false, matches: result.matches };
@@ -446,7 +460,7 @@ export class TournamentService {
         success: true,
        };
     } catch (error) {
-      console.error('Error in startTournament:', error);
+      console.log('Error in startTournament:', error);
       return { success: false, error: 'Failed to start tournament' };
     }
   }
@@ -471,6 +485,51 @@ export class TournamentService {
   /**
    * Populate first round matches - JavaScript replacement for populate_first_round_matches() function
    */
+  simulateGame(): { p1: number; p2: number } {
+    let p1 = Math.floor(Math.random() * 10) + 11; // 11 to 20
+    let p2 = Math.floor(Math.random() * 10) + 11;
+
+    while (p1 === p2 || Math.abs(p1 - p2) < 2) {
+      if (p1 > p2) p1++;
+      else p2++;
+      if (p1 >= 30 || p2 >= 30) break; // max point cap
+    }
+
+    return { p1, p2 };
+  }
+
+  generateMatchResult(player1Id: string, player2Id: string | null) {
+    // Handle bye (no opponent)
+    if (!player2Id) {
+      return {
+        winnerId: player1Id,
+        score: '21-0, 21-0',
+        completed: true,
+        status: 'bye',
+      };
+    }
+
+    const games: string[] = [];
+    let player1Wins = 0;
+    let player2Wins = 0;
+
+    // Simulate best-of-3
+    while (player1Wins < 2 && player2Wins < 2) {
+      const result = this.simulateGame();
+      games.push(`${result.p1}-${result.p2}`);
+
+      if (result.p1 > result.p2) player1Wins++;
+      else player2Wins++;
+    }
+
+    return {
+      winnerId: player1Wins > player2Wins ? player1Id : player2Id,
+      score: games.join(', '),
+      completed: true,
+      status: 'completed',
+    };
+  }
+  
   async generateMatches(tournamentId: string, round_interval_minutes: number, round_level: number, players: any[]): Promise<{ success: boolean; matches?: any[]; error?: string;  }> {
     try {
       // Shuffle players
@@ -481,14 +540,14 @@ export class TournamentService {
       const matches = [];
       for (let i = 0; i < shuffledPlayers.length; i += 2) {
         const player1 = shuffledPlayers[i];
-        const player2 = shuffledPlayers[i + 1] || null; // Handle odd number of players
+        const player2 = shuffledPlayers[i + 1] || null;
 
         console.log('[generateMatches] making match between', player1, 'and', player2);
         matches.push({
           tournament_id: tournamentId,
           player1_id: player1.player_id,
           player2_id: player2?.player_id || null,
-          winner_id: player2 ? null : player1.player_id, // Auto-win if bye
+          winner_id: player2 ? null : player1.player_id,
           scheduled_start_time: new Date(new Date().getTime() + 1000 * 60 * round_interval_minutes || 10).toISOString(),
           created_at: new Date().toISOString(),
           completed: player2 ? false : true,
