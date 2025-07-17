@@ -560,13 +560,13 @@ const AdminInterclub: React.FC = () => {
 
       // 2) Fetch approved registrations with players
       const regs = [
-        { user_id: 'team-1' },
-        { user_id: 'team-2' },
-        { user_id: 'team-3' },
-        { user_id: 'team-4' }
+        { user_id: '11111111-1111-1111-1111-111111111111' },
+        { user_id: '22222222-2222-2222-2222-222222222222' },
+        { user_id: '33333333-3333-3333-3333-333333333333' },
+        { user_id: '44444444-4444-4444-4444-444444444444' }
       ];
       const count = regs.length;
-      
+
       if (!count || count < 4) {
         alert('Minimum 4 approved teams required to generate schedule');
         return;
