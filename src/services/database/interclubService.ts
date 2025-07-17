@@ -426,32 +426,91 @@ export class InterclubService {
     }
   }
 
-  private generateMatchSchedule(teamIds: string[]): {
-    home_team_id: string;
-    away_team_id: string;
-    matchday_number: number;
-  }[] {
-    const fixtures: any[] = [];
-    const numTeams = teamIds.length;
-
-    // Round-robin pairing (home & away)
-    let matchday = 1;
-    for (let i = 0; i < numTeams; i++) {
-      for (let j = i + 1; j < numTeams; j++) {
-        fixtures.push({
-          home_team_id: teamIds[i],
-          away_team_id: teamIds[j],
-          matchday_number: matchday++
-        });
-        fixtures.push({
-          home_team_id: teamIds[j],
-          away_team_id: teamIds[i],
-          matchday_number: matchday++
-        });
+  async generateAndPersistMatchSchedule(
+    seasonId: string,
+    teamIds: string[],
+    computeMatchDate: (matchday: number) => string  // e.g. md => new Date(startDate.getTime() + (md-1)*7*24*60*60*1000).toISOString()
+  ): Promise<{ success: boolean; error?: string }> {
+    // 1) Build raw home/away fixtures
+    const raw: { home: string; away: string }[] = [];
+    for (let i = 0; i < teamIds.length; i++) {
+      for (let j = i + 1; j < teamIds.length; j++) {
+        raw.push({ home: teamIds[i], away: teamIds[j] });
+        raw.push({ home: teamIds[j], away: teamIds[i] });
       }
     }
 
-    return fixtures;
+    const totalMD = raw.length;    // 2*(N−1) matchdays
+    const weeks = 4;
+    const perWeekBase = Math.floor(totalMD / weeks);
+    const extras = totalMD % weeks;
+
+    // 2) Build week buckets — some weeks get +1 MD if extras > 0
+    const weekBuckets = Array.from({ length: weeks }, (_, w) =>
+      perWeekBase + (w < extras ? 1 : 0)
+    );
+
+    // 3) Prepare week_schedule structure
+    const weekSchedule: { week: number; matchdays: number[] }[] = weekBuckets.map((_, w) => ({
+      week: w + 1,
+      matchdays: []
+    }));
+
+    // 4) Assign fixtures to weeks and build insert payload
+    let matchday = 1;
+    const fixturesToInsert: {
+      season_id: string;
+      week_number: number;
+      home_team_id: string;
+      away_team_id: string;
+      match_date: string;
+      status?: string;
+    }[] = [];
+
+    for (const { home, away } of raw) {
+      // find which week this matchday falls into
+      let cum = 0, wk = 0;
+      while (cum + weekBuckets[wk] < matchday) {
+        cum += weekBuckets[wk++];
+      }
+
+      // record schedule
+      weekSchedule[wk].matchdays.push(matchday);
+
+      fixturesToInsert.push({
+        season_id: seasonId,
+        week_number: wk + 1,
+        home_team_id: home,
+        away_team_id: away,
+        match_date: computeMatchDate(matchday),
+        status: 'scheduled'
+      });
+
+      matchday++;
+    }
+
+    // 5) Bulk insert into interclub_matches
+    const { error: insertError } = await this.supabase
+      .from('interclub_matches')
+      .insert(fixturesToInsert);
+
+    if (insertError) {
+      console.error('Error inserting fixtures:', insertError);
+      return { success: false, error: insertError.message };
+    }
+
+    // 6) Persist week_schedule JSON back to the season
+    const { error: updateError } = await this.supabase
+      .from('interclub_seasons')
+      .update({ week_schedule: JSON.stringify(weekSchedule), updated_at: new Date().toISOString() })
+      .eq('id', seasonId);
+
+    if (updateError) {
+      console.error('Error updating week_schedule:', updateError);
+      return { success: false, error: updateError.message };
+    }
+
+    return { success: true };
   }
 
   /**

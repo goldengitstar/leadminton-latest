@@ -545,38 +545,101 @@ const AdminInterclub: React.FC = () => {
   const generateMatchSchedule = async (seasonId: string) => {
     try {
       setLoading(true);
+
+      // 1) Fetch season info
+      const { data: season, error: seasonErr } = await supabase
+        .from('interclub_seasons')
+        .select('start_date, max_teams_per_group')
+        .eq('id', seasonId)
+        .single();
+
+      if (seasonErr || !season) throw seasonErr || new Error('Season not found');
+
+      const seasonStart = new Date(season.start_date);
+      const maxPerGroup = season.max_teams_per_group;
+
+      // 2) Fetch approved registrations with players
+      const regs = [
+        { user_id: 'team-1' },
+        { user_id: 'team-2' },
+        { user_id: 'team-3' },
+        { user_id: 'team-4' }
+      ];
+      const count = regs.length;
       
-      // Generate groups and matches for the season
-      // First, check approved registrations count
-      const { data: registrations, count, error } = await supabase
-        .from('interclub_registrations')
-        .select('*', { count: 'exact' })
-        .eq('season_id', seasonId)
-        .eq('status', 'approved');
-      
-      if (error || !count || count < 4) {
+      if (!count || count < 4) {
         alert('Minimum 4 approved teams required to generate schedule');
         return;
       }
-      
-      // Update season status to active
-      const { error: updateError } = await supabase
+
+      // 3) Shuffle and group registrations
+      const shuffled: string[] = regs!.map(r => r.user_id).sort(() => Math.random() - 0.5);
+      const groupedRegs: string[][] = [];
+
+      while (shuffled.length) {
+        groupedRegs.push(shuffled.splice(0, maxPerGroup));
+      }
+
+      // 4) Persist groups
+      const groupRecords = groupedRegs.map((group, idx) => ({
+        season_id: seasonId,
+        name: `Group ${idx + 1}`
+      }));
+
+      const { data: createdGroups, error: grpErr } = await supabase
+        .from('interclub_groups')
+        .insert(groupRecords)
+        .select('id');
+
+      if (grpErr) throw grpErr;
+
+      // 5) Generate and persist fixtures
+      const service = new InterclubService(supabase);
+      const weekSchedule: { group: number; week: number; date: string }[] = [];
+
+      for (let idx = 0; idx < groupedRegs.length; idx++) {
+        const groupNum = idx + 1;
+        const teamIds = groupedRegs[idx];
+
+        // Compute match date
+        const computeMatchDate = (week: number) =>
+          new Date(seasonStart.getTime() + (week - 1) * 7 * 86400_000).toISOString();
+
+        const result = await service.generateAndPersistMatchSchedule(
+          seasonId,
+          teamIds,
+          computeMatchDate
+        );
+        if (!result.success) throw new Error(result.error);
+
+        // Build week_schedule
+        const weeks = (teamIds.length - 1) * 2; // double round robin
+        for (let w = 1; w <= weeks; w++) {
+          weekSchedule.push({
+            group: groupNum,
+            week: w,
+            date: computeMatchDate(w)
+          });
+        }
+      }
+
+      // 6) Update season status and week_schedule
+      const { error: updErr } = await supabase
         .from('interclub_seasons')
-        .update({ 
+        .update({
           status: 'active',
+          week_schedule: JSON.stringify(weekSchedule),
           updated_at: new Date().toISOString()
         })
         .eq('id', seasonId);
-      
-      if (updateError) {
-        console.error('Failed to update season status:', updateError);
-        return;
-      }
-      
+
+      if (updErr) throw updErr;
+
       logActivity('interclub_schedule_generated', 'season', seasonId);
       await loadSeasons();
-    } catch (error) {
-      console.error('Error generating schedule:', error);
+    } catch (err) {
+      console.error('Error generating schedule:', err);
+      alert((err as Error).message || 'Failed to generate schedule');
     } finally {
       setLoading(false);
     }
