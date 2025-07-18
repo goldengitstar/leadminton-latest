@@ -547,7 +547,7 @@ const InterclubPage: React.FC = () => {
 
         <div className="grid lg:grid-cols-2 gap-6 mb-6">
           {/* Club Players */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="bg-white rounded-xl shadow-lg p-6 h-full flex flex-col">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold flex items-center">
                 <Users className="w-6 h-6 mr-2 text-blue-500" />
@@ -571,7 +571,7 @@ const InterclubPage: React.FC = () => {
               </button>
             </div>
             
-            <div className={`overflow-y-auto ${showAllPlayers ? 'max-h-[400px]' : 'max-h-60'}`}>
+            <div className={`overflow-y-auto ${showAllPlayers ? 'max-h-[500px]' : 'max-h-60'}`}>
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
@@ -615,9 +615,9 @@ const InterclubPage: React.FC = () => {
             </div>
           </div>
           {/* Next Match and Lineup */}
-          <div className="space-y-6">
+          <div className="space-y-6 h-full flex flex-col">
             {/* Next Match */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="bg-white rounded-xl shadow-lg p-6 h-full">
               <h2 className="text-xl font-bold mb-4 flex items-center">
                 <Target className="w-6 h-6 mr-2 text-blue-500" />
                 Next Match
@@ -670,9 +670,9 @@ const InterclubPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-6">
+        <div className="grid lg:grid-cols-2 gap-6 h-full">
           {/* Season Rewards */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="bg-white rounded-xl shadow-lg p-6 h-full flex flex-col">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold flex items-center">
                 <Award className="w-6 h-6 mr-2 text-yellow-500" />
@@ -715,7 +715,7 @@ const InterclubPage: React.FC = () => {
           </div>
 
           {/* Group Standings */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="bg-white rounded-xl shadow-lg p-6 h-full flex flex-col">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold flex items-center">
                 <BarChart2 className="w-6 h-6 mr-2 text-blue-500" />
