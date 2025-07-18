@@ -435,7 +435,7 @@ const AdminInterclub: React.FC = () => {
 
       const transformedRegistrations = (data || []).map(reg => ({
         ...reg,
-        players: JSON.parse(reg.players || '[]')
+        players: reg.players || '[]'
       }));
       
       setRegistrations(transformedRegistrations);
@@ -541,6 +541,10 @@ const AdminInterclub: React.FC = () => {
       setLoading(false);
     }
   };
+    type Registration = {
+    user_id: string;
+    players: any;
+  };
 
   const generateMatchSchedule = async (seasonId: string) => {
     try {
@@ -559,30 +563,13 @@ const AdminInterclub: React.FC = () => {
       const maxPerGroup = season.max_teams_per_group;
 
       // 2) Fetch approved registrations with players
-      const regs = [
-        { user_id: '11111111-1111-1111-1111-111111111111' },
-        { user_id: '22222222-2222-2222-2222-222222222222' },
-        { user_id: '33333333-3333-3333-3333-333333333333' },
-        { user_id: '44444444-4444-4444-4444-444444444444' },
-        { user_id: '55555555-5555-5555-5555-555555555555' },
-        { user_id: '66666666-6666-6666-6666-666666666666' },
-        { user_id: '77777777-7777-7777-7777-777777777777' },
-        { user_id: '88888888-8888-8888-8888-888888888888' },
-        { user_id: '99999999-9999-9999-9999-999999999999' },
-        { user_id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' },
-        { user_id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb' },
-        { user_id: 'cccccccc-cccc-cccc-cccc-cccccccccccc' },
-        { user_id: 'dddddddd-dddd-dddd-dddd-dddddddddddd' },
-        { user_id: 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee' },
-        { user_id: 'ffffffff-ffff-ffff-ffff-ffffffffffff' },
-        { user_id: '00000000-0000-0000-0000-000000000000' },
-        { user_id: '12345678-1234-1234-1234-123456789012' },
-        { user_id: 'abcdefab-cdef-cdef-cdef-abcdefabcdef' },
-        { user_id: 'deadbeef-dead-beef-dead-beefdeadbeef' },
-        { user_id: 'feedface-feed-face-feed-facefeedface' }
-      ];
-      const count = regs.length;
+      const { data: regs, count, error: regErr } = await supabase
+        .from('interclub_registrations')
+        .select('user_id', { count: 'exact' })
+        .eq('season_id', seasonId)
+        .eq('status', 'approved');
 
+      if (regErr) throw regErr;
       if (!count || count < 4) {
         alert('Minimum 4 approved teams required to generate schedule');
         return;
