@@ -562,48 +562,60 @@ const AdminInterclub: React.FC = () => {
       const seasonStart = new Date(season.start_date);
       const maxPerGroup = season.max_teams_per_group;
 
-      // 2) Fetch approved registrations with players
-      const { data: regs, count, error: regErr } = await supabase
+      // 2) Fetch approved registrations
+      const { data: regs, error: regErr } = await supabase
         .from('interclub_registrations')
-        .select('user_id', { count: 'exact' })
+        .select('user_id')
         .eq('season_id', seasonId)
         .eq('status', 'approved');
 
       if (regErr) throw regErr;
-      if (!count || count < 4) {
+      if (!regs || regs.length < 4) {
         alert('Minimum 4 approved teams required to generate schedule');
         return;
       }
 
       // 3) Shuffle and group registrations
-      const shuffled: string[] = regs!.map(r => r.user_id).sort(() => Math.random() - 0.5);
+      const shuffled = regs.map(r => r.user_id).sort(() => Math.random() - 0.5);
       const groupedRegs: string[][] = [];
-
       while (shuffled.length) {
         groupedRegs.push(shuffled.splice(0, maxPerGroup));
       }
 
-      // 4) Persist groups
-      const groupRecords = groupedRegs.map((group, idx) => ({
+      // 4) Insert group records into interclub_groups
+      const groupRecords = groupedRegs.map(() => ({
         season_id: seasonId
       }));
 
       const { data: createdGroups, error: grpErr } = await supabase
         .from('interclub_groups')
         .insert(groupRecords)
-        .select('id');
+        .select('id, group_number');
 
       if (grpErr) throw grpErr;
 
-      // 5) Generate and persist fixtures
+      // 5) Assign group_number to each team (update interclub_registrations)
+      for (let i = 0; i < groupedRegs.length; i++) {
+        const teamUserIds = groupedRegs[i];
+        const groupNumber = createdGroups[i].group_number;
+
+        const { error: updateErr } = await supabase
+          .from('interclub_registrations')
+          .update({ group_assignment: groupNumber })
+          .in('user_id', teamUserIds)
+          .eq('season_id', seasonId);
+
+        if (updateErr) throw updateErr;
+      }
+
+      // 6) Generate fixtures and week schedule
       const service = new InterclubService(supabase);
       const weekSchedule: { group: number; week: number; date: string }[] = [];
 
       for (let idx = 0; idx < groupedRegs.length; idx++) {
-        const groupNum = idx + 1;
+        const groupNum = createdGroups[idx].group_number;
         const teamIds = groupedRegs[idx];
 
-        // Compute match date
         const computeMatchDate = (week: number) =>
           new Date(seasonStart.getTime() + (week - 1) * 7 * 86400_000).toISOString();
 
@@ -614,9 +626,8 @@ const AdminInterclub: React.FC = () => {
         );
         if (!result.success) throw new Error(result.error);
 
-        // Build week_schedule
-        const weeks = (teamIds.length - 1) * 2; // double round robin
-        for (let w = 1; w <= weeks; w++) {
+        const totalWeeks = (teamIds.length - 1) * 2; // double round robin
+        for (let w = 1; w <= totalWeeks; w++) {
           weekSchedule.push({
             group: groupNum,
             week: w,
@@ -625,7 +636,7 @@ const AdminInterclub: React.FC = () => {
         }
       }
 
-      // 6) Update week_schedule
+      // 7) Update week_schedule on season
       const { error: updErr } = await supabase
         .from('interclub_seasons')
         .update({
