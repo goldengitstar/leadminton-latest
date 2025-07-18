@@ -622,7 +622,8 @@ const AdminInterclub: React.FC = () => {
         const result = await service.generateAndPersistMatchSchedule(
           seasonId,
           teamIds,
-          computeMatchDate
+          computeMatchDate,
+          groupNum
         );
         if (!result.success) throw new Error(result.error);
 

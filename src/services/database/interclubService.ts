@@ -429,7 +429,8 @@ export class InterclubService {
   async generateAndPersistMatchSchedule(
     seasonId: string,
     teamIds: string[],
-    computeMatchDate: (matchday: number) => string  // e.g. md => new Date(startDate.getTime() + (md-1)*7*24*60*60*1000).toISOString()
+    computeMatchDate: (matchday: number) => string,
+    groupNumber: number 
   ): Promise<{ success: boolean; error?: string }> {
     // 1) Build raw home/away fixtures
     const raw: { home: string; away: string }[] = [];
@@ -465,6 +466,7 @@ export class InterclubService {
       away_team_id: string;
       match_date: string;
       status?: string;
+      group_number:number;
     }[] = [];
 
     for (const { home, away } of raw) {
@@ -483,7 +485,8 @@ export class InterclubService {
         home_team_id: home,
         away_team_id: away,
         match_date: computeMatchDate(matchday),
-        status: 'scheduled'
+        status: 'scheduled',
+        group_number: groupNumber
       });
 
       matchday++;
