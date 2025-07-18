@@ -16,7 +16,12 @@ import {
   Target,
   Play,
   Eye,
-  Settings
+  Settings,
+  ChevronDown,
+  ChevronUp,
+  Award,
+  Shield,
+  BarChart2
 } from 'lucide-react';
 import { useGame } from '../contexts/GameContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -47,6 +52,11 @@ const InterclubPage: React.FC = () => {
   const [selectedSeason, setSelectedSeason] = useState<InterclubSeason | null>(null);
   const [currentSeasonStatus, setCurrentSeasonStatus] = useState<any>(null);
   const [nextEncounter, setNextEncounter] = useState<any>(null);
+  const [showFullStandings, setShowFullStandings] = useState(false);
+  const [showLineupBuilder, setShowLineupBuilder] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState<string>('');
+  
+  // Lineup state
   const [lineup, setLineup] = useState({
     mens_singles: '',
     womens_singles: '',
@@ -59,7 +69,34 @@ const InterclubPage: React.FC = () => {
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
   const [teamName, setTeamName] = useState('');
   const [registrationError, setRegistrationError] = useState<string>('');
-  
+
+  // Calculate time remaining until next match
+  useEffect(() => {
+    if (!nextEncounter?.match_date) return;
+
+    const updateCountdown = () => {
+      const now = new Date();
+      const matchDate = new Date(nextEncounter.match_date);
+      const diff = matchDate.getTime() - now.getTime();
+
+      if (diff <= 0) {
+        setTimeRemaining('Match started');
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      setTimeRemaining(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, [nextEncounter]);
+
   useEffect(() => {
     const maleCount = gameState.players.filter(p => p.gender === 'male').length;
     const femaleCount  = gameState.players.filter(p => p.gender === 'female').length;
@@ -153,6 +190,7 @@ const InterclubPage: React.FC = () => {
       
       if (result.success) {
         await loadInterclubData();
+        setShowLineupBuilder(false);
       }
     } catch (error) {
       console.error('Lineup submission error:', error);
@@ -493,6 +531,9 @@ const InterclubPage: React.FC = () => {
   if (currentView === 'dashboard' && currentSeasonStatus) {
     const malePlayersAvailable = gameState.players.filter(p => p.gender === 'male');
     const femalePlayersAvailable = gameState.players.filter(p => p.gender === 'female');
+    const endDate = new Date(currentSeasonStatus.registration.season.end_date);
+    const today = new Date();
+    const daysRemaining = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
     return (
       <div className="container mx-auto px-4 py-8">
@@ -501,47 +542,134 @@ const InterclubPage: React.FC = () => {
           <h1 className="text-2xl font-bold">Interclub Season - {currentSeasonStatus.registration.season.name}</h1>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Left Column - Next Match and Lineup Builder */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Next Match Card */}
-            {nextEncounter && (
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-xl font-bold mb-4 flex items-center">
-                  <Target className="w-6 h-6 mr-2 text-blue-500" />
-                  Next Match
-                </h2>
-                
-                <div className="bg-blue-50 rounded-lg p-4 mb-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium">MD{nextEncounter.matchday_number}</span>
-                    <span className="text-sm text-gray-600">
-                      {new Date(nextEncounter.match_date).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <div className="text-lg font-bold text-center">
-                    {nextEncounter.home_team_id === user?.id ? 'HOME' : 'AWAY'}
-                  </div>
-                </div>
+        <div className="grid lg:grid-cols-2 gap-6 mb-6">
+          {/* Club Players */}
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold flex items-center">
+                <Users className="w-6 h-6 mr-2 text-blue-500" />
+                Club Players
+              </h2>
+              <span className="text-sm text-gray-500">{gameState.players.length} players</span>
+            </div>
+            
+            <div className="overflow-y-auto max-h-96">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Level</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gender</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {gameState.players
+                    .sort((a, b) => b.level - a.level)
+                    .map((player, index) => (
+                      <tr key={player.id}>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <span className="font-medium">{player.name}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <span className="text-gray-600">Level {player.level}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <span className={`px-2 py-1 text-xs rounded-full ${
+                            player.gender === 'male' 
+                              ? 'bg-blue-100 text-blue-800' 
+                              : 'bg-pink-100 text-pink-800'
+                          }`}>
+                            {player.gender === 'male' ? 'Male' : 'Female'}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <span className="font-medium">#{index + 1}</span>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-                {nextEncounter.status === 'lineup_pending' && (
-                  <div className="text-center text-yellow-600 mb-4">
-                    Lineup submission pending
+          {/* Next Match and Lineup */}
+          <div className="space-y-6">
+            {/* Next Match */}
+            <div className="bg-white rounded-xl shadow-lg p-6">
+              <h2 className="text-xl font-bold mb-4 flex items-center">
+                <Target className="w-6 h-6 mr-2 text-blue-500" />
+                Next Match
+              </h2>
+              
+              {nextEncounter ? (
+                <>
+                  <div className="bg-blue-50 rounded-lg p-4 mb-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <div className="flex items-center">
+                        <Shield className="w-5 h-5 mr-2 text-blue-600" />
+                        <span className="font-medium">MD{nextEncounter.matchday_number}</span>
+                      </div>
+                      <span className="text-sm text-gray-600">
+                        {new Date(nextEncounter.match_date).toLocaleDateString()}
+                      </span>
+                    </div>
+                    
+                    <div className="text-center mb-2">
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                        nextEncounter.home_team_id === user?.id 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-purple-100 text-purple-800'
+                      }`}>
+                        {nextEncounter.home_team_id === user?.id ? 'HOME MATCH' : 'AWAY MATCH'}
+                      </span>
+                    </div>
+                    
+                    <div className="text-center text-lg font-bold">
+                      {timeRemaining}
+                    </div>
                   </div>
-                )}
-              </div>
-            )}
+
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h3 className="font-medium mb-1">Opponent:</h3>
+                      <p className="text-gray-600">
+                        {nextEncounter.home_team_id === user?.id 
+                          ? nextEncounter.away_team_name 
+                          : nextEncounter.home_team_name}
+                      </p>
+                    </div>
+                    
+                    <button
+                      onClick={() => setShowLineupBuilder(!showLineupBuilder)}
+                      className={`px-4 py-2 rounded-lg flex items-center space-x-2 ${
+                        showLineupBuilder 
+                          ? 'bg-gray-200 text-gray-800' 
+                          : 'bg-blue-600 text-white hover:bg-blue-700'
+                      }`}
+                    >
+                      <Settings className="w-4 h-4" />
+                      <span>{showLineupBuilder ? 'Hide Lineup' : 'Set Lineup'}</span>
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-4 text-gray-600">
+                  No upcoming matches scheduled
+                </div>
+              )}
+            </div>
 
             {/* Lineup Builder */}
-            {nextEncounter && (nextEncounter.status === 'lineup_pending' || nextEncounter.status === 'active') && (
+            {showLineupBuilder && nextEncounter && (
               <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-xl font-bold mb-4 flex items-center">
-                  <Settings className="w-6 h-6 mr-2 text-blue-500" />
-                  Lineup Builder
-                </h2>
-
+                <h3 className="text-lg font-bold mb-4">Lineup Builder</h3>
+                
                 <div className="grid md:grid-cols-2 gap-6">
-                  {/* Match Types */}
                   <div className="space-y-4">
                     {/* Men's Singles */}
                     <div>
@@ -551,7 +679,7 @@ const InterclubPage: React.FC = () => {
                         onChange={(e) => setLineup({...lineup, mens_singles: e.target.value})}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
-                        <option value="">Select a player</option>
+                        <option value="">Select player</option>
                         {malePlayersAvailable.map(player => (
                           <option key={player.id} value={player.id}>
                             {player.name} (Level {player.level})
@@ -568,7 +696,7 @@ const InterclubPage: React.FC = () => {
                         onChange={(e) => setLineup({...lineup, womens_singles: e.target.value})}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
-                        <option value="">Select a player</option>
+                        <option value="">Select player</option>
                         {femalePlayersAvailable.map(player => (
                           <option key={player.id} value={player.id}>
                             {player.name} (Level {player.level})
@@ -671,9 +799,8 @@ const InterclubPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Lineup Summary */}
                   <div className="bg-gray-50 rounded-lg p-4">
-                    <h3 className="font-bold mb-4">Lineup Summary</h3>
+                    <h4 className="font-bold mb-3">Lineup Summary</h4>
                     <div className="space-y-3 text-sm">
                       <div className="bg-white p-3 rounded">
                         <span className="font-medium">MS:</span> {lineup.mens_singles ? gameState.players.find(p => p.id === lineup.mens_singles)?.name : 'Not assigned'}
@@ -704,128 +831,173 @@ const InterclubPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="mt-6">
-                      <button
-                        onClick={handleLineupSubmission}
-                        disabled={!canSubmitLineup() || loading}
-                        className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {loading ? 'Submitting...' : 'Submit Lineup'}
-                      </button>
-                    </div>
+                    <button
+                      onClick={handleLineupSubmission}
+                      disabled={!canSubmitLineup() || loading}
+                      className={`w-full mt-4 py-2 px-4 rounded-lg flex items-center justify-center space-x-2 ${
+                        canSubmitLineup() 
+                          ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                          : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                      }`}
+                    >
+                      {loading ? (
+                        <>
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          <span>Submitting...</span>
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="w-4 h-4" />
+                          <span>Submit Lineup</span>
+                        </>
+                      )}
+                    </button>
                   </div>
                 </div>
               </div>
             )}
           </div>
+        </div>
 
-          {/* Right Column - Current Standing and Standings */}
-          <div className="space-y-6">
-            {/* Current Standing */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h2 className="text-xl font-bold mb-4 flex items-center">
-                <Medal className="w-6 h-6 mr-2 text-yellow-500" />
-                Your Position
+        <div className="grid lg:grid-cols-2 gap-6">
+          {/* Season Rewards */}
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold flex items-center">
+                <Award className="w-6 h-6 mr-2 text-yellow-500" />
+                Season Rewards
               </h2>
-              
-              {currentSeasonStatus.standing ? (
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-blue-600 mb-2">
-                    #{currentSeasonStatus.standing.position}
-                  </div>
-                  <div className="text-gray-600 mb-4">
-                    {currentSeasonStatus.standing.points} points
-                  </div>
-                  
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span>Matches played:</span>
-                      <span>{currentSeasonStatus.standing.matches_played}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Wins:</span>
-                      <span className="text-green-600">{currentSeasonStatus.standing.encounters_won}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Losses:</span>
-                      <span className="text-red-600">{currentSeasonStatus.standing.encounters_lost}</span>
-                    </div>
-                  </div>
-
-                  {/* Form */}
-                  {currentSeasonStatus.standing.form && currentSeasonStatus.standing.form.length > 0 && (
-                    <div className="mt-4">
-                      <span className="text-sm text-gray-600">Recent form:</span>
-                      <div className="flex justify-center space-x-1 mt-1">
-                        {currentSeasonStatus.standing.form.slice(-5).map((result: string, idx: number) => (
-                          <div
-                            key={idx}
-                            className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white ${
-                              result === 'W' ? 'bg-green-500' : 'bg-red-500'
-                            }`}
-                          >
-                            {result}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <p className="text-gray-600 text-center">Position not available</p>
-              )}
+              <div className="flex items-center">
+                <Clock className="w-4 h-4 mr-1 text-gray-500" />
+                <span className="text-sm text-gray-600">{daysRemaining} days remaining</span>
+              </div>
             </div>
+            
+            <div className="grid grid-cols-3 gap-4">
+              {/* 1st Place */}
+              <div className="bg-gradient-to-b from-yellow-400 to-yellow-300 rounded-lg p-4 text-center">
+                <div className="flex justify-center mb-2">
+                  <Crown className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="font-bold text-white">1st Place</h3>
+                <p className="text-white text-sm">Unlock next tier + 500 coins</p>
+              </div>
+              
+              {/* 2nd Place */}
+              <div className="bg-gradient-to-b from-gray-400 to-gray-300 rounded-lg p-4 text-center">
+                <div className="flex justify-center mb-2">
+                  <Medal className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="font-bold text-white">2nd Place</h3>
+                <p className="text-white text-sm">300 coins + 20 shuttlecocks</p>
+              </div>
+              
+              {/* 3rd Place */}
+              <div className="bg-gradient-to-b from-amber-700 to-amber-600 rounded-lg p-4 text-center">
+                <div className="flex justify-center mb-2">
+                  <Award className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="font-bold text-white">3rd Place</h3>
+                <p className="text-white text-sm">150 coins + 10 shuttlecocks</p>
+              </div>
+            </div>
+          </div>
 
-            {/* Standings */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h2 className="text-xl font-bold mb-4 flex items-center">
-                <Trophy className="w-6 h-6 mr-2 text-blue-500" />
+          {/* Group Standings */}
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold flex items-center">
+                <BarChart2 className="w-6 h-6 mr-2 text-blue-500" />
                 Group Standings
               </h2>
-              
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pos</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Team</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pts</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">P</th>
+              <button 
+                onClick={() => setShowFullStandings(!showFullStandings)}
+                className="flex items-center text-sm text-blue-600 hover:text-blue-800"
+              >
+                {showFullStandings ? (
+                  <>
+                    <span>Show Less</span>
+                    <ChevronUp className="w-4 h-4 ml-1" />
+                  </>
+                ) : (
+                  <>
+                    <span>View All</span>
+                    <ChevronDown className="w-4 h-4 ml-1" />
+                  </>
+                )}
+              </button>
+            </div>
+            
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pos</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Team</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pts</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">P</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">W</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">D</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">L</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {(showFullStandings 
+                    ? currentSeasonStatus.standings 
+                    : currentSeasonStatus.standings?.slice(0, 5)
+                  )?.map((standing: any) => (
+                    <tr 
+                      key={standing.team_id}
+                      className={standing.team_id === user?.id ? 'bg-blue-50 font-medium' : ''}
+                    >
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <span className={`font-bold ${
+                            standing.position === 1 ? 'text-yellow-500' :
+                            standing.position === 2 ? 'text-gray-500' :
+                            standing.position === 3 ? 'text-amber-700' : ''
+                          }`}>
+                            {standing.position}
+                          </span>
+                          {standing.position <= 3 && (
+                            <span className="ml-1">
+                              {standing.position === 1 && <Crown className="w-4 h-4 text-yellow-500" />}
+                              {standing.position === 2 && <Medal className="w-4 h-4 text-gray-500" />}
+                              {standing.position === 3 && <Award className="w-4 h-4 text-amber-700" />}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <span>{standing.team_name}</span>
+                          {standing.team_id === user?.id && (
+                            <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">YOU</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap font-bold">
+                        {standing.points}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        {standing.matches_played}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-green-600">
+                        {standing.encounters_won}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-yellow-600">
+                        {standing.encounters_drawn || 0}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-red-600">
+                        {standing.encounters_lost}
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {currentSeasonStatus.standings?.slice(0, 5).map((standing: any) => (
-                      <tr 
-                        key={standing.team_id}
-                        className={standing.team_id === user?.id ? 'bg-blue-50' : ''}
-                      >
-                        <td className="px-3 py-2 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <span className="text-sm font-bold">{standing.position}</span>
-                            {standing.position <= 2 && <Crown className="w-3 h-3 ml-1 text-yellow-500" />}
-                          </div>
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <span className="text-sm font-medium">{standing.team_name}</span>
-                            {standing.team_id === user?.id && <span className="ml-1 text-xs bg-blue-100 text-blue-800 px-1 py-0.5 rounded">YOU</span>}
-                          </div>
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-sm font-bold text-blue-600">
-                          {standing.points}
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-sm">{standing.matches_played}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {currentSeasonStatus.standings?.length > 5 && (
-                <div className="mt-2 text-center text-sm text-blue-600">
-                  + {currentSeasonStatus.standings.length - 5} more teams
-                </div>
-              )}
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
