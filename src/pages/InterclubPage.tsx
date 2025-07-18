@@ -624,7 +624,7 @@ const InterclubPage: React.FC = () => {
               
               {nextEncounter ? (
                 <>
-                  <div className="p-4 mb-4">
+                  <div className="p-4 mb-4 justify-center h-full flex">
                     <div className="text-center mb-2 flex justify-center">
                       <div className='justify-center'>
                         <div className="w-12 h-12 bg-blue-200 rounded-full flex items-center justify-center">
@@ -660,7 +660,7 @@ const InterclubPage: React.FC = () => {
                   </div>
                 </>
               ) : (
-                <div className="text-center py-4 text-gray-600">
+                <div className="text-center py-4 text-gray-600 h-full justify-center flex">
                   No upcoming matches scheduled
                 </div>
               )}
