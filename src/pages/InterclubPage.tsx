@@ -689,25 +689,53 @@ const InterclubPage: React.FC = () => {
                 <Crown className="w-8 h-8 text-white mr-4" />
                 <div>
                   <h3 className="font-bold text-white">1st Place</h3>
-                  <p className="text-white text-sm">Unlock next tier + 500 coins</p>
+                  <p className="text-white text-sm">
+                    Unlock next tier
+                    {currentSeasonStatus.registration.season.prize_pool.first.coins > 0 &&
+                      ` + ${currentSeasonStatus.registration.season.prize_pool.first.coins} coins`}
+                    {currentSeasonStatus.registration.season.prize_pool.first.shuttlecocks > 0 &&
+                      ` + ${currentSeasonStatus.registration.season.prize_pool.first.shuttlecocks} shuttlecocks`}
+                    {currentSeasonStatus.registration.season.prize_pool.first.meals > 0 &&
+                      ` + ${currentSeasonStatus.registration.season.prize_pool.first.meals} meals`}
+                    {currentSeasonStatus.registration.season.prize_pool.first.diamonds > 0 &&
+                      ` + ${currentSeasonStatus.registration.season.prize_pool.first.diamonds} diamonds`}
+                  </p>
                 </div>
               </div>
-              
+
               {/* 2nd Place */}
               <div className="bg-gradient-to-b from-gray-400 to-gray-300 rounded-lg p-4 mt-2 flex">
                 <Medal className="w-8 h-8 text-white mr-4" />
                 <div>
                   <h3 className="font-bold text-white">2nd Place</h3>
-                  <p className="text-white text-sm">300 coins + 20 shuttlecocks</p>
+                  <p className="text-white text-sm">
+                    {currentSeasonStatus.registration.season.prize_pool.second.coins > 0 &&
+                      `${currentSeasonStatus.registration.season.prize_pool.second.coins} coins`}
+                    {currentSeasonStatus.registration.season.prize_pool.second.shuttlecocks > 0 &&
+                      ` + ${currentSeasonStatus.registration.season.prize_pool.second.shuttlecocks} shuttlecocks`}
+                    {currentSeasonStatus.registration.season.prize_pool.second.meals > 0 &&
+                      ` + ${currentSeasonStatus.registration.season.prize_pool.second.meals} meals`}
+                    {currentSeasonStatus.registration.season.prize_pool.second.diamonds > 0 &&
+                      ` + ${currentSeasonStatus.registration.season.prize_pool.second.diamonds} diamonds`}
+                  </p>
                 </div>
               </div>
-              
+
               {/* 3rd Place */}
               <div className="bg-gradient-to-b from-amber-700 to-amber-600 rounded-lg p-4 mt-2 flex">
                 <Award className="w-8 h-8 text-white mr-4" />
                 <div>
                   <h3 className="font-bold text-white">3rd Place</h3>
-                  <p className="text-white text-sm">150 coins + 10 shuttlecocks</p>
+                  <p className="text-white text-sm">
+                    {currentSeasonStatus.registration.season.prize_pool.third.coins > 0 &&
+                      `${currentSeasonStatus.registration.season.prize_pool.third.coins} coins`}
+                    {currentSeasonStatus.registration.season.prize_pool.third.shuttlecocks > 0 &&
+                      ` + ${currentSeasonStatus.registration.season.prize_pool.third.shuttlecocks} shuttlecocks`}
+                    {currentSeasonStatus.registration.season.prize_pool.third.meals > 0 &&
+                      ` + ${currentSeasonStatus.registration.season.prize_pool.third.meals} meals`}
+                    {currentSeasonStatus.registration.season.prize_pool.third.diamonds > 0 &&
+                      ` + ${currentSeasonStatus.registration.season.prize_pool.third.diamonds} diamonds`}
+                  </p>
                 </div>
               </div>
             </div>
