@@ -62,36 +62,48 @@ export class ResourceService {
    */
   async getUserResourceBalances(userId: string): Promise<Record<string, number>> {
     try {
-      console.log("Fetching resources for user id", userId)
-      const { data, error } = await this.supabase
-        .from('resource_transactions')
-        .select('resource_type, amount')
-        .eq('user_id', userId);
+        console.log("Fetching resources for user id", userId)
 
-      if (error) {
-        console.error('Error getting resource balances:', error);
-        return {};
-      }
+        // 1) Get total count without fetching rows
+        const { count, error: countErr } = await this.supabase
+          .from('resource_transactions')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', userId)
 
-      console.log('[ResourceService] Raw transactions:', data);
-      
-      // Calculate balances - start from zero
-      const balances: Record<string, number> = {
-        shuttlecocks: 0,
-        meals: 0,
-        coins: 0,
-        diamonds: 0,
-      };
+        if (countErr) throw countErr
+        const total = count || 0
 
-      data?.forEach(transaction => {
-        const { resource_type, amount } = transaction;
-        if (resource_type in balances) {
-          balances[resource_type] += amount;
+        // 2) Page through all transactions
+        const results: { resource_type: string; amount: number }[] = []
+        const batchSize = 1000
+        for (let from = 0; from < total; from += batchSize) {
+          const to = Math.min(from + batchSize - 1, total - 1)
+          const { data, error } = await this.supabase
+            .from('resource_transactions')
+            .select('resource_type, amount')
+            .eq('user_id', userId)
+            .range(from, to)
+
+          if (error) throw error
+          if (data) results.push(...data)
         }
-      });
 
-      console.log('[ResourceService] Final balances:', balances);
-      return balances;
+        // 3) Calculate balances
+        const balances: Record<string, number> = {
+          shuttlecocks: 0,
+          meals: 0,
+          coins: 0,
+          diamonds: 0,
+        }
+
+        for (const { resource_type, amount } of results) {
+          if (resource_type in balances) {
+            balances[resource_type] += amount
+          }
+        }
+
+        console.log('[ResourceService] Final balances:', balances)
+        return balances;
     } catch (error) {
       console.error('Error in getUserResourceBalances:', error);
       return {};
