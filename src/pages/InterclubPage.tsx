@@ -535,6 +535,7 @@ const InterclubPage: React.FC = () => {
     const malePlayersAvailable = gameState.players.filter(p => p.gender === 'male');
     const femalePlayersAvailable = gameState.players.filter(p => p.gender === 'female');
     const endDate = new Date(currentSeasonStatus.registration.season.end_date);
+    console.log("Season details", currentSeasonStatus.registration.season)
     const today = new Date();
     const daysRemaining = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
