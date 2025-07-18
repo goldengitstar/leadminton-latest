@@ -635,12 +635,15 @@ const InterclubPage: React.FC = () => {
                       </span>
                     </div>
                     
-                    <div className="text-center mb-2">
-                      <div>
-                        <Swords className='w-5 h-5'/>
+                    <div className="text-center mb-2 flex justify-center">
+                      <div className='justify-center'>
+                        <Swords className='w-8 h-8 text-blue-500'/>
+                        <h3 className='text-center'>{nextEncounter.home_team_name}</h3>
                       </div>
-                      <div>
-                        <Swords className='w-5 h-5'/>
+                      <h1>VS</h1>
+                      <div className='justify-center'>
+                        <Swords className='w-5 h-5 text-pink-500'/>
+                        <h3 className='text-center'>{nextEncounter.away_team_name}</h3>
                       </div>
                     </div>
                     
