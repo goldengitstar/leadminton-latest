@@ -633,7 +633,7 @@ const InterclubPage: React.FC = () => {
                         </div>
                         <h3 className='text-center'>{nextEncounter.home_team_name}</h3>
                       </div>
-                      <h2 className='mx-2 bold mt-[auto] mb-[auto]'>VS</h2>
+                      <h2 className='mx-4 bold mt-[auto] mb-[auto]'>VS</h2>
                       <div className='justify-center'>
                         <div className="w-12 h-12 bg-pink-200 rounded-full flex items-center justify-center">
                           <Trophy className="w-6 h-6 text-pink-500" />
@@ -651,7 +651,7 @@ const InterclubPage: React.FC = () => {
                         className={`px-4 py-2 rounded-lg flex items-center space-x-2 ${
                           showLineupBuilder 
                             ? 'bg-gray-200 text-gray-800' 
-                            : 'bg-blue-600 text-white hover:bg-blue-700'
+                            : 'bg-blue-600 text-white hover:bg-purple-700'
                         }`}
                       >
                         <Settings className="w-4 h-4" />
