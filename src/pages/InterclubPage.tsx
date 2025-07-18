@@ -893,30 +893,30 @@ const InterclubPage: React.FC = () => {
             
             <div className="grid grid-cols-3 gap-4">
               {/* 1st Place */}
-              <div className="bg-gradient-to-b from-yellow-400 to-yellow-300 rounded-lg p-4 text-center">
-                <div className="flex justify-center mb-2">
-                  <Crown className="w-8 h-8 text-white" />
+              <div className="bg-gradient-to-b from-yellow-400 to-yellow-300 rounded-lg p-4 text-center flex">
+                <Crown className="w-8 h-8 text-white mr-4" />
+                <div>
+                  <h3 className="font-bold text-white">1st Place</h3>
+                  <p className="text-white text-sm">Unlock next tier + 500 coins</p>
                 </div>
-                <h3 className="font-bold text-white">1st Place</h3>
-                <p className="text-white text-sm">Unlock next tier + 500 coins</p>
               </div>
               
               {/* 2nd Place */}
-              <div className="bg-gradient-to-b from-gray-400 to-gray-300 rounded-lg p-4 text-center">
-                <div className="flex justify-center mb-2">
-                  <Medal className="w-8 h-8 text-white" />
+              <div className="bg-gradient-to-b from-gray-400 to-gray-300 rounded-lg p-4 text-center flex">
+                <Medal className="w-8 h-8 text-white mr-4" />
+                <div>
+                  <h3 className="font-bold text-white">2nd Place</h3>
+                  <p className="text-white text-sm">300 coins + 20 shuttlecocks</p>
                 </div>
-                <h3 className="font-bold text-white">2nd Place</h3>
-                <p className="text-white text-sm">300 coins + 20 shuttlecocks</p>
               </div>
               
               {/* 3rd Place */}
-              <div className="bg-gradient-to-b from-amber-700 to-amber-600 rounded-lg p-4 text-center">
-                <div className="flex justify-center mb-2">
-                  <Award className="w-8 h-8 text-white" />
+              <div className="bg-gradient-to-b from-amber-700 to-amber-600 rounded-lg p-4 text-center flex">
+                <Award className="w-8 h-8 text-white mr-4" />
+                <div>
+                  <h3 className="font-bold text-white">3rd Place</h3>
+                  <p className="text-white text-sm">150 coins + 10 shuttlecocks</p>
                 </div>
-                <h3 className="font-bold text-white">3rd Place</h3>
-                <p className="text-white text-sm">150 coins + 10 shuttlecocks</p>
               </div>
             </div>
           </div>
