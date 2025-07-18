@@ -19,7 +19,10 @@ import {
   Settings,
   List,
   Award,
-  Table
+  Table,
+  Info,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { useGame } from '../contexts/GameContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -47,6 +50,9 @@ const InterclubPage: React.FC = () => {
   const [currentSeasonStatus, setCurrentSeasonStatus] = useState<any>(null);
   const [nextEncounter, setNextEncounter] = useState<any>(null);
   const [showLineupBuilder, setShowLineupBuilder] = useState(false);
+  const [showFullPlayers, setShowFullPlayers] = useState(false);
+  const [showFullSchedule, setShowFullSchedule] = useState(false);
+  const [showFullRanking, setShowFullRanking] = useState(false);
   
   // Lineup state
   const [lineup, setLineup] = useState({
@@ -137,6 +143,9 @@ const InterclubPage: React.FC = () => {
   seasonEndDate.setDate(seasonEndDate.getDate() + 30);
   const daysRemaining = Math.floor((seasonEndDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
 
+  // Sort players by level (descending)
+  const sortedPlayers = [...gameState.players].sort((a, b) => b.level - a.level);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -161,23 +170,40 @@ const InterclubPage: React.FC = () => {
               <Users className="w-5 h-5 mr-2 text-blue-500" />
               Club Players
             </h2>
-            <span className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">
-              {gameState.players.length} players
-            </span>
+            <button 
+              onClick={() => setShowFullPlayers(!showFullPlayers)}
+              className="text-sm bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700 flex items-center"
+            >
+              {showFullPlayers ? 'Show Less' : 'View All'}
+            </button>
           </div>
           
-          <div className="space-y-3 max-h-96 overflow-y-auto">
-            {gameState.players.map(player => (
-              <div key={player.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div>
-                  <div className="font-medium">{player.name}</div>
-                  <div className="text-sm text-gray-600">
-                    Level {player.level} • {player.gender === 'male' ? 'Male' : 'Female'}
+          <div className={`space-y-3 ${showFullPlayers ? 'max-h-[800px]' : 'max-h-[400px]'} overflow-y-auto`}>
+            <div className="grid grid-cols-12 gap-2 px-3 py-2 bg-gray-100 rounded-lg text-xs font-medium mb-2">
+              <div className="col-span-1">Rank</div>
+              <div className="col-span-4">Name</div>
+              <div className="col-span-2">Level</div>
+              <div className="col-span-2">Gender</div>
+              <div className="col-span-2">Energy</div>
+              <div className="col-span-1">Points</div>
+            </div>
+            
+            {sortedPlayers.map((player, index) => (
+              <div key={player.id} className="grid grid-cols-12 gap-2 items-center p-2 bg-gray-50 rounded-lg hover:bg-gray-100">
+                <div className="col-span-1 font-medium text-sm">{index + 1}</div>
+                <div className="col-span-4 font-medium truncate">{player.name}</div>
+                <div className="col-span-2 text-sm">Lvl {player.level}</div>
+                <div className="col-span-2 text-sm">{player.gender === 'male' ? 'Male' : 'Female'}</div>
+                <div className="col-span-2">
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-green-500 h-2 rounded-full" 
+                      style={{ width: `${(player.energy / 100) * 100}%` }}
+                    ></div>
                   </div>
+                  <span className="text-xs">{player.energy}/100</span>
                 </div>
-                <div className="text-xs bg-gray-200 text-gray-800 px-2 py-1 rounded">
-                  {player.energy} energy
-                </div>
+                <div className="col-span-1 text-sm font-bold">{player.points || 0}</div>
               </div>
             ))}
           </div>
@@ -185,32 +211,98 @@ const InterclubPage: React.FC = () => {
 
         {/* Top Right - Next Match & Lineup Builder */}
         <div className="bg-white rounded-xl shadow-lg p-6">
-          {nextEncounter ? (
-            <>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold flex items-center">
-                  <Target className="w-5 h-5 mr-2 text-blue-500" />
-                  Next Match
-                </h2>
-                <button
-                  onClick={() => setShowLineupBuilder(!showLineupBuilder)}
-                  className="flex items-center space-x-1 bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700 text-sm"
-                >
-                  {showLineupBuilder ? (
-                    <>
-                      <Eye className="w-4 h-4" />
-                      <span>View Match</span>
-                    </>
-                  ) : (
-                    <>
-                      <Settings className="w-4 h-4" />
-                      <span>Set Lineup</span>
-                    </>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold flex items-center">
+              <Target className="w-5 h-5 mr-2 text-blue-500" />
+              Next Match
+            </h2>
+            <button
+              onClick={() => setShowFullSchedule(!showFullSchedule)}
+              className="flex items-center space-x-1 bg-gray-200 text-gray-800 p-2 rounded-lg hover:bg-gray-300"
+              title="View full schedule"
+            >
+              <Info className="w-4 h-4" />
+            </button>
+          </div>
+
+          {showFullSchedule ? (
+            <div className="space-y-4">
+              <h3 className="font-bold">Full Season Schedule</h3>
+              {currentSeasonStatus?.schedule?.map((match: any) => (
+                <div key={match.id} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="font-medium">MD{match.matchday_number}</span>
+                    <span className="text-sm text-gray-600">
+                      {new Date(match.match_date).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className={match.home_team_id === user?.id ? 'font-bold' : ''}>
+                      {match.home_team_id === user?.id ? 'Your Team' : match.home_team_name}
+                    </span>
+                    <span className="px-2">vs</span>
+                    <span className={match.away_team_id === user?.id ? 'font-bold' : ''}>
+                      {match.away_team_id === user?.id ? 'Your Team' : match.away_team_name}
+                    </span>
+                  </div>
+                  {match.status !== 'pending' && (
+                    <div className="text-center mt-1 text-sm">
+                      Result: {match.home_score} - {match.away_score}
+                    </div>
                   )}
-                </button>
+                </div>
+              ))}
+              <button
+                onClick={() => setShowFullSchedule(false)}
+                className="w-full bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300 text-sm mt-2"
+              >
+                Hide Schedule
+              </button>
+            </div>
+          ) : nextEncounter ? (
+            <>
+              <div className="bg-blue-50 rounded-lg p-4 mb-4">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="font-medium">MD{nextEncounter.matchday_number}</span>
+                  <span className="text-sm text-gray-600">
+                    {new Date(nextEncounter.match_date).toLocaleDateString()}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between items-center mb-2">
+                  <div className="text-center">
+                    <div className="font-bold">
+                      {nextEncounter.home_team_id === user?.id ? 'Your Team' : nextEncounter.home_team_name}
+                    </div>
+                    <div className="text-sm text-gray-600">Home</div>
+                  </div>
+                  
+                  <div className="text-xl font-bold mx-4">vs</div>
+                  
+                  <div className="text-center">
+                    <div className="font-bold">
+                      {nextEncounter.away_team_id === user?.id ? 'Your Team' : nextEncounter.away_team_name}
+                    </div>
+                    <div className="text-sm text-gray-600">Away</div>
+                  </div>
+                </div>
+                
+                <div className="flex justify-between text-sm">
+                  <span>Status:</span>
+                  <span className="font-medium">
+                    {nextEncounter.status === 'lineup_pending' ? 'Lineup Pending' : 'Scheduled'}
+                  </span>
+                </div>
               </div>
 
-              {showLineupBuilder ? (
+              {!showLineupBuilder ? (
+                <button
+                  onClick={() => setShowLineupBuilder(true)}
+                  className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 text-sm"
+                >
+                  Create Lineup
+                </button>
+              ) : (
                 <div className="space-y-4">
                   <div className="grid md:grid-cols-2 gap-4">
                     {/* Men's Singles */}
@@ -341,30 +433,20 @@ const InterclubPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <button
-                    onClick={handleLineupSubmission}
-                    disabled={!canSubmitLineup() || loading}
-                    className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                  >
-                    {loading ? 'Submitting...' : 'Submit Lineup'}
-                  </button>
-                </div>
-              ) : (
-                <div className="bg-blue-50 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium">MD{nextEncounter.matchday_number}</span>
-                    <span className="text-sm text-gray-600">
-                      {new Date(nextEncounter.match_date).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <div className="text-lg font-bold text-center mb-4">
-                    {nextEncounter.home_team_id === user?.id ? 'HOME MATCH' : 'AWAY MATCH'}
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span>Status:</span>
-                    <span className="font-medium">
-                      {nextEncounter.status === 'lineup_pending' ? 'Lineup Pending' : 'Scheduled'}
-                    </span>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => setShowLineupBuilder(false)}
+                      className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300 text-sm"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleLineupSubmission}
+                      disabled={!canSubmitLineup() || loading}
+                      className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                    >
+                      {loading ? 'Submitting...' : 'Submit Lineup'}
+                    </button>
                   </div>
                 </div>
               )}
@@ -379,10 +461,18 @@ const InterclubPage: React.FC = () => {
 
         {/* Bottom Left - Season Rewards */}
         <div className="bg-white rounded-xl shadow-lg p-6">
-          <h2 className="text-xl font-bold mb-4 flex items-center">
-            <Award className="w-5 h-5 mr-2 text-yellow-500" />
-            Season Rewards
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold flex items-center">
+              <Award className="w-5 h-5 mr-2 text-yellow-500" />
+              Season Rewards
+            </h2>
+            <button 
+              onClick={() => setShowFullRanking(!showFullRanking)}
+              className="text-sm bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700"
+            >
+              {showFullRanking ? 'Show Less' : 'View All'}
+            </button>
+          </div>
           
           <div className="mb-4">
             <div className="flex items-center justify-between mb-2">
@@ -446,11 +536,13 @@ const InterclubPage: React.FC = () => {
                     <th className="px-3 py-2 text-left">#</th>
                     <th className="px-3 py-2 text-left">Team</th>
                     <th className="px-3 py-2 text-left">Pts</th>
+                    <th className="px-3 py-2 text-left">W</th>
+                    <th className="px-3 py-2 text-left">L</th>
                     <th className="px-3 py-2 text-left">Form</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {currentSeasonStatus.standings.slice(0, 8).map((standing: any) => (
+                  {(showFullRanking ? currentSeasonStatus.standings : currentSeasonStatus.standings.slice(0, 5)).map((standing: any) => (
                     <tr 
                       key={standing.team_id}
                       className={standing.team_id === user?.id ? 'bg-blue-50 font-medium' : ''}
@@ -474,6 +566,8 @@ const InterclubPage: React.FC = () => {
                         )}
                       </td>
                       <td className="px-3 py-2 font-bold">{standing.points}</td>
+                      <td className="px-3 py-2 text-green-600">{standing.encounters_won}</td>
+                      <td className="px-3 py-2 text-red-600">{standing.encounters_lost}</td>
                       <td className="px-3 py-2">
                         <div className="flex space-x-1">
                           {standing.form?.slice(-3).map((result: string, idx: number) => (
@@ -492,6 +586,14 @@ const InterclubPage: React.FC = () => {
                   ))}
                 </tbody>
               </table>
+              {!showFullRanking && currentSeasonStatus.standings.length > 5 && (
+                <button
+                  onClick={() => setShowFullRanking(true)}
+                  className="w-full text-center text-blue-600 py-2 text-sm hover:underline"
+                >
+                  Show more ({currentSeasonStatus.standings.length - 5} hidden)
+                </button>
+              )}
             </div>
           ) : (
             <div className="text-center py-8 text-gray-600">
