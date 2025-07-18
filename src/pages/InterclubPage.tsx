@@ -891,7 +891,7 @@ const InterclubPage: React.FC = () => {
               </div>
             </div>
             
-            <div className="grid grid-cols-3 gap-4">
+            <div>
               {/* 1st Place */}
               <div className="bg-gradient-to-b from-yellow-400 to-yellow-300 rounded-lg p-4 text-center flex">
                 <Crown className="w-8 h-8 text-white mr-4" />
