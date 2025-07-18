@@ -555,17 +555,15 @@ const InterclubPage: React.FC = () => {
               </h2>
               <button 
                 onClick={() => setShowAllPlayers(!showAllPlayers)}
-                className="flex items-center text-sm text-white bg-blue-600 hover:text-blue-800"
+                className="flex items-center text-sm text-white bg-blue-600 hover:text-blue-800 px-4 py-2 rounded-lg flex items-center space-x-2 "
               >
                 {showAllPlayers ? (
                   <>
                     <span>Show Less</span>
-                    <ChevronUp className="w-4 h-4 ml-1" />
                   </>
                 ) : (
                   <>
                     <span>View All</span>
-                    <ChevronDown className="w-4 h-4 ml-1" />
                   </>
                 )}
               </button>
@@ -723,17 +721,15 @@ const InterclubPage: React.FC = () => {
               </h2>
               <button 
                 onClick={() => setShowFullStandings(!showFullStandings)}
-                className="flex items-center text-sm text-white bg-blue-600 hover:text-blue-800"
+                className="flex items-center text-sm text-white bg-blue-600 hover:text-blue-800 px-4 py-2 rounded-lg flex items-center space-x-2 "
               >
                 {showFullStandings ? (
                   <>
                     <span>Show Less</span>
-                    <ChevronUp className="w-4 h-4 ml-1" />
                   </>
                 ) : (
                   <>
                     <span>View All</span>
-                    <ChevronDown className="w-4 h-4 ml-1" />
                   </>
                 )}
               </button>
