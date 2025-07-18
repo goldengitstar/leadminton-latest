@@ -56,6 +56,15 @@ const InterclubPage: React.FC = () => {
   // Lineup state
   const [lineupSubmission, setLineupSubmission] = useState<LineupSubmission | null>(null);
 
+  // --- at top of your component ---
+  useEffect(() => {
+    const selectedObjs = gameState.players.filter(p => selectedPlayers.includes(p.id));
+    const maleCount    = selectedObjs.filter(p => p.gender === 'male').length;
+    const femaleCount  = selectedObjs.filter(p => p.gender === 'female').length;
+    setMeetsGenderReqs(maleCount >= 4 && femaleCount >= 3);
+  }, [selectedPlayers, gameState.players]);
+
+
   useEffect(() => {
     if (user?.id) {
       loadInterclubData();
@@ -332,10 +341,6 @@ const InterclubPage: React.FC = () => {
   // Registration View
   if (currentView === 'registration' && selectedSeason) {
     const tierInfo = getTierInfo(selectedSeason.tier);
-    const selectedPlayerObjs = gameState.players.filter(p => selectedPlayers.includes(p.id));
-    const maleCount   = selectedPlayerObjs.filter(p => p.gender === 'male').length;
-    const femaleCount = selectedPlayerObjs.filter(p => p.gender === 'female').length;
-    setMeetsGenderReqs(maleCount >= 4 && femaleCount >= 3)
 
     return (
       <div className="container mx-auto px-4 py-8">
