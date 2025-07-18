@@ -945,6 +945,7 @@ export class InterclubService {
   async getGroupStandings(seasonId: string, groupNumber: number): Promise<GroupStanding[]> {
     try {
       // Get all encounters for this group
+      console.log("Retrieving group standings", seasonId, groupNumber)
       const { data: encounters, error } = await this.supabase
         .from('interclub_matches')
         .select('*')
