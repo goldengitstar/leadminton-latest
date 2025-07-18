@@ -571,7 +571,7 @@ const InterclubPage: React.FC = () => {
               </button>
             </div>
             
-            <div className={`overflow-y-auto ${showAllPlayers ? 'max-h-[500px]' : 'max-h-60'}`}>
+            <div className={`overflow-y-auto ${showAllPlayers ? 'max-h-[400px]' : 'max-h-60'}`}>
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
