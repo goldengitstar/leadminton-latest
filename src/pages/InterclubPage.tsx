@@ -690,7 +690,6 @@ const InterclubPage: React.FC = () => {
                 <div>
                   <h3 className="font-bold text-white">1st Place</h3>
                   <p className="text-white text-sm">
-                    Unlock next tier
                     {currentSeasonStatus.registration.season.prize_pool.first.coins > 0 &&
                       ` + ${currentSeasonStatus.registration.season.prize_pool.first.coins} coins`}
                     {currentSeasonStatus.registration.season.prize_pool.first.shuttlecocks > 0 &&
