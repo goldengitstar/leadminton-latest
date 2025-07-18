@@ -58,6 +58,7 @@ const InterclubPage: React.FC = () => {
   
   useEffect(() => {
     const selectedObjs = gameState.players.filter(p => selectedPlayers.includes(p.id));
+    console.log(gameState.players)
     const maleCount    = selectedObjs.filter(p => p.gender === 'male').length;
     const femaleCount  = selectedObjs.filter(p => p.gender === 'female').length;
     console.log("Male count ", maleCount, "Female count ", femaleCount)
