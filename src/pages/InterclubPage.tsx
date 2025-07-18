@@ -52,6 +52,14 @@ const InterclubPage: React.FC = () => {
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
   const [teamName, setTeamName] = useState('');
   const [registrationError, setRegistrationError] = useState<string>('');
+
+  const [lineup, setLineup] = useState({
+      mens_singles: '',
+      womens_singles: '',
+      mens_doubles: ['', ''] as [string, string],
+      womens_doubles: ['', ''] as [string, string],
+      mixed_doubles: ['', ''] as [string, string]
+    });
   
   // Lineup state
   const [lineupSubmission, setLineupSubmission] = useState<LineupSubmission | null>(null);
@@ -600,13 +608,6 @@ const InterclubPage: React.FC = () => {
 
   // Lineup Builder View
   if (currentView === 'lineup' && nextEncounter) {
-    const [lineup, setLineup] = useState({
-      mens_singles: '',
-      womens_singles: '',
-      mens_doubles: ['', ''] as [string, string],
-      womens_doubles: ['', ''] as [string, string],
-      mixed_doubles: ['', ''] as [string, string]
-    });
 
     const malePlayersAvailable = gameState.players.filter(p => p.gender === 'male');
     const femalePlayersAvailable = gameState.players.filter(p => p.gender === 'female');
