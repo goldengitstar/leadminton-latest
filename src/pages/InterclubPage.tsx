@@ -55,6 +55,7 @@ const InterclubPage: React.FC = () => {
   const [showFullStandings, setShowFullStandings] = useState(false);
   const [showLineupBuilder, setShowLineupBuilder] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState<string>('');
+  const [showAllPlayers, setShowAllPlayers] = useState(false);
   
   // Lineup state
   const [lineup, setLineup] = useState({
@@ -486,7 +487,7 @@ const InterclubPage: React.FC = () => {
                           checked={selectedPlayers.includes(player.id)}
                           onChange={(e) => {
                             if (e.target.checked) {
-                              if (selectedPlayers.length < 10) { // Max 10 players
+                              if (selectedPlayers.length < 10) {
                                 setSelectedPlayers([...selectedPlayers, player.id]);
                               }
                             } else {
@@ -550,10 +551,25 @@ const InterclubPage: React.FC = () => {
                 <Users className="w-6 h-6 mr-2 text-blue-500" />
                 Club Players
               </h2>
-              <span className="text-sm text-gray-500">{gameState.players.length} players</span>
+              <button 
+                onClick={() => setShowAllPlayers(!showAllPlayers)}
+                className="flex items-center text-sm text-blue-600 hover:text-blue-800"
+              >
+                {showAllPlayers ? (
+                  <>
+                    <span>Show Less</span>
+                    <ChevronUp className="w-4 h-4 ml-1" />
+                  </>
+                ) : (
+                  <>
+                    <span>View All</span>
+                    <ChevronDown className="w-4 h-4 ml-1" />
+                  </>
+                )}
+              </button>
             </div>
             
-            <div className="overflow-y-auto max-h-96">
+            <div className={`overflow-y-auto ${showAllPlayers ? 'max-h-[500px]' : 'max-h-60'}`}>
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
@@ -596,7 +612,6 @@ const InterclubPage: React.FC = () => {
               </table>
             </div>
           </div>
-
           {/* Next Match and Lineup */}
           <div className="space-y-6">
             {/* Next Match */}

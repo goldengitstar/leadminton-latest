@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS interclub_seasons (
     registration_deadline date NOT NULL,
     max_teams integer DEFAULT 16,
     entry_fee numeric DEFAULT 0,
-    status text DEFAULT 'draft' CHECK (status IN ('draft', 'registration', 'active', 'completed')),
+    status text DEFAULT 'draft' CHECK (status IN ('draft', 'registration_open', 'registration_closed', 'active', 'completed')),
     created_at timestamptz DEFAULT now(),
     updated_at timestamptz DEFAULT now()
 );
