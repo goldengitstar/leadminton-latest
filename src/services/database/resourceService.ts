@@ -62,6 +62,7 @@ export class ResourceService {
    */
   async getUserResourceBalances(userId: string): Promise<Record<string, number>> {
     try {
+      console.log("Fetching resources for user id", userId)
       const { data, error } = await this.supabase
         .from('resource_transactions')
         .select('resource_type, amount')
