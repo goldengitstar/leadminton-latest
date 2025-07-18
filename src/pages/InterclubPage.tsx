@@ -55,12 +55,12 @@ const InterclubPage: React.FC = () => {
   
   // Lineup state
   const [lineupSubmission, setLineupSubmission] = useState<LineupSubmission | null>(null);
-
-  // --- at top of your component ---
+  
   useEffect(() => {
     const selectedObjs = gameState.players.filter(p => selectedPlayers.includes(p.id));
     const maleCount    = selectedObjs.filter(p => p.gender === 'male').length;
     const femaleCount  = selectedObjs.filter(p => p.gender === 'female').length;
+    console.log("Male count ", maleCount, "Female count ", femaleCount)
     setMeetsGenderReqs(maleCount >= 4 && femaleCount >= 3);
   }, [selectedPlayers, gameState.players]);
 
