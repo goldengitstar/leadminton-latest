@@ -624,25 +624,15 @@ const InterclubPage: React.FC = () => {
               
               {nextEncounter ? (
                 <>
-                  <div className="bg-blue-50 rounded-lg p-4 mb-4">
-                    <div className="flex justify-between items-center mb-2">
-                      <div className="flex items-center">
-                        <Shield className="w-5 h-5 mr-2 text-blue-600" />
-                        <span className="font-medium">MD{nextEncounter.matchday_number}</span>
-                      </div>
-                      <span className="text-sm text-gray-600">
-                        {new Date(nextEncounter.match_date).toLocaleDateString()}
-                      </span>
-                    </div>
-                    
+                  <div className="p-4 mb-4">
                     <div className="text-center mb-2 flex justify-center">
                       <div className='justify-center'>
-                        <Swords className='w-10 h-10 text-blue-500'/>
+                        <Trophy className='w-10 h-10 text-blue-500'/>
                         <h3 className='text-center'>{nextEncounter.home_team_name}</h3>
                       </div>
                       <h1 className='mx-2'>VS</h1>
                       <div className='justify-center'>
-                        <Swords className='w-10 h-10 text-pink-500'/>
+                        <Trophy className='w-10 h-10 text-pink-500'/>
                         <h3 className='text-center'>{nextEncounter.away_team_name}</h3>
                       </div>
                     </div>
@@ -650,29 +640,19 @@ const InterclubPage: React.FC = () => {
                     <div className="text-center text-lg font-bold">
                       {timeRemaining}
                     </div>
-                  </div>
-
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h3 className="font-medium mb-1">Opponent:</h3>
-                      <p className="text-gray-600">
-                        {nextEncounter.home_team_id === user?.id 
-                          ? nextEncounter.away_team_name 
-                          : nextEncounter.home_team_name}
-                      </p>
+                    <div className="flex justify-center">
+                      <button
+                        onClick={() => setShowLineupBuilder(!showLineupBuilder)}
+                        className={`px-4 py-2 rounded-lg flex items-center space-x-2 ${
+                          showLineupBuilder 
+                            ? 'bg-gray-200 text-gray-800' 
+                            : 'bg-blue-600 text-white hover:bg-blue-700'
+                        }`}
+                      >
+                        <Settings className="w-4 h-4" />
+                        <span>{showLineupBuilder ? 'Hide Lineup' : 'Set Lineup'}</span>
+                      </button>
                     </div>
-                    
-                    <button
-                      onClick={() => setShowLineupBuilder(!showLineupBuilder)}
-                      className={`px-4 py-2 rounded-lg flex items-center space-x-2 ${
-                        showLineupBuilder 
-                          ? 'bg-gray-200 text-gray-800' 
-                          : 'bg-blue-600 text-white hover:bg-blue-700'
-                      }`}
-                    >
-                      <Settings className="w-4 h-4" />
-                      <span>{showLineupBuilder ? 'Hide Lineup' : 'Set Lineup'}</span>
-                    </button>
                   </div>
                 </>
               ) : (
