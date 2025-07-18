@@ -53,6 +53,7 @@ const InterclubPage: React.FC = () => {
   const [selectedSeason, setSelectedSeason] = useState<InterclubSeason | null>(null);
   const [currentSeasonStatus, setCurrentSeasonStatus] = useState<any>(null);
   const [nextEncounter, setNextEncounter] = useState<any>(null);
+  const [showLineupPopup, setShowLineupPopup] = useState(false);
   const [showFullStandings, setShowFullStandings] = useState(false);
   const [showLineupBuilder, setShowLineupBuilder] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState<string>('');
@@ -646,7 +647,7 @@ const InterclubPage: React.FC = () => {
                     </div>
                     <div className="flex justify-center">
                       <button
-                        onClick={() => setShowLineupBuilder(!showLineupBuilder)}
+                        onClick={() => setShowLineupPopup(true)}
                         className={`px-4 py-2 rounded-lg flex items-center space-x-2 ${
                           showLineupBuilder 
                             ? 'bg-gray-200 text-gray-800' 
@@ -654,7 +655,7 @@ const InterclubPage: React.FC = () => {
                         }`}
                       >
                         <Settings className="w-4 h-4" />
-                        <span>{showLineupBuilder ? 'Hide Lineup' : 'Set Lineup'}</span>
+                        <span>Set Lineup</span>
                       </button>
                     </div>
                   </div>
@@ -666,201 +667,6 @@ const InterclubPage: React.FC = () => {
               )}
             </div>
 
-            {/* Lineup Builder */}
-            {showLineupBuilder && nextEncounter && (
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h3 className="text-lg font-bold mb-4">Lineup Builder</h3>
-                
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    {/* Men's Singles */}
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Men's Singles (MS)</label>
-                      <select
-                        value={lineup.mens_singles}
-                        onChange={(e) => setLineup({...lineup, mens_singles: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value="">Select player</option>
-                        {malePlayersAvailable.map(player => (
-                          <option key={player.id} value={player.id}>
-                            {player.name} (Level {player.level})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Women's Singles */}
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Women's Singles (WS)</label>
-                      <select
-                        value={lineup.womens_singles}
-                        onChange={(e) => setLineup({...lineup, womens_singles: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value="">Select player</option>
-                        {femalePlayersAvailable.map(player => (
-                          <option key={player.id} value={player.id}>
-                            {player.name} (Level {player.level})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Men's Doubles */}
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Men's Doubles (MD)</label>
-                      <div className="space-y-2">
-                        <select
-                          value={lineup.mens_doubles[0]}
-                          onChange={(e) => setLineup({...lineup, mens_doubles: [e.target.value, lineup.mens_doubles[1]]})}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                          <option value="">Player 1</option>
-                          {malePlayersAvailable.map(player => (
-                            <option key={player.id} value={player.id}>
-                              {player.name} (Level {player.level})
-                            </option>
-                          ))}
-                        </select>
-                        <select
-                          value={lineup.mens_doubles[1]}
-                          onChange={(e) => setLineup({...lineup, mens_doubles: [lineup.mens_doubles[0], e.target.value]})}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                          <option value="">Player 2</option>
-                          {malePlayersAvailable.map(player => (
-                            <option key={player.id} value={player.id}>
-                              {player.name} (Level {player.level})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-
-                    {/* Women's Doubles */}
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Women's Doubles (WD)</label>
-                      <div className="space-y-2">
-                        <select
-                          value={lineup.womens_doubles[0]}
-                          onChange={(e) => setLineup({...lineup, womens_doubles: [e.target.value, lineup.womens_doubles[1]]})}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                          <option value="">Player 1</option>
-                          {femalePlayersAvailable.map(player => (
-                            <option key={player.id} value={player.id}>
-                              {player.name} (Level {player.level})
-                            </option>
-                          ))}
-                        </select>
-                        <select
-                          value={lineup.womens_doubles[1]}
-                          onChange={(e) => setLineup({...lineup, womens_doubles: [lineup.womens_doubles[0], e.target.value]})}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                          <option value="">Player 2</option>
-                          {femalePlayersAvailable.map(player => (
-                            <option key={player.id} value={player.id}>
-                              {player.name} (Level {player.level})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-
-                    {/* Mixed Doubles */}
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Mixed Doubles (XD)</label>
-                      <div className="space-y-2">
-                        <select
-                          value={lineup.mixed_doubles[0]}
-                          onChange={(e) => setLineup({...lineup, mixed_doubles: [e.target.value, lineup.mixed_doubles[1]]})}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                          <option value="">Male Player</option>
-                          {malePlayersAvailable.map(player => (
-                            <option key={player.id} value={player.id}>
-                              {player.name} (Level {player.level})
-                            </option>
-                          ))}
-                        </select>
-                        <select
-                          value={lineup.mixed_doubles[1]}
-                          onChange={(e) => setLineup({...lineup, mixed_doubles: [lineup.mixed_doubles[0], e.target.value]})}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                          <option value="">Female Player</option>
-                          {femalePlayersAvailable.map(player => (
-                            <option key={player.id} value={player.id}>
-                              {player.name} (Level {player.level})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <h4 className="font-bold mb-3">Lineup Summary</h4>
-                    <div className="space-y-3 text-sm">
-                      <div className="bg-white p-3 rounded">
-                        <span className="font-medium">MS:</span> {lineup.mens_singles ? gameState.players.find(p => p.id === lineup.mens_singles)?.name : 'Not assigned'}
-                      </div>
-                      <div className="bg-white p-3 rounded">
-                        <span className="font-medium">WS:</span> {lineup.womens_singles ? gameState.players.find(p => p.id === lineup.womens_singles)?.name : 'Not assigned'}
-                      </div>
-                      <div className="bg-white p-3 rounded">
-                        <span className="font-medium">MD:</span> {
-                          lineup.mens_doubles[0] && lineup.mens_doubles[1] 
-                            ? `${gameState.players.find(p => p.id === lineup.mens_doubles[0])?.name} / ${gameState.players.find(p => p.id === lineup.mens_doubles[1])?.name}`
-                            : 'Not assigned'
-                        }
-                      </div>
-                      <div className="bg-white p-3 rounded">
-                        <span className="font-medium">WD:</span> {
-                          lineup.womens_doubles[0] && lineup.womens_doubles[1] 
-                            ? `${gameState.players.find(p => p.id === lineup.womens_doubles[0])?.name} / ${gameState.players.find(p => p.id === lineup.womens_doubles[1])?.name}`
-                            : 'Not assigned'
-                        }
-                      </div>
-                      <div className="bg-white p-3 rounded">
-                        <span className="font-medium">XD:</span> {
-                          lineup.mixed_doubles[0] && lineup.mixed_doubles[1] 
-                            ? `${gameState.players.find(p => p.id === lineup.mixed_doubles[0])?.name} / ${gameState.players.find(p => p.id === lineup.mixed_doubles[1])?.name}`
-                            : 'Not assigned'
-                        }
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={handleLineupSubmission}
-                      disabled={!canSubmitLineup() || loading}
-                      className={`w-full mt-4 py-2 px-4 rounded-lg flex items-center justify-center space-x-2 ${
-                        canSubmitLineup() 
-                          ? 'bg-blue-600 text-white hover:bg-blue-700' 
-                          : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                      }`}
-                    >
-                      {loading ? (
-                        <>
-                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          <span>Submitting...</span>
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircle className="w-4 h-4" />
-                          <span>Submit Lineup</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </div>
 
@@ -1003,6 +809,219 @@ const InterclubPage: React.FC = () => {
             </div>
           </div>
         </div>
+        
+        {/* Lineup Popup */}
+        {showLineupPopup && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-bold">Lineup Builder - MD{nextEncounter.matchday_number}</h3>
+                <button 
+                  onClick={() => setShowLineupPopup(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Match Types */}
+                <div className="space-y-4">
+                  {/* Men's Singles */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Men's Singles (MS)</label>
+                    <select
+                      value={lineup.mens_singles}
+                      onChange={(e) => setLineup({...lineup, mens_singles: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">Select player</option>
+                      {malePlayersAvailable.map(player => (
+                        <option key={player.id} value={player.id}>
+                          {player.name} (Level {player.level})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Women's Singles */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Women's Singles (WS)</label>
+                    <select
+                      value={lineup.womens_singles}
+                      onChange={(e) => setLineup({...lineup, womens_singles: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">Select player</option>
+                      {femalePlayersAvailable.map(player => (
+                        <option key={player.id} value={player.id}>
+                          {player.name} (Level {player.level})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Men's Doubles */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Men's Doubles (MD)</label>
+                    <div className="space-y-2">
+                      <select
+                        value={lineup.mens_doubles[0]}
+                        onChange={(e) => setLineup({...lineup, mens_doubles: [e.target.value, lineup.mens_doubles[1]]})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">Player 1</option>
+                        {malePlayersAvailable.map(player => (
+                          <option key={player.id} value={player.id}>
+                            {player.name} (Level {player.level})
+                          </option>
+                        ))}
+                      </select>
+                      <select
+                        value={lineup.mens_doubles[1]}
+                        onChange={(e) => setLineup({...lineup, mens_doubles: [lineup.mens_doubles[0], e.target.value]})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">Player 2</option>
+                        {malePlayersAvailable.map(player => (
+                          <option key={player.id} value={player.id}>
+                            {player.name} (Level {player.level})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Women's Doubles */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Women's Doubles (WD)</label>
+                    <div className="space-y-2">
+                      <select
+                        value={lineup.womens_doubles[0]}
+                        onChange={(e) => setLineup({...lineup, womens_doubles: [e.target.value, lineup.womens_doubles[1]]})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">Player 1</option>
+                        {femalePlayersAvailable.map(player => (
+                          <option key={player.id} value={player.id}>
+                            {player.name} (Level {player.level})
+                          </option>
+                        ))}
+                      </select>
+                      <select
+                        value={lineup.womens_doubles[1]}
+                        onChange={(e) => setLineup({...lineup, womens_doubles: [lineup.womens_doubles[0], e.target.value]})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">Player 2</option>
+                        {femalePlayersAvailable.map(player => (
+                          <option key={player.id} value={player.id}>
+                            {player.name} (Level {player.level})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Mixed Doubles */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Mixed Doubles (XD)</label>
+                    <div className="space-y-2">
+                      <select
+                        value={lineup.mixed_doubles[0]}
+                        onChange={(e) => setLineup({...lineup, mixed_doubles: [e.target.value, lineup.mixed_doubles[1]]})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">Male Player</option>
+                        {malePlayersAvailable.map(player => (
+                          <option key={player.id} value={player.id}>
+                            {player.name} (Level {player.level})
+                          </option>
+                        ))}
+                      </select>
+                      <select
+                        value={lineup.mixed_doubles[1]}
+                        onChange={(e) => setLineup({...lineup, mixed_doubles: [lineup.mixed_doubles[0], e.target.value]})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">Female Player</option>
+                        {femalePlayersAvailable.map(player => (
+                          <option key={player.id} value={player.id}>
+                            {player.name} (Level {player.level})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Lineup Summary */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-bold mb-3">Lineup Summary</h4>
+                  <div className="space-y-3 text-sm">
+                    <div className="bg-white p-3 rounded">
+                      <span className="font-medium">MS:</span> {lineup.mens_singles ? gameState.players.find(p => p.id === lineup.mens_singles)?.name : 'Not assigned'}
+                    </div>
+                    <div className="bg-white p-3 rounded">
+                      <span className="font-medium">WS:</span> {lineup.womens_singles ? gameState.players.find(p => p.id === lineup.womens_singles)?.name : 'Not assigned'}
+                    </div>
+                    <div className="bg-white p-3 rounded">
+                      <span className="font-medium">MD:</span> {
+                        lineup.mens_doubles[0] && lineup.mens_doubles[1] 
+                          ? `${gameState.players.find(p => p.id === lineup.mens_doubles[0])?.name} / ${gameState.players.find(p => p.id === lineup.mens_doubles[1])?.name}`
+                          : 'Not assigned'
+                      }
+                    </div>
+                    <div className="bg-white p-3 rounded">
+                      <span className="font-medium">WD:</span> {
+                        lineup.womens_doubles[0] && lineup.womens_doubles[1] 
+                          ? `${gameState.players.find(p => p.id === lineup.womens_doubles[0])?.name} / ${gameState.players.find(p => p.id === lineup.womens_doubles[1])?.name}`
+                          : 'Not assigned'
+                      }
+                    </div>
+                    <div className="bg-white p-3 rounded">
+                      <span className="font-medium">XD:</span> {
+                        lineup.mixed_doubles[0] && lineup.mixed_doubles[1] 
+                          ? `${gameState.players.find(p => p.id === lineup.mixed_doubles[0])?.name} / ${gameState.players.find(p => p.id === lineup.mixed_doubles[1])?.name}`
+                          : 'Not assigned'
+                      }
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      handleLineupSubmission();
+                      setShowLineupPopup(false);
+                    }}
+                    disabled={!canSubmitLineup() || loading}
+                    className={`w-full mt-4 py-2 px-4 rounded-lg flex items-center justify-center space-x-2 ${
+                      canSubmitLineup() 
+                        ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                        : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                    }`}
+                  >
+                    {loading ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>Submitting...</span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="w-4 h-4" />
+                        <span>Submit Lineup</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
