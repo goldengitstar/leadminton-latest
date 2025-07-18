@@ -27,6 +27,7 @@ import { useGame } from '../contexts/GameContext';
 import { useAuth } from '../contexts/AuthContext';
 import { InterclubService } from '../services/database/interclubService';
 import { supabase } from '../lib/supabase';
+import { Swords } from "lucide-react";
 import {
   InterclubSeason,
   InterclubTier,
@@ -635,13 +636,12 @@ const InterclubPage: React.FC = () => {
                     </div>
                     
                     <div className="text-center mb-2">
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                        nextEncounter.home_team_id === user?.id 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-purple-100 text-purple-800'
-                      }`}>
-                        {nextEncounter.home_team_id === user?.id ? 'HOME MATCH' : 'AWAY MATCH'}
-                      </span>
+                      <div>
+                        <Swords className='w-5 h-5'/>
+                      </div>
+                      <div>
+                        <Swords className='w-5 h-5'/>
+                      </div>
                     </div>
                     
                     <div className="text-center text-lg font-bold">
