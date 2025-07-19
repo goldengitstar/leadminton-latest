@@ -33,11 +33,17 @@ export class TournamentService {
               level,
               matches:match (
                 id,
-                winner,
-                score,
+                player1_id,
+                player2_id,
+                winner_id,
+                round_level,
                 completed,
-                "startTime",
-                players
+                status,
+                score,
+                scheduled_start_time,
+                actual_start_time,
+                actual_end_time,
+                created_at
               )
             )
           `)
