@@ -131,6 +131,7 @@ const InterclubPage: React.FC = () => {
       // Get next encounter if in active season
       if (currentStatus) {
         const nextMatch = await interclubService.getUserNextEncounter(user.id);
+        console.log(nextMatch)
         setNextEncounter(nextMatch);
         setCurrentView('dashboard');
       }
@@ -685,13 +686,13 @@ const InterclubPage: React.FC = () => {
             
             <div>
               {/* 1st Place */}
-              <div className="bg-gradient-to-b from-yellow-400 to-yellow-300 rounded-lg p-4 flex">
+              <div className="bg-[#fefce8] rounded-lg p-4 flex">
                 <Crown className="w-8 h-8 text-white mr-4" />
                 <div>
                   <h3 className="font-bold text-white">1st Place</h3>
                   <p className="text-white text-sm">
                     {currentSeasonStatus.registration.season.prize_pool.first.coins > 0 &&
-                      ` + ${currentSeasonStatus.registration.season.prize_pool.first.coins} coins`}
+                      `${currentSeasonStatus.registration.season.prize_pool.first.coins} coins`}
                     {currentSeasonStatus.registration.season.prize_pool.first.shuttlecocks > 0 &&
                       ` + ${currentSeasonStatus.registration.season.prize_pool.first.shuttlecocks} shuttlecocks`}
                     {currentSeasonStatus.registration.season.prize_pool.first.meals > 0 &&
@@ -703,7 +704,7 @@ const InterclubPage: React.FC = () => {
               </div>
 
               {/* 2nd Place */}
-              <div className="bg-gradient-to-b from-gray-400 to-gray-300 rounded-lg p-4 mt-2 flex">
+              <div className="bg-[#f3f4f6] rounded-lg p-4 mt-2 flex">
                 <Medal className="w-8 h-8 text-white mr-4" />
                 <div>
                   <h3 className="font-bold text-white">2nd Place</h3>
@@ -721,7 +722,7 @@ const InterclubPage: React.FC = () => {
               </div>
 
               {/* 3rd Place */}
-              <div className="bg-gradient-to-b from-amber-700 to-amber-600 rounded-lg p-4 mt-2 flex">
+              <div className="bg-[#f3f4f6] rounded-lg p-4 mt-2 flex">
                 <Award className="w-8 h-8 text-white mr-4" />
                 <div>
                   <h3 className="font-bold text-white">3rd Place</h3>
