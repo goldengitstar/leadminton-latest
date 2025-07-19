@@ -714,7 +714,7 @@ const InterclubPage: React.FC = () => {
             <div>
               {/* 1st Place */}
               <div className="bg-[#fefce8] rounded-lg p-4 flex">
-                <Crown className="w-8 h-8 text-white mr-4" />
+                <Crown className="w-8 h-8 text-[#fde047] mr-4" />
                 <div>
                   <h3 className="font-bold">1st Place</h3>
                   <p className="text-sm">
@@ -732,7 +732,7 @@ const InterclubPage: React.FC = () => {
 
               {/* 2nd Place */}
               <div className="bg-[#f3f4f6] rounded-lg p-4 mt-2 flex">
-                <Medal className="w-8 h-8 text-white mr-4" />
+                <Medal className="w-8 h-8 text-gray-300 mr-4" />
                 <div>
                   <h3 className="font-bold">2nd Place</h3>
                   <p className="text-sm">
@@ -749,8 +749,8 @@ const InterclubPage: React.FC = () => {
               </div>
 
               {/* 3rd Place */}
-              <div className="bg-[#f3f4f6] rounded-lg p-4 mt-2 flex">
-                <Award className="w-8 h-8 text-white mr-4" />
+              <div className="bg-[#fff7ed] rounded-lg p-4 mt-2 flex">
+                <Award className="w-8 h-8 text-orange-200 mr-4" />
                 <div>
                   <h3 className="font-bold">3rd Place</h3>
                   <p className="text-sm">
