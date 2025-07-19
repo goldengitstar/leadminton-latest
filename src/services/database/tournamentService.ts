@@ -32,7 +32,7 @@ export class TournamentService {
               name,
               level,
               matches:match (
-                match_id,
+                id,
                 winner,
                 score,
                 completed,
