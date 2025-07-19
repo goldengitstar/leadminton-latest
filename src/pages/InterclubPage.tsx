@@ -689,8 +689,8 @@ const InterclubPage: React.FC = () => {
               <div className="bg-[#fefce8] rounded-lg p-4 flex">
                 <Crown className="w-8 h-8 text-white mr-4" />
                 <div>
-                  <h3 className="font-bold text-white">1st Place</h3>
-                  <p className="text-white text-sm">
+                  <h3 className="font-bold">1st Place</h3>
+                  <p className="text-sm">
                     {currentSeasonStatus.registration.season.prize_pool.first.coins > 0 &&
                       `${currentSeasonStatus.registration.season.prize_pool.first.coins} coins`}
                     {currentSeasonStatus.registration.season.prize_pool.first.shuttlecocks > 0 &&
@@ -707,8 +707,8 @@ const InterclubPage: React.FC = () => {
               <div className="bg-[#f3f4f6] rounded-lg p-4 mt-2 flex">
                 <Medal className="w-8 h-8 text-white mr-4" />
                 <div>
-                  <h3 className="font-bold text-white">2nd Place</h3>
-                  <p className="text-white text-sm">
+                  <h3 className="font-bold">2nd Place</h3>
+                  <p className="text-sm">
                     {currentSeasonStatus.registration.season.prize_pool.second.coins > 0 &&
                       `${currentSeasonStatus.registration.season.prize_pool.second.coins} coins`}
                     {currentSeasonStatus.registration.season.prize_pool.second.shuttlecocks > 0 &&
@@ -725,8 +725,8 @@ const InterclubPage: React.FC = () => {
               <div className="bg-[#f3f4f6] rounded-lg p-4 mt-2 flex">
                 <Award className="w-8 h-8 text-white mr-4" />
                 <div>
-                  <h3 className="font-bold text-white">3rd Place</h3>
-                  <p className="text-white text-sm">
+                  <h3 className="font-bold">3rd Place</h3>
+                  <p className="text-sm">
                     {currentSeasonStatus.registration.season.prize_pool.third.coins > 0 &&
                       `${currentSeasonStatus.registration.season.prize_pool.third.coins} coins`}
                     {currentSeasonStatus.registration.season.prize_pool.third.shuttlecocks > 0 &&

@@ -1121,7 +1121,15 @@ export class InterclubService {
     try {
       const { data: encounter, error } = await this.supabase
         .from('interclub_matches')
-        .select('*')
+        .select(`
+          *,
+          home_team:interclub_registrations!interclub_matches_home_team_id_fkey (
+            team_name
+          ),
+          away_team:interclub_registrations!interclub_matches_away_team_id_fkey (
+            team_name
+          )
+        `)
         .or(`home_team_id.eq.${userId},away_team_id.eq.${userId}`)
         .in('status', ['lineup_pending', 'ready'])
         .order('match_date', { ascending: true })
