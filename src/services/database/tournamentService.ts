@@ -43,11 +43,33 @@ export class TournamentService {
               scheduled_start_time,
               actual_start_time,
               actual_end_time,
-              created_at
+              created_at,
+              player1:player1_id (
+                id,
+                name,
+                is_cpu
+              ),
+              player2:player2_id (
+                id,
+                name,
+                is_cpu
+              )
             )
           )
         `)
         .order('start_date', { ascending: false });
+      
+      if(tournaments){  
+        for (const tournament of tournaments) {
+          for (const round of tournament.rounds) {
+            for (const match of round.matches) {
+              match.players = [match.player1, match.player2];
+              delete match.player1;
+              delete match.player2;
+            }
+          }
+        }
+      }
 
       if (error) {
         console.error('Error fetching tournaments:', error);
