@@ -53,7 +53,7 @@ export class TournamentService {
           console.error('Error fetching tournaments:', error);
           throw error;
         }
-
+        console.log("tournaments", tournaments)
         // Convert numeric tier and status to string equivalents
         const tiers    = ['local', 'regional', 'national', 'international', 'premier'];
         const statuses = ['upcoming', 'ongoing', 'completed'];
