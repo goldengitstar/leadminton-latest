@@ -44,7 +44,7 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
     console.log('Final match winnerId:', lastMatch.winnerId);
 
     // 4. Look up that player in registeredPlayers
-    return registeredPlayers.find(p => p.id === lastMatch.winner_id) ?? null;
+    return registeredPlayers.find(p => p.id === lastMatch.winnerId) ?? null;
   };
 
   // Check if all tournament matches are completed
