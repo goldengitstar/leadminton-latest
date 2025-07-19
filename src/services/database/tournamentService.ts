@@ -22,7 +22,6 @@ export class TournamentService {
    */
   async getTournaments(): Promise<any[]> {
     try {
-      // Fetch tournaments and matches
       const { data: tournaments, error } = await this.supabase
         .from('tournament_list')
         .select(`
@@ -49,25 +48,33 @@ export class TournamentService {
         `)
         .order('start_date', { ascending: false });
 
-      // Fetch all players once
-      const { data: allPlayers } = await this.supabase
+      if (error) throw error;
+
+      // 2. Fetch all players
+      const { data: players, error: playersError } = await this.supabase
         .from('players')
         .select('id, name, is_cpu');
 
-      const playerMap = new Map(allPlayers?.map(p => [p.id, p]));
+      if (playersError) throw playersError;
 
+      // 3. Map player IDs to player objects for fast lookup
+      const playerMap = new Map(players.map(p => [p.id, p]));
+      
+      // 4. Inject `players: []` into each match with player1 and player2 details
       if (tournaments) {
         for (const tournament of tournaments) {
           for (const round of tournament.rounds) {
+            console.log(tournament.rounds)
             for (const match of round.matches) {
-              match.players = [
-                playerMap.get(match.player1_id) ?? null,
-                playerMap.get(match.player2_id) ?? null
-              ];
+              console.log(round.matches)
+              const player1 = playerMap.get(match.player1_id);
+              const player2 = playerMap.get(match.player2_id);
+              match.players = [player1, player2].filter(Boolean); // Only include valid players
             }
           }
         }
       }
+
       if (error) {
         console.error('Error fetching tournaments:', error);
         throw error;
