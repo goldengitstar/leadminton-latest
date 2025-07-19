@@ -22,30 +22,38 @@ export class TournamentService {
    */
   async getTournaments(): Promise<any[]> {
     try {
-      const { data: tournaments, error: tournamentsError } = await this.supabase
+      // Fetch tournaments plus their rounds in one query
+      const { data: tournaments, error } = await this.supabase
         .from('tournament_list')
-        .select('*')
+        .select(`
+          *,
+          rounds:round (
+            id,
+            name,
+            level
+          )
+        `)
         .order('start_date', { ascending: false });
 
-      if (tournamentsError) {
-        console.error('Error fetching tournaments:', tournamentsError);
-        throw tournamentsError;
+      if (error) {
+        console.error('Error fetching tournaments:', error);
+        throw error;
       }
 
-      // Convert numeric tier and status to string equivalents for frontend compatibility
-      const tiers = ['local', 'regional', 'national', 'international', 'premier'];
+      // Convert numeric tier and status to string equivalents
+      const tiers    = ['local', 'regional', 'national', 'international', 'premier'];
       const statuses = ['upcoming', 'ongoing', 'completed'];
 
-      const convertedTournaments = (tournaments || []).map(tournament => ({
-        ...tournament,
-        tier: tiers[tournament.tier] || 'local',
-        status: statuses[tournament.status] || 'upcoming'
+      return (tournaments || []).map(t => ({
+        ...t,
+        tier:   tiers[t.tier]         ?? 'local',
+        status: statuses[t.status]    ?? 'upcoming',
+        // rounds is already an array of { id, name, level }
+        rounds: t.rounds.sort((a, b) => a.level - b.level),
       }));
-
-      return convertedTournaments;
-    } catch (error) {
-      console.error('Error in fetching tournaments:', error);
-      throw error;
+    } catch (err) {
+      console.error('Error in fetching tournaments:', err);
+      throw err;
     }
   }
 

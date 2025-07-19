@@ -135,11 +135,8 @@ export default function TournamentsPage() {
       
       // Update detail view tournament if it exists
       if (detailViewTournament) {
-        console.log("Detailed view tournament", detailViewTournament)
-        console.log("Updated tournament", loadedTournaments)
         const updatedTournament = loadedTournaments.find(t => t.id === detailViewTournament.id);
         if (updatedTournament) {
-          console.log("Tournament", updatedTournament)
           setDetailViewTournament(updatedTournament);
         }
       }
