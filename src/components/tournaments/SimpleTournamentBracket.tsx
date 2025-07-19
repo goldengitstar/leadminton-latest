@@ -25,6 +25,8 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
     return player.name;
   };
 
+  console.log("Rounds", rounds)
+
   const getTournamentWinner = async () => {
     if (!rounds?.length) return null;
 
