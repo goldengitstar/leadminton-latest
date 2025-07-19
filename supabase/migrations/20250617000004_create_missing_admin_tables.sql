@@ -17,7 +17,9 @@ CREATE TABLE cpu_teams (
 
 CREATE TABLE IF NOT EXISTS public.club_managers (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    manager_name text NOT NULL,
     name text NOT NULL,
+    surname text NOT NULL,
     user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     club_name text NOT NULL,
     created_at timestamptz DEFAULT now(),
