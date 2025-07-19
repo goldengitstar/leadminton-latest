@@ -68,8 +68,8 @@ interface MatchData {
 
 interface ClubData {
   user_id: string;
-  manager_id: string;
-  manager_name: string;
+  name: string;
+  club_name: string;
   resources: {
     diamonds: number;
     meals: number;
@@ -159,8 +159,8 @@ const AdminInterclub: React.FC = () => {
       
       // Fetch all players who are club managers
       const { data: managers } = await supabase
-        .from('players')
-        .select('id, name, user_id')
+        .from('club_managers')
+        .select('id, club_name, name, user_id')
         .eq('is_cpu', false);
       
       if (!managers) return;
@@ -189,8 +189,8 @@ const AdminInterclub: React.FC = () => {
         
         return {
           user_id: manager.user_id,
-          manager_id: manager.id,
-          manager_name: manager.name,
+          name: manager.name,
+          club_name: manager.club_name,
           resources
         };
       }));
@@ -546,117 +546,121 @@ const AdminInterclub: React.FC = () => {
     players: any;
   };
 
-  const generateMatchSchedule = async (seasonId: string) => {
-    try {
-      setLoading(true);
+async function createInterclubGroups(seasonId: string) {
+  const { data: season, error: seasonErr } = await supabase
+    .from('interclub_seasons')
+    .select('max_teams_per_group')
+    .eq('id', seasonId)
+    .single();
+  if (seasonErr || !season) throw seasonErr || new Error('Season not found');
+  const maxPerGroup = season.max_teams_per_group;
 
-      // 1) Fetch season info
-      const { data: season, error: seasonErr } = await supabase
-        .from('interclub_seasons')
-        .select('start_date, max_teams_per_group')
-        .eq('id', seasonId)
-        .single();
+  const { data: regs, error: regErr } = await supabase
+    .from('interclub_registrations')
+    .select('user_id')
+    .eq('season_id', seasonId)
+    .eq('status', 'approved');
+  if (regErr) throw regErr;
+  if (!regs || regs.length < 4) {
+    throw new Error('Minimum 4 approved teams required to create groups');
+  }
 
-      if (seasonErr || !season) throw seasonErr || new Error('Season not found');
+  const shuffled = regs.map(r => r.user_id).sort(() => Math.random() - 0.5);
+  const groupedRegs: string[][] = [];
+  while (shuffled.length) {
+    groupedRegs.push(shuffled.splice(0, maxPerGroup));
+  }
 
-      const seasonStart = new Date(season.start_date);
-      const maxPerGroup = season.max_teams_per_group;
+  const groupRecords = groupedRegs.map(() => ({ season_id: seasonId }));
+  const { data: createdGroups, error: grpErr } = await supabase
+    .from('interclub_groups')
+    .insert(groupRecords)
+    .select('id, group_number');
+  if (grpErr) throw grpErr;
+  if (!createdGroups) throw new Error('Failed to create groups');
 
-      // 2) Fetch approved registrations
-      const { data: regs, error: regErr } = await supabase
-        .from('interclub_registrations')
-        .select('user_id')
-        .eq('season_id', seasonId)
-        .eq('status', 'approved');
+  // 1.5) Update each team's registration with its group_number
+  for (let i = 0; i < groupedRegs.length; i++) {
+    const userIds = groupedRegs[i];
+    const groupNumber = createdGroups[i].group_number;
+    const { error: updateErr } = await supabase
+      .from('interclub_registrations')
+      .update({ group_assignment: groupNumber })
+      .eq('season_id', seasonId)
+      .in('user_id', userIds);
+    if (updateErr) throw updateErr;
+  }
 
-      if (regErr) throw regErr;
-      if (!regs || regs.length < 4) {
-        alert('Minimum 4 approved teams required to generate schedule');
-        return;
-      }
+  return { groupedRegs, createdGroups };
+}
 
-      // 3) Shuffle and group registrations
-      const shuffled = regs.map(r => r.user_id).sort(() => Math.random() - 0.5);
-      const groupedRegs: string[][] = [];
-      while (shuffled.length) {
-        groupedRegs.push(shuffled.splice(0, maxPerGroup));
-      }
+async function generateInterclubSchedule(seasonId: string) {
+  const { data: season, error: seasonErr } = await supabase
+    .from('interclub_seasons')
+    .select('start_date')
+    .eq('id', seasonId)
+    .single();
+  if (seasonErr || !season) throw seasonErr || new Error('Season not found');
+  const seasonStart = new Date(season.start_date);
 
-      // 4) Insert group records into interclub_groups
-      const groupRecords = groupedRegs.map(() => ({
-        season_id: seasonId
-      }));
+  const { data: groups, error: grpErr } = await supabase
+    .from('interclub_groups')
+    .select('group_number')
+    .eq('season_id', seasonId);
+  if (grpErr) throw grpErr;
+  if (!groups || groups.length === 0) {
+    throw new Error('No groups found—run createInterclubGroups first');
+  }
 
-      const { data: createdGroups, error: grpErr } = await supabase
-        .from('interclub_groups')
-        .insert(groupRecords)
-        .select('id, group_number');
+  const weekSchedule: { group: number; week: number; date: string }[] = [];
+  const service = new InterclubService(supabase);
 
-      if (grpErr) throw grpErr;
+  for (const { group_number } of groups) {
+    const { data: regs, error: regErr } = await supabase
+      .from('interclub_registrations')
+      .select('user_id')
+      .eq('season_id', seasonId)
+      .eq('group_assignment', group_number);
+    if (regErr) throw regErr;
+    const teamIds = regs!.map(r => r.user_id);
 
-      // 5) Assign group_number to each team (update interclub_registrations)
-      for (let i = 0; i < groupedRegs.length; i++) {
-        const teamUserIds = groupedRegs[i];
-        const groupNumber = createdGroups[i].group_number;
+    const computeMatchDate = (week: number) =>
+      new Date(seasonStart.getTime() + (week - 1) * 7 * 86400_000).toISOString();
 
-        const { error: updateErr } = await supabase
-          .from('interclub_registrations')
-          .update({ group_assignment: groupNumber })
-          .in('user_id', teamUserIds)
-          .eq('season_id', seasonId);
-
-        if (updateErr) throw updateErr;
-      }
-
-      // 6) Generate fixtures and week schedule
-      const service = new InterclubService(supabase);
-      const weekSchedule: { group: number; week: number; date: string }[] = [];
-
-      for (let idx = 0; idx < groupedRegs.length; idx++) {
-        const groupNum = createdGroups[idx].group_number;
-        const teamIds = groupedRegs[idx];
-
-        const computeMatchDate = (week: number) =>
-          new Date(seasonStart.getTime() + (week - 1) * 7 * 86400_000).toISOString();
-
-        const result = await service.generateAndPersistMatchSchedule(
-          seasonId,
-          teamIds,
-          computeMatchDate,
-          groupNum
-        );
-        if (!result.success) throw new Error(result.error);
-
-        const totalWeeks = (teamIds.length - 1) * 2; // double round robin
-        for (let w = 1; w <= totalWeeks; w++) {
-          weekSchedule.push({
-            group: groupNum,
-            week: w,
-            date: computeMatchDate(w)
-          });
-        }
-      }
-
-      // 7) Update week_schedule on season
-      const { error: updErr } = await supabase
-        .from('interclub_seasons')
-        .update({
-          week_schedule: JSON.stringify(weekSchedule),
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', seasonId);
-
-      if (updErr) throw updErr;
-
-      logActivity('interclub_schedule_generated', 'season', seasonId);
-      await loadSeasons();
-    } catch (err) {
-      console.error('Error generating schedule:', err);
-      alert((err as Error).message || 'Failed to generate schedule');
-    } finally {
-      setLoading(false);
+    const result = await service.generateAndPersistMatchSchedule(
+      seasonId,
+      teamIds,
+      computeMatchDate,
+      group_number
+    );
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to persist match schedule');
     }
-  };
+
+    // double round robin → (n−1)*2 weeks
+    const totalWeeks = (teamIds.length - 1) * 2;
+    for (let w = 1; w <= totalWeeks; w++) {
+      weekSchedule.push({
+        group: group_number,
+        week: w,
+        date: computeMatchDate(w),
+      });
+    }
+  }
+
+  // 2.4) Persist the aggregate week_schedule JSON on the season
+  const { error: updErr } = await supabase
+    .from('interclub_seasons')
+    .update({
+      week_schedule: JSON.stringify(weekSchedule),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', seasonId);
+  if (updErr) throw updErr;
+
+  logActivity('interclub_schedule_generated', 'season', seasonId);
+  await loadSeasons();
+}
 
   const handleResourceChange = (section: 'entry_fee' | 'prize_pool', position: string | null, resource: keyof { coins: number; shuttlecocks: number; meals: number; diamonds: number }, value: number) => {
     setSeasonForm(prev => ({
@@ -973,7 +977,7 @@ const AdminInterclub: React.FC = () => {
                         
                         {season.status === 'registration_closed' && (
                           <button
-                            onClick={() => generateMatchSchedule(season.id)}
+                            onClick={() => generateInterclubSchedule(season.id)}
                             className="text-green-600 hover:text-green-900"
                             title="Generate schedule"
                           >
@@ -1482,7 +1486,7 @@ const AdminInterclub: React.FC = () => {
                                          <p>No groups created for this season</p>
                      {season.status === 'registration_closed' && (
                        <button
-                         onClick={() => generateMatchSchedule(season.id)}
+                         onClick={() => createInterclubGroups(season.id)}
                          className="mt-3 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
                        >
                          Generate Groups
@@ -1702,8 +1706,9 @@ const AdminInterclub: React.FC = () => {
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Manager</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Manager ID</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Owner</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User Id</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Team name</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     <Diamond className="w-4 h-4 inline mr-1 text-purple-500" />
                     Diamonds
@@ -1733,12 +1738,15 @@ const AdminInterclub: React.FC = () => {
                   </tr>
                 ) : (
                   clubs.map((club) => (
-                    <tr key={club.manager_id} className="hover:bg-gray-50">
+                    <tr key={club.user_id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="font-medium text-gray-900">{club.manager_name}</div>
+                        <div className="font-medium text-gray-900">{club.name}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {club.manager_id}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="font-medium text-gray-900">{club.user_id}</div>
+                      </td>
+                       <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="font-medium text-gray-900">{club.club_name}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {club.resources.diamonds}
@@ -1787,8 +1795,8 @@ const AdminInterclub: React.FC = () => {
             </div>
             
             <div className="mb-4">
-              <h3 className="text-lg font-semibold mb-2">{editingClub.manager_name}</h3>
-              <p className="text-sm text-gray-600">Manager ID: {editingClub.manager_id}</p>
+              <h3 className="text-lg font-semibold mb-2">{editingClub.name}</h3>
+              <p className="text-sm text-gray-600">Manager ID: {editingClub.user_id}</p>
             </div>
             
             <div className="space-y-4">

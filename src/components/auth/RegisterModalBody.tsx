@@ -40,106 +40,102 @@ function RegisterModalBody({ onClose }: { onClose: () => void }) {
     checkUserSession();
   }, []);
 
-  const handleRegister = async () => {
-    if (!managerName || !name || !surname) {
-      setErrorText('Name Fields required');
+ const handleRegister = async () => {
+    setErrorText('');
+    if (!managerName.trim() || !name.trim() || !surname.trim()) {
+      setErrorText('All name fields are required.');
       return;
     }
     if (!teamName.trim()) {
-      setErrorText('Team name is required');
+      setErrorText('Team name is required.');
       return;
     }
-    if (!email) {
-      setErrorText('Email required');
-      return;
-    }
-    if (!pw) {
-      setErrorText('Password required');
+    if (!email.trim()) {
+      setErrorText('Email is required.');
       return;
     }
     if (pw.length < 6) {
-      setErrorText('Password length must be at least 6.');
-      return;
-    }
-    if (!confirmPw) {
-      setErrorText('Confirm Password required');
+      setErrorText('Password must be at least 6 characters.');
       return;
     }
     if (pw !== confirmPw) {
-      setErrorText('Passwords do not match');
+      setErrorText('Passwords do not match.');
       return;
     }
 
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email: email,
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email,
         password: pw,
         options: {
           data: {
             manager_name: managerName,
-            name: name,
-            surname: surname,
-            team_name: teamName.trim()
+            name,
+            surname,
+            club_name: teamName.trim(),
           },
-          emailRedirectTo: undefined
-        }
+        },
       });
 
-      console.log("[handleRegister] data", data);
+      if (signUpError) {
+        throw new Error(signUpError.message);
+      }
+      const userId = signUpData.user?.id;
+      if (!userId) {
+        throw new Error('No user ID returned from signUp.');
+      }
 
-      if (error) {
-        console.error("Registration Error:", error.message);
-        setErrorText(error.message);
+      const { error: managerError } = await supabase
+        .from('club_managers')
+        .insert({
+          name: managerName.trim(),
+          user_id: userId,
+          club_name: teamName.trim(),
+        });
+      if (managerError) {
+        throw new Error(`Club manager insert failed: ${managerError.message}`);
+      }
+      
+      if (!user?.email_confirmed_at) {
+        console.log('[handleRegister] Email not yet confirmed, moving to code step');
+        setStep(1);
         return;
       }
 
-      if (data.user) {
-        if (!data.user.email_confirmed_at) {
-          console.log("[handleRegister] Email not confirmed, prompting for code...");
-          setStep(1);
-          return;
-        }
+      const setupResult = await userService.handleNewUser(
+        userId,
+        email.trim(),
+        teamName.trim()
+      );
+      if (!setupResult.success) {
+        throw new Error(setupResult.error || 'Failed to set up user profile.');
+      }
 
-        console.log("[handleRegister] Creating user profile and game data...");
-        const setupResult = await userService.handleNewUser(
-          data.user.id,
+      const { data: signInData, error: signInError } =
+        await supabase.auth.signInWithPassword({
           email,
-          teamName.trim()
-        );
-
-        if (!setupResult.success) {
-          console.error("User setup error:", setupResult.error);
-          setErrorText(setupResult.error || 'Failed to set up user profile');
-          return;
-        }
-
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-          email: email,
           password: pw,
         });
-
-        console.log("[handleRegister] signInData", signInData);
-
-        if (signInError) {
-          console.error("Auto-login Error:", signInError.message);
-          setErrorText("Registration successful, but auto-login failed. Please try logging in manually.");
-        } else {
-          console.log("[handleRegister] Registration and setup completed successfully");
-
-          console.log("[handleRegister] Triggering game state refresh...");
-          setTimeout(async () => {
-            await refreshGameState();
-            console.log("[handleRegister] Game state refresh completed");
-          }, 1000);
-
-          onClose();
-        }
+      if (signInError) {
+        console.warn('[handleRegister] Auto-login failed:', signInError.message);
+        setErrorText(
+          'Registration successful, but auto‑login failed. Please log in manually.'
+        );
+        return;
       }
-    } catch (err) {
-      console.error("Unexpected error:", err);
-      setErrorText('An unexpected error occurred. Please try again.');
+      console.log('[handleRegister] Auto-login OK:', signInData);
+
+      setTimeout(async () => {
+        await refreshGameState();
+        console.log('[handleRegister] Game state refreshed');
+        onClose();
+      }, 1000);
+    } catch (err: any) {
+      console.error('[handleRegister] Error:', err);
+      setErrorText(err.message || 'An unexpected error occurred.');
     }
   };
+
 
   const handleCode = async () => {
     const { data, error } = await supabase.auth.verifyOtp({
@@ -195,7 +191,7 @@ function RegisterModalBody({ onClose }: { onClose: () => void }) {
             />
           </div>
           <div className="form-group">
-            <label>Team Name</label>
+            <label>Club Name</label>
             <input
               type="text"
               value={teamName}

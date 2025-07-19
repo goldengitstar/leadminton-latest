@@ -15,6 +15,15 @@ CREATE TABLE cpu_teams (
     updated_at timestamptz DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS public.club_managers (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    name text NOT NULL,
+    user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    club_name text NOT NULL,
+    created_at timestamptz DEFAULT now(),
+    UNIQUE(user_id)
+)
+
 -- Player team assignments table (for linking players to CPU teams)
 CREATE TABLE IF NOT EXISTS player_team_assignments (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
