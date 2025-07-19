@@ -69,8 +69,8 @@ export class TournamentService {
               level:  r.level,
               matches: (r.matches || [])
                 .map(m => ({
-                  matchId:   m.match_id,
-                  winner:    m.winner,
+                  matchId:   m.id,
+                  winnerId:    m.winner_id,
                   score:     m.score,
                   completed: m.completed,
                   startTime: m.startTime,
