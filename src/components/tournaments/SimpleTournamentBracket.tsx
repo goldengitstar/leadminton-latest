@@ -26,7 +26,7 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
   // Check if tournament is completed and find the winner
   const getTournamentWinner = () => {
     if (!rounds || rounds.length === 0) return null;
-    
+    console.log(registeredPlayers)
     // Get the final round (highest level/last round)
     const finalRound = rounds[rounds.length - 1];
     
