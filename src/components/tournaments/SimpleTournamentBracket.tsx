@@ -26,7 +26,7 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
   };
 
   // Check if tournament is completed and find the winner
-  const getTournamentWinner = (): typeof registeredPlayers[0] | null => {
+  const getTournamentWinner = async (): Promise<typeof registeredPlayers[0] | null> => {
     if (!rounds?.length) return null;
 
     // 1. Identify the final round (highest level)
@@ -49,16 +49,15 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
       .from('players')
       .select('*')
       .eq('id', lastMatch.winnerId)
-      .single(); // optional: expects only one result
+      .single();
 
     if (error) {
       console.error('Error fetching player:', error);
-      return null
+      return null;
     } else {
       console.log('Player:', data);
+      return data;
     }
-
-    return data;
   };
 
   // Check if all tournament matches are completed
