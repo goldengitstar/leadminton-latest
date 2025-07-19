@@ -122,7 +122,7 @@ export default function TournamentsPage() {
       const loadedTournaments = await tournamentService.getTournaments();
       setTournaments(loadedTournaments);
 
-      const { data: players, error } = await this.supabase
+      const { data: players, error } = await supabase
         .from('players')
         .select('id, name, is_cpu');
       if (error) throw error;
