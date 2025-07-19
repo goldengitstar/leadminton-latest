@@ -58,6 +58,9 @@ const InterclubPage: React.FC = () => {
   const [showLineupBuilder, setShowLineupBuilder] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState<string>('');
   const [showAllPlayers, setShowAllPlayers] = useState(false);
+  const [showSchedulePopup, setShowSchedulePopup] = useState(false);
+  const [seasonMatches, setSeasonMatches] = useState<any[]>([]);
+  const [scheduleLoading, setScheduleLoading] = useState(false);
   
   // Lineup state
   const [lineup, setLineup] = useState({
@@ -177,6 +180,25 @@ const InterclubPage: React.FC = () => {
       setRegistrationError('Registration failed');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchSeasonMatches = async (seasonId: string) => {
+    setScheduleLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('interclub_matches')
+        .select('*')
+        .eq('season_id', seasonId)
+        .order('week_number', { ascending: true })
+        .order('match_date', { ascending: true });
+
+      if (error) throw error;
+      setSeasonMatches(data || []);
+    } catch (error) {
+      console.error('Error fetching season matches:', error);
+    } finally {
+      setScheduleLoading(false);
     }
   };
 
@@ -619,7 +641,11 @@ const InterclubPage: React.FC = () => {
             {/* Next Match */}
             <div className="bg-white rounded-xl shadow-lg p-6 h-full">
               <h2 className="text-xl font-bold mb-4 flex items-center">
-                <Target className="w-6 h-6 mr-2 text-blue-500" />
+                <Target className="w-6 h-6 mr-2 text-blue-500"
+                onClick={() => {
+                  setShowSchedulePopup(true);
+                  fetchSeasonMatches(currentSeasonStatus.registration.season.id);
+                }}/>
                 Next Match
               </h2>
               
@@ -631,14 +657,14 @@ const InterclubPage: React.FC = () => {
                         <div className="w-12 h-12 bg-blue-200 rounded-full flex items-center justify-center">
                           <Trophy className="w-6 h-6 text-blue-500" />
                         </div>
-                        <h3 className='text-center'>{nextEncounter.home_team_name}</h3>
+                        <h3 className='text-center bold my-2'>{nextEncounter.home_team_name}</h3>
                       </div>
                       <h2 className='mx-4 bold mt-[auto] mb-[auto]'>VS</h2>
                       <div className='justify-center'>
                         <div className="w-12 h-12 bg-pink-200 rounded-full flex items-center justify-center">
                           <Trophy className="w-6 h-6 text-pink-500" />
                         </div>
-                        <h3 className='text-center'>{nextEncounter.away_team_name}</h3>
+                        <h3 className='text-center bold my-2'>{nextEncounter.away_team_name}</h3>
                       </div>
                     </div>
                     
@@ -1044,6 +1070,84 @@ const InterclubPage: React.FC = () => {
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+        )}
+        {/* Season Schedule Popup */}
+        {showSchedulePopup && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-bold">Season Schedule - {currentSeasonStatus.registration.season.name}</h3>
+                <button 
+                  onClick={() => setShowSchedulePopup(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {scheduleLoading ? (
+                <div className="flex justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Week</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Home Team</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Away Team</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Result</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {seasonMatches.map((match) => (
+                        <tr 
+                          key={match.id}
+                          className={match.id === nextEncounter?.id ? 'bg-blue-50' : ''}
+                        >
+                          <td className="px-4 py-3 whitespace-nowrap">Week {match.week_number}</td>
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            {new Date(match.match_date).toLocaleDateString()}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            {match.home_team_type === 'user' 
+                              ? match.home_team_id === user?.id 
+                                ? 'Your Team' 
+                                : match.home_team_name || 'Team ' + match.home_team_id.slice(0, 4)
+                              : 'CPU Team'}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            {match.away_team_type === 'user' 
+                              ? match.away_team_id === user?.id 
+                                ? 'Your Team' 
+                                : match.away_team_name || 'Team ' + match.away_team_id.slice(0, 4)
+                              : 'CPU Team'}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            <span className={`px-2 py-1 text-xs rounded-full ${
+                              match.status === 'completed' ? 'bg-green-100 text-green-800' :
+                              match.status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {match.status.replace('_', ' ')}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            {match.final_score || '-'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
         )}

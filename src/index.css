@@ -8,6 +8,19 @@ body {
   @apply bg-gray-50 text-gray-900;
 }
 
+.fixed {
+  position: fixed;
+}
+.inset-0 {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+.z-50 {
+  z-index: 50;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
