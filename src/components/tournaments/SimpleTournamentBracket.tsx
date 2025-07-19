@@ -38,7 +38,7 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
     // 3. Find the last match (or the one with the latest scheduledStart)
     const lastMatch = finalRound.matches
       .slice()
-      .sort((a, b) => new Date(a.scheduled_start_time).getTime() - new Date(b.scheduled_start_time).getTime())
+      .sort((a, b) => new Date(a.scheduledStart).getTime() - new Date(b.scheduledStart).getTime())
       .pop()!;
 
     console.log('Final match winnerId:', lastMatch.winner_id);
