@@ -3,6 +3,7 @@ import { Trophy, Clock, Crown, Star, CheckCircle } from 'lucide-react';
 import { TournamentRound } from '../../types/tournament';
 import { supabase } from "@/lib/supabase";
 
+
 interface SimpleTournamentBracketProps {
   registeredPlayers: any[];
   tournamentName: string;
@@ -24,41 +25,41 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
     return player.name;
   };
 
-  async function getTournamentWinner(): Promise<any> {
+  // Check if tournament is completed and find the winner
+  const getTournamentWinner = (): typeof registeredPlayers[0] | null => {
     if (!rounds?.length) return null;
-    const finalRound = [...rounds]
-      .sort((a, b) => a.level - b.level)
+
+    // 1. Identify the final round (highest level)
+    const finalRound = rounds.slice().sort((a, b) => a.level - b.level).pop()!;
+    if (!finalRound.matches?.length) return null;
+
+    // 2. Ensure all final‐round matches have completed
+    const allCompleted = finalRound.matches.every(m => m.completed);
+    if (!allCompleted) return null;
+
+    // 3. Find the last match (or the one with the latest scheduledStart)
+    const lastMatch = finalRound.matches
+      .slice()
+      .sort((a, b) => new Date(a.scheduledStart).getTime() - new Date(b.scheduledStart).getTime())
       .pop()!;
 
-    if (!finalRound.matches?.length || !finalRound.matches.every(m => m.completed)) {
-      return null;
-    }
+    console.log('Final match winnerId:', lastMatch.winnerId);
 
-    const lastMatch = [...finalRound.matches]
-      .sort((a, b) =>
-        new Date(a.scheduledStart).getTime() - new Date(b.scheduledStart).getTime()
-      )
-      .pop()!;
-
-    const winnerId = lastMatch.winnerId;
-    console.log('Final match winnerId:', winnerId);
-
-    if (!winnerId) return null;
-
-    const { data: [player], error } = await supabase
+    const { data, error } = await supabase
       .from('players')
       .select('*')
-      .eq('id', winnerId)
-      .single();
+      .eq('id', lastMatch.winnerId)
+      .single(); // optional: expects only one result
 
     if (error) {
-      console.error('Error fetching winning player:', error);
-      return null;
+      console.error('Error fetching player:', error);
+      return null
+    } else {
+      console.log('Player:', data);
     }
-    console.log("player", player)
-    return player;
-  }
 
+    return data;
+  };
 
   // Check if all tournament matches are completed
   const isTournamentCompleted = () => {
