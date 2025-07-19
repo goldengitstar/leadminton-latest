@@ -1,6 +1,7 @@
 import React from 'react';
 import { Trophy, Clock, Crown, Star, CheckCircle } from 'lucide-react';
 import { TournamentRound } from '../../types/tournament';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 interface SimpleTournamentBracketProps {
   registeredPlayers: any[];
@@ -9,6 +10,13 @@ interface SimpleTournamentBracketProps {
   currentPlayerId: string;
   onBack: () => void;
 }
+
+// Initialize Supabase client for standalone functions
+const supabase: SupabaseClient = createClient(
+  Deno.env.get('SUPABASE_URL')!,
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+);
+
 
 const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
   registeredPlayers,
@@ -23,29 +31,41 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
     return player.name;
   };
 
-  // Check if tournament is completed and find the winner
-  const getTournamentWinner = (): typeof registeredPlayers[0] | null => {
+  async function getTournamentWinner(): Promise<any> {
     if (!rounds?.length) return null;
-
-    // 1. Identify the final round (highest level)
-    const finalRound = rounds.slice().sort((a, b) => a.level - b.level).pop()!;
-    if (!finalRound.matches?.length) return null;
-
-    // 2. Ensure all final‐round matches have completed
-    const allCompleted = finalRound.matches.every(m => m.completed);
-    if (!allCompleted) return null;
-
-    // 3. Find the last match (or the one with the latest scheduledStart)
-    const lastMatch = finalRound.matches
-      .slice()
-      .sort((a, b) => new Date(a.scheduledStart).getTime() - new Date(b.scheduledStart).getTime())
+    const finalRound = [...rounds]
+      .sort((a, b) => a.level - b.level)
       .pop()!;
 
-    console.log('Final match winnerId:', lastMatch.winnerId);
+    if (!finalRound.matches?.length || !finalRound.matches.every(m => m.completed)) {
+      return null;
+    }
 
-    // 4. Look up that player in registeredPlayers
-    return registeredPlayers.find(p => p.id === lastMatch.winnerId) ?? null;
-  };
+    const lastMatch = [...finalRound.matches]
+      .sort((a, b) =>
+        new Date(a.scheduledStart).getTime() - new Date(b.scheduledStart).getTime()
+      )
+      .pop()!;
+
+    const winnerId = lastMatch.winnerId;
+    console.log('Final match winnerId:', winnerId);
+
+    if (!winnerId) return null;
+
+    const { data: [player], error } = await supabase
+      .from('players')
+      .select('*')
+      .eq('id', winnerId)
+      .single();
+
+    if (error) {
+      console.error('Error fetching winning player:', error);
+      return null;
+    }
+    console.log("player", player)
+    return player;
+  }
+
 
   // Check if all tournament matches are completed
   const isTournamentCompleted = () => {
