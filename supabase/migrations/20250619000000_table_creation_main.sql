@@ -91,7 +91,7 @@ create table public.players (
   max_level integer not null,
   created_at timestamp with time zone null default now(),
   rank double precision null,
-  gender gender_enum null default 'male'::gender_enum,
+  gender gender_enum not null,
   rarity text null,
   training json null,
   equipment json null,
