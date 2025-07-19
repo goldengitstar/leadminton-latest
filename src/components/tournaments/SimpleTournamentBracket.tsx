@@ -1,7 +1,7 @@
 import React from 'react';
 import { Trophy, Clock, Crown, Star, CheckCircle } from 'lucide-react';
 import { TournamentRound } from '../../types/tournament';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { supabase } from "@/lib/supabase";
 
 interface SimpleTournamentBracketProps {
   registeredPlayers: any[];
@@ -10,13 +10,6 @@ interface SimpleTournamentBracketProps {
   currentPlayerId: string;
   onBack: () => void;
 }
-
-// Initialize Supabase client for standalone functions
-const supabase: SupabaseClient = createClient(
-  Deno.env.get('SUPABASE_URL')!,
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-);
-
 
 const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
   registeredPlayers,
