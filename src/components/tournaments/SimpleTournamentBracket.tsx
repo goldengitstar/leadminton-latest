@@ -24,29 +24,27 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
   };
 
   // Check if tournament is completed and find the winner
-  const getTournamentWinner = () => {
-    if (!rounds || rounds.length === 0) return null;
-    console.log(registeredPlayers)
-    // Get the final round (highest level/last round)
-    const finalRound = rounds[rounds.length - 1];
-    
-    // Check if all matches in the final round are completed
-    const allFinalMatchesCompleted = finalRound.matches.every(match => match.completed);
-    
-    if (allFinalMatchesCompleted && finalRound.matches.length > 0) {
-      // For single elimination, the winner is the winner of the last match in the final round
-      const finalMatch = finalRound.matches[finalRound.matches.length - 1];
-      console.log('Final match winner:', finalMatch.winner);
+  const getTournamentWinner = (): typeof registeredPlayers[0] | null => {
+    if (!rounds?.length) return null;
 
-      for(let i = 0; i < registeredPlayers.length; i++) {
-        if(registeredPlayers[i].id === finalMatch.winner) {
-          return registeredPlayers[i];
-        }
-      }
-      return null;
-    }
-    
-    return null;
+    // 1. Identify the final round (highest level)
+    const finalRound = rounds.slice().sort((a, b) => a.level - b.level).pop()!;
+    if (!finalRound.matches?.length) return null;
+
+    // 2. Ensure all final‐round matches have completed
+    const allCompleted = finalRound.matches.every(m => m.completed);
+    if (!allCompleted) return null;
+
+    // 3. Find the last match (or the one with the latest scheduledStart)
+    const lastMatch = finalRound.matches
+      .slice()
+      .sort((a, b) => new Date(a.scheduled_start_time).getTime() - new Date(b.scheduled_start_time).getTime())
+      .pop()!;
+
+    console.log('Final match winnerId:', lastMatch.winner_id);
+
+    // 4. Look up that player in registeredPlayers
+    return registeredPlayers.find(p => p.id === lastMatch.winner_id) ?? null;
   };
 
   // Check if all tournament matches are completed
