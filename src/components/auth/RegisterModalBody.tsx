@@ -97,12 +97,6 @@ function RegisterModalBody({ onClose }: { onClose: () => void }) {
       if (managerError) {
         throw new Error(`Club manager insert failed: ${managerError.message}`);
       }
-      
-      if (!user?.email_confirmed_at) {
-        console.log('[handleRegister] Email not yet confirmed, moving to code step');
-        setStep(1);
-        return;
-      }
 
       const setupResult = await userService.handleNewUser(
         userId,

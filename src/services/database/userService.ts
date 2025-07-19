@@ -18,36 +18,6 @@ export class UserService {
    */
   async handleNewUser(userId: string, email?: string, teamName?: string): Promise<{ success: boolean; error?: string }> {
     try {
-      // Check if user already has player setup
-      const { data: existingPlayers } = await this.supabase
-        .from('players')
-        .select('id')
-        .eq('user_id', userId)
-        .limit(1);
-
-      if (existingPlayers && existingPlayers.length > 0) {
-        return { success: true }; // User already set up
-      }
-
-      // Create user profile with team name
-      const displayName = email ? email.split('@')[0] : 'Player';
-      const { error: profileError } = await this.supabase
-        .from('user_profiles')
-        .insert({
-          user_id: userId,
-          team_name: teamName || `${displayName} Team`,
-          display_name: displayName,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        });
-
-      if (profileError) {
-        console.warn('Failed to create user profile:', profileError);
-        // Don't fail user creation for this
-      }
-
-      console.log("Created user profiles")
-
       // Give initial resources to new user
       const initialResources = [
         { resource_type: 'coins', amount: 1000, source: 'initial_resources' },
