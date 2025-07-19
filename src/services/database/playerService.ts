@@ -327,6 +327,7 @@ export class PlayerService {
    */
     async createPlayer(userId: string, name?: string, gender?: 'male'|'female') {
       try {
+        const playerGender = gender ?? generateRandomGender();
         const { rarity, totalStats, max_level } = chooseRarity();
 
         const statKeys = [
@@ -343,8 +344,8 @@ export class PlayerService {
           .from('players')
           .insert({
             user_id: userId,
-            name: name || generateRandomName(gender),
-            gender,
+            name: name || generateRandomName(playerGender),
+            gender: playerGender,
             is_cpu: false,
             rarity,
             level: computedLevel,
