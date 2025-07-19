@@ -88,7 +88,9 @@ function RegisterModalBody({ onClose }: { onClose: () => void }) {
       const { error: managerError } = await supabase
         .from('club_managers')
         .insert({
-          name: managerName.trim(),
+          manager_name: managerName.trim(),
+          name: name.trim(),
+          surname: surname.trim(),
           user_id: userId,
           club_name: teamName.trim(),
         });
