@@ -41,7 +41,7 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
       .sort((a, b) => new Date(a.scheduledStart).getTime() - new Date(b.scheduledStart).getTime())
       .pop()!;
 
-    console.log('Final match winnerId:', lastMatch.winner_id);
+    console.log('Final match winnerId:', lastMatch.winnerId);
 
     // 4. Look up that player in registeredPlayers
     return registeredPlayers.find(p => p.id === lastMatch.winner_id) ?? null;
