@@ -11,6 +11,7 @@ import {
   ArrowLeft,
   CheckCircle,
   AlertCircle,
+  Info,
   Crown,
   Medal,
   Target,
@@ -641,7 +642,7 @@ const InterclubPage: React.FC = () => {
             {/* Next Match */}
             <div className="bg-white rounded-xl shadow-lg p-6 h-full">
               <h2 className="text-xl font-bold mb-4 flex items-center">
-                <Target className="w-6 h-6 mr-2 text-blue-500"
+                <Info className="w-6 h-6 mr-2 text-blue-500"
                 onClick={() => {
                   setShowSchedulePopup(true);
                   fetchSeasonMatches(currentSeasonStatus.registration.season.id);
