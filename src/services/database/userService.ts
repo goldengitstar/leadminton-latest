@@ -20,10 +20,10 @@ export class UserService {
     try {
       // Give initial resources to new user
       const initialResources = [
-        { resource_type: 'coins', amount: 10000, source: 'initial_resources' },
-        { resource_type: 'shuttlecocks', amount: 10000, source: 'initial_resources' },
-        { resource_type: 'meals', amount: 10000, source: 'initial_resources' },
-        { resource_type: 'diamonds', amount: 10000, source: 'initial_resources' }
+        { resource_type: 'coins', amount: 50000, source: 'initial_resources' },
+        { resource_type: 'shuttlecocks', amount: 50000, source: 'initial_resources' },
+        { resource_type: 'meals', amount: 50000, source: 'initial_resources' },
+        { resource_type: 'diamonds', amount: 50000, source: 'initial_resources' }
       ];
 
       const resourceResult = await this.resourceService.batchResourceTransactions(userId, initialResources);

@@ -137,6 +137,7 @@ export default function TournamentsPage() {
       if (detailViewTournament) {
         const updatedTournament = loadedTournaments.find(t => t.id === detailViewTournament.id);
         if (updatedTournament) {
+          console.log("Tournament", updatedTournament)
           setDetailViewTournament(updatedTournament);
         }
       }
