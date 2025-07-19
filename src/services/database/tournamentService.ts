@@ -48,33 +48,6 @@ export class TournamentService {
         `)
         .order('start_date', { ascending: false });
 
-      if (error) throw error;
-
-      // 2. Fetch all players
-      const { data: players, error: playersError } = await this.supabase
-        .from('players')
-        .select('id, name, is_cpu');
-
-      if (playersError) throw playersError;
-
-      // 3. Map player IDs to player objects for fast lookup
-      const playerMap = new Map(players.map(p => [p.id, p]));
-      
-      // 4. Inject `players: []` into each match with player1 and player2 details
-      if (tournaments) {
-        for (const tournament of tournaments) {
-          for (const round of tournament.rounds) {
-            console.log(tournament.rounds)
-            for (const match of round.matches) {
-              console.log(round.matches)
-              const player1 = playerMap.get(match.player1_id);
-              const player2 = playerMap.get(match.player2_id);
-              match.players = [player1, player2].filter(Boolean); // Only include valid players
-            }
-          }
-        }
-      }
-
       if (error) {
         console.error('Error fetching tournaments:', error);
         throw error;

@@ -121,6 +121,22 @@ export default function TournamentsPage() {
       setLoading(true);
       const loadedTournaments = await tournamentService.getTournaments();
       setTournaments(loadedTournaments);
+
+      const { data: players, error } = await this.supabase
+        .from('players')
+        .select('id, name, is_cpu');
+      if (error) throw error;
+
+      const playerMap = new Map(players.map(p => [p.id, p]));
+
+      loadedTournaments?.forEach(tournament =>
+        tournament.rounds.forEach(round =>
+          round.matches.forEach(match =>
+            match.players = [playerMap.get(match.player1_id), playerMap.get(match.player2_id)].filter(Boolean)
+          )
+        )
+      );
+
       console.log('loadedTournaments', loadedTournaments);
       console.log('gameState.players', gameState.players);
 
