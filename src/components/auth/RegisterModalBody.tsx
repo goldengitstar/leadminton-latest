@@ -103,7 +103,9 @@ function RegisterModalBody({ onClose }: { onClose: () => void }) {
         email.trim(),
         teamName.trim()
       );
+      
       if (!setupResult.success) {
+        console.log(setupResult.error)
         throw new Error(setupResult.error || 'Failed to set up user profile.');
       }
 
