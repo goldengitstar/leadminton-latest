@@ -120,7 +120,7 @@ export default function TournamentsPage() {
     try {
       setLoading(true);
       const loadedTournaments = await tournamentService.getTournaments();
-      setTournaments(loadedTournaments);
+      
 
       const { data: players, error } = await supabase
         .from('players')
@@ -136,6 +136,8 @@ export default function TournamentsPage() {
           )
         )
       );
+
+      setTournaments(loadedTournaments);
 
       console.log('loadedTournaments', loadedTournaments);
       console.log('gameState.players', gameState.players);
