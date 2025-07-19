@@ -1119,17 +1119,10 @@ export class InterclubService {
    */
   async getUserNextEncounter(userId: string): Promise<InterclubEncounter | null> {
     try {
+      // Step 1: Fetch next encounter match
       const { data: encounter, error } = await this.supabase
         .from('interclub_matches')
-        .select(`
-          *,
-          home_team:interclub_registrations!interclub_matches_home_team_id_fkey (
-            team_name
-          ),
-          away_team:interclub_registrations!interclub_matches_away_team_id_fkey (
-            team_name
-          )
-        `)
+        .select('*')
         .or(`home_team_id.eq.${userId},away_team_id.eq.${userId}`)
         .in('status', ['lineup_pending', 'ready'])
         .order('match_date', { ascending: true })
@@ -1140,16 +1133,34 @@ export class InterclubService {
         return null;
       }
 
-      // Parse lineups if they exist
+      // Step 2: Fetch team names using the IDs from the encounter
+      const { data: teams, error: teamError } = await this.supabase
+        .from('interclub_registrations')
+        .select('user_id, team_name')
+        .in('user_id', [encounter.home_team_id, encounter.away_team_id]);
+
+      if (teamError) {
+        console.error('Error fetching team names:', teamError);
+        return null;
+      }
+
+      // Step 3: Match team names to their respective IDs
+      const homeTeamName = teams.find(t => t.user_id === encounter.home_team_id)?.team_name || 'Unknown';
+      const awayTeamName = teams.find(t => t.user_id === encounter.away_team_id)?.team_name || 'Unknown';
+
+      // Step 4: Parse lineups safely
       const homeLineup = encounter.home_lineup ? JSON.parse(encounter.home_lineup) : null;
       const awayLineup = encounter.away_lineup ? JSON.parse(encounter.away_lineup) : null;
 
+      // Step 5: Return enriched encounter object
       return {
         ...encounter,
         home_lineup: homeLineup,
         away_lineup: awayLineup,
-        matches: [] // Individual matches would be populated when needed
-      };
+        home_team_name: homeTeamName,
+        away_team_name: awayTeamName,
+        matches: [] // populate separately as needed
+      } as InterclubEncounter;
     } catch (error) {
       console.error('Error in getUserNextEncounter:', error);
       return null;
