@@ -21,41 +21,64 @@ export class TournamentService {
    * Get tournaments with rounds and matches - JavaScript replacement for get_tournaments_with_rounds_matches() function
    */
   async getTournaments(): Promise<any[]> {
-    try {
-      // Fetch tournaments plus their rounds in one query
-      const { data: tournaments, error } = await this.supabase
-        .from('tournament_list')
-        .select(`
-          *,
-          rounds:round (
-            id,
-            name,
-            level
-          )
-        `)
-        .order('start_date', { ascending: false });
+      try {
+        // Fetch tournaments plus their rounds and matches in one query
+        const { data: tournaments, error } = await this.supabase
+          .from('tournament_list')
+          .select(`
+            *,
+            rounds:round (
+              id,
+              name,
+              level,
+              matches:match (
+                match_id,
+                winner,
+                score,
+                completed,
+                "startTime",
+                players
+              )
+            )
+          `)
+          .order('start_date', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching tournaments:', error);
-        throw error;
+        if (error) {
+          console.error('Error fetching tournaments:', error);
+          throw error;
+        }
+
+        // Convert numeric tier and status to string equivalents
+        const tiers    = ['local', 'regional', 'national', 'international', 'premier'];
+        const statuses = ['upcoming', 'ongoing', 'completed'];
+
+        return (tournaments || []).map(t => ({
+          ...t,
+          tier:   tiers[t.tier]      ?? 'local',
+          status: statuses[t.status] ?? 'upcoming',
+          rounds: (t.rounds || [])
+            .map(r => ({
+              id:     r.id,
+              name:   r.name,
+              level:  r.level,
+              matches: (r.matches || [])
+                .map(m => ({
+                  matchId:   m.match_id,
+                  winner:    m.winner,
+                  score:     m.score,
+                  completed: m.completed,
+                  startTime: m.startTime,
+                  players:   m.players,
+                }))
+                .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()),
+            }))
+            .sort((a, b) => a.level - b.level),
+        }));
+      } catch (err) {
+        console.error('Error in fetching tournaments:', err);
+        throw err;
       }
-
-      // Convert numeric tier and status to string equivalents
-      const tiers    = ['local', 'regional', 'national', 'international', 'premier'];
-      const statuses = ['upcoming', 'ongoing', 'completed'];
-
-      return (tournaments || []).map(t => ({
-        ...t,
-        tier:   tiers[t.tier]         ?? 'local',
-        status: statuses[t.status]    ?? 'upcoming',
-        // rounds is already an array of { id, name, level }
-        rounds: t.rounds.sort((a, b) => a.level - b.level),
-      }));
-    } catch (err) {
-      console.error('Error in fetching tournaments:', err);
-      throw err;
     }
-  }
 
   /**
    * Get tournaments with rounds and matches - JavaScript replacement for get_tournaments_with_rounds_matches() function
