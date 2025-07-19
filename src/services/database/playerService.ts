@@ -328,6 +328,7 @@ export class PlayerService {
     async createPlayer(userId: string, name?: string, gender?: 'male'|'female') {
       try {
         const playerGender = gender ?? generateRandomGender();
+         console.log("Creating real player. Gender ", playerGender)
         const { rarity, totalStats, max_level } = chooseRarity();
 
         const statKeys = [
@@ -439,6 +440,7 @@ export class PlayerService {
   ) {
     try {
       const playerGender = gender || (Math.random() > 0.5 ? 'male' : 'female');
+      console.log("Creating real player. Gender ", playerGender)
       const playerName = teamName && playerNumber 
         ? `${teamName} Player ${playerNumber}`
         : generateRandomName(playerGender);
