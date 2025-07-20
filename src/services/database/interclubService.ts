@@ -942,9 +942,6 @@ export class InterclubService {
   // STANDINGS & STATISTICS
   // ==========================================
 
-  /**
-   * Get group standings for a season
-   */
   async getGroupStandings(seasonId: string, groupNumber: number): Promise<GroupStanding[]> {
     try {
       // Get all encounters for this group
@@ -1148,9 +1145,15 @@ export class InterclubService {
       const homeTeamName = teams.find(t => t.user_id === encounter.home_team_id)?.team_name || 'Unknown';
       const awayTeamName = teams.find(t => t.user_id === encounter.away_team_id)?.team_name || 'Unknown';
 
+      console.log("Home team name ", homeTeamName);
+      console.log("Away team name ", awayTeamName);
+
       // Step 4: Parse lineups safely
       const homeLineup = encounter.home_lineup ? JSON.parse(encounter.home_lineup) : null;
       const awayLineup = encounter.away_lineup ? JSON.parse(encounter.away_lineup) : null;
+
+      console.log("Home lineup", homeLineup, "Away team ", awayLineup)
+
 
       // Step 5: Return enriched encounter object
       return {
