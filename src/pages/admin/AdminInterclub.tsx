@@ -160,8 +160,7 @@ const AdminInterclub: React.FC = () => {
       // Fetch all players who are club managers
       const { data: managers } = await supabase
         .from('club_managers')
-        .select('id, club_name, name, user_id, manager_name')
-        .eq('is_cpu', false);
+        .select('*')
       
       console.log("managers", managers)
       if (!managers) return;
