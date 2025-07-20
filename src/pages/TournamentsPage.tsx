@@ -134,10 +134,10 @@ export default function TournamentsPage() {
 
       loadedTournaments?.forEach(tournament =>
         tournament.rounds.forEach(round =>
-          round.matches.forEach(match =>
-            console.log("player 1", playerMap.get(match.player1_id))
-            match.players = [playerMap.get(match.player1_id), playerMap.get(match.player2_id)].filter(Boolean)
-          )
+          round.matches.forEach(match => {
+            console.log("player 1", playerMap.get(match.player1_id));
+            match.players = [playerMap.get(match.player1_id), playerMap.get(match.player2_id)].filter(Boolean);
+          })
         )
       );
 
