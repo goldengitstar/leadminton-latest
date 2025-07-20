@@ -941,43 +941,39 @@ export class InterclubService {
   // ==========================================
   // STANDINGS & STATISTICS
   // ==========================================
-
-  async getGroupStandings(seasonId: string, groupNumber: number): Promise<GroupStanding[]> {
+    async getGroupStandings(seasonId: string, groupNumber: number): Promise<GroupStanding[]> {
     try {
-      // Get all encounters for this group
-      console.log("Retrieving group standings", seasonId, groupNumber)
+      console.log("🏁 Start getGroupStandings", { seasonId, groupNumber });
+
+      // Fetch encounters
       const { data: encounters, error } = await this.supabase
         .from('interclub_matches')
         .select('*')
         .eq('season_id', seasonId)
         .eq('group_number', groupNumber)
         .eq('status', 'completed');
-
-      console.log("Retrieved encounters", encounters, "Error ", error)
+      console.log("📥 Retrieved encounters:", { count: encounters?.length, error, encounters });
 
       if (error) {
-        console.error('Error fetching encounters:', error);
+        console.error('❌ Error fetching encounters:', error);
         return [];
       }
 
-      // Get teams in this group
+      // Fetch registrations
       const { data: registrations, error: regError } = await this.supabase
         .from('interclub_registrations')
         .select('*')
         .eq('season_id', seasonId)
         .eq('group_assignment', groupNumber);
-
-      console.log("Registrations", registrations)
+      console.log("📥 Retrieved registrations:", { count: registrations?.length, regError, registrations });
 
       if (regError) {
-        console.error('Error fetching registrations:', regError);
+        console.error('❌ Error fetching registrations:', regError);
         return [];
       }
 
-      // Calculate standings
+      // Initialize standings
       const standings: Record<string, GroupStanding> = {};
-
-      // Initialize standings for all teams
       registrations?.forEach(reg => {
         standings[reg.user_id] = {
           team_id: reg.user_id,
@@ -993,85 +989,114 @@ export class InterclubService {
           form: []
         };
       });
+      console.log("🔨 Initialized standings:", standings);
 
-      // Process encounters
-      encounters?.forEach(encounter => {
-        const homeTeamId = encounter.home_team_id;
-        const awayTeamId = encounter.away_team_id;
-        const results = JSON.parse(encounter.results || '[]');
-        
-        if (standings[homeTeamId]) {
-          standings[homeTeamId].matches_played++;
-        }
-        if (standings[awayTeamId]) {
-          standings[awayTeamId].matches_played++;
+      // Process each encounter
+      encounters?.forEach((encounter, idx) => {
+        console.log(`➡️ Processing encounter[${idx}]`, encounter);
+
+        const rawResults = encounter.results;
+        let results: any[] = [];
+
+        console.log("   🔍 Raw results value:", rawResults, "type:", typeof rawResults);
+
+        try {
+          if (Array.isArray(rawResults)) {
+            results = rawResults;
+          } else if (typeof rawResults === 'string') {
+            results = JSON.parse(rawResults || '[]');
+          } else {
+            console.warn("   ⚠️ Unexpected results type, defaulting to []");
+            results = [];
+          }
+        } catch (parseErr) {
+          console.error("   ❌ JSON.parse failed on results:", rawResults, parseErr);
+          results = [];
         }
 
-        // Count individual match wins
+        console.log("   ✅ Parsed results:", results);
+
+        const homeId = encounter.home_team_id;
+        const awayId = encounter.away_team_id;
+
+        // Update matches played
+        if (standings[homeId]) {
+          standings[homeId].matches_played++;
+          console.log(`   ➕ ${homeId} matches_played now`, standings[homeId].matches_played);
+        }
+        if (standings[awayId]) {
+          standings[awayId].matches_played++;
+          console.log(`   ➕ ${awayId} matches_played now`, standings[awayId].matches_played);
+        }
+
+        // Count individual wins
         let homeWins = 0;
         let awayWins = 0;
-        
-        results.forEach((result: any) => {
-          if (result.winner === 'home') {
-            homeWins++;
-          } else {
-            awayWins++;
-          }
+        results.forEach((r: any, i: number) => {
+          if (r.winner === 'home') homeWins++;
+          else awayWins++;
         });
+        console.log(`   🎯 homeWins=${homeWins}, awayWins=${awayWins}`);
 
-        // Update statistics
-        if (standings[homeTeamId]) {
-          standings[homeTeamId].individual_matches_won += homeWins;
-          standings[homeTeamId].individual_matches_lost += awayWins;
-          
+        // Update home stats
+        if (standings[homeId]) {
+          const s = standings[homeId];
+          s.individual_matches_won += homeWins;
+          s.individual_matches_lost += awayWins;
           if (homeWins > awayWins) {
-            standings[homeTeamId].encounters_won++;
-            standings[homeTeamId].points += 3; // 3 points for encounter win
-            standings[homeTeamId].form.push('W');
+            s.encounters_won++;
+            s.points += 3;
+            s.form.push('W');
           } else {
-            standings[homeTeamId].encounters_lost++;
-            standings[homeTeamId].form.push('L');
+            s.encounters_lost++;
+            s.form.push('L');
           }
+          console.log(`   🏠 Updated home (${homeId}) standing:`, s);
         }
-
-        if (standings[awayTeamId]) {
-          standings[awayTeamId].individual_matches_won += awayWins;
-          standings[awayTeamId].individual_matches_lost += homeWins;
-          
+        
+        // Update away stats
+        if (standings[awayId]) {
+          const s = standings[awayId];
+          s.individual_matches_won += awayWins;
+          s.individual_matches_lost += homeWins;
           if (awayWins > homeWins) {
-            standings[awayTeamId].encounters_won++;
-            standings[awayTeamId].points += 3;
-            standings[awayTeamId].form.push('W');
+            s.encounters_won++;
+            s.points += 3;
+            s.form.push('W');
           } else {
-            standings[awayTeamId].encounters_lost++;
-            standings[awayTeamId].form.push('L');
+            s.encounters_lost++;
+            s.form.push('L');
           }
+          console.log(`   🏁 Updated away (${awayId}) standing:`, s);
         }
       });
 
-      // Sort by points, then by individual match difference
-      const sortedStandings = Object.values(standings).sort((a, b) => {
-        if (b.points !== a.points) {
-          return b.points - a.points;
-        }
-        const aDiff = a.individual_matches_won - a.individual_matches_lost;
-        const bDiff = b.individual_matches_won - b.individual_matches_lost;
-        return bDiff - aDiff;
+      console.log("📊 Completed processing all encounters. Standings before sort:", standings);
+
+      // Sort
+      const sorted = Object.values(standings).sort((a, b) => {
+        if (b.points !== a.points) return b.points - a.points;
+        const diffA = a.individual_matches_won - a.individual_matches_lost;
+        const diffB = b.individual_matches_won - b.individual_matches_lost;
+        return diffB - diffA;
+      });
+      console.log("🔀 After sort:", sorted);
+
+      // Assign positions & trim form
+      sorted.forEach((s, i) => {
+        s.position = i + 1;
+        s.form = s.form.slice(-5);
+        console.log(`   #${s.position} ${s.team_name} form:`, s.form);
       });
 
-      // Assign positions
-      sortedStandings.forEach((standing, index) => {
-        standing.position = index + 1;
-        standing.form = standing.form.slice(-5); // Keep last 5 results
-      });
+      console.log("✅ Final standings:", sorted);
+      return sorted;
 
-      return sortedStandings;
-    } catch (error) {
-      console.error('Error in getGroupStandings:', error);
+    } catch (err) {
+      console.error('🔥 Unexpected error in getGroupStandings:', err);
       return [];
     }
   }
-
   /**
    * Update group standings after an encounter
    */
