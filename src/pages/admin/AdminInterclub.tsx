@@ -163,7 +163,7 @@ const AdminInterclub: React.FC = () => {
         .select('id, club_name, name, user_id, manager_name')
         .eq('is_cpu', false);
       
-      console.log(managers)
+      console.log("managers", managers)
       if (!managers) return;
       
       // For each manager, get their resource transactions
@@ -195,7 +195,7 @@ const AdminInterclub: React.FC = () => {
           resources
         };
       }));
-      console.log(clubsData)
+      console.log("clubs data", clubsData)
       setClubs(clubsData);
     } catch (error) {
       console.error('Error loading clubs:', error);
