@@ -49,6 +49,7 @@ export class InterclubService {
         .from('interclub_seasons')
         .select('*')
         .in('tier', unlockedTiers)
+        .eq('status', 'registration_open')
         .order('start_date', { ascending: true });
 
       if (error) {
