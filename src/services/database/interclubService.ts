@@ -953,6 +953,8 @@ export class InterclubService {
         .eq('group_number', groupNumber)
         .eq('status', 'completed');
 
+      console.log("Retrieved encounters", encounters, "Error ", error)
+
       if (error) {
         console.error('Error fetching encounters:', error);
         return [];
@@ -964,6 +966,8 @@ export class InterclubService {
         .select('*')
         .eq('season_id', seasonId)
         .eq('group_assignment', groupNumber);
+
+      console.log("Registrations", registrations)
 
       if (regError) {
         console.error('Error fetching registrations:', regError);
