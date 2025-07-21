@@ -387,7 +387,7 @@ const TournamentForm: React.FC<TournamentFormProps> = ({
                   onChange={(e) => handleInputChange('maxParticipants', parseInt(e.target.value))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  {[8, 16, 24, 32, 48, 64].map(option => (
+                  {[8, 24, 32, 64].map(option => (
                     <option key={option} value={option}>
                       {option}
                     </option>
