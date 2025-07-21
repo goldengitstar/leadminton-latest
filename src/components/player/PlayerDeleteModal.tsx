@@ -78,7 +78,7 @@ export default function PlayerDeleteModal({
   };
 
   const handleRemove = async () => {
-    const cost = 0;
+    const cost = 100;
     if (resources.coins < cost) {
       toast.warning(`Not enough coins! You need ${cost} coins to remove a player.`);
       return;
