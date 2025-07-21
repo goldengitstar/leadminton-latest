@@ -87,7 +87,7 @@ const PlayerSelectionModal: React.FC<PlayerSelectionModalProps> = ({
               eligiblePlayers.map((player) => {
                 const stats = getPlayerStats(player);
                 const isSelected = selectedPlayers.some(p => p.id === player.id);
-
+                console.log("Selected players", selectedPlayers)
                 return (
                   <div
                     key={player.id}
