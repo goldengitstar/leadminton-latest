@@ -633,11 +633,11 @@ export class PlayerService {
           
           // Associate player with team
           await this.supabase
-            .from('team_players')
+            .from('player_team_assignments')
             .insert({
               team_id: teamId,
               player_id: result.player.id,
-              created_at: new Date().toISOString()
+              assigned_at: new Date().toISOString()
             });
         }
       }
