@@ -432,7 +432,7 @@ const AdminInterclub: React.FC = () => {
         console.error('Error loading registrations:', error);
         return;
       }
-      console.log("players registrations ", data)
+      console.log("players registrations ", data.players)
       const transformedRegistrations = (data || []).map(reg => ({
         ...reg,
         players: reg.players || '[]'
