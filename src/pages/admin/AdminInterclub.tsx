@@ -370,7 +370,7 @@ const AdminInterclub: React.FC = () => {
       `)
       .order('created_at', { ascending: false });
 
-      console.log(seasonsData)
+      console.log("Seasons data", seasonsData)
       if (error) throw error;
       if (!seasonsData) return setSeasons([]);
 
