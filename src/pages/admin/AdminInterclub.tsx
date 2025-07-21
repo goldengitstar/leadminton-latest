@@ -432,11 +432,22 @@ const AdminInterclub: React.FC = () => {
         console.error('Error loading registrations:', error);
         return;
       }
-      const transformedRegistrations = (data || []).map(reg => ({
-        ...reg,
-        players: reg.players || '[]'
-      }));
-      console.log("Players", transformedRegistrations[0].players)
+      const transformedRegistrations = (data || []).map(reg => {
+        let players = reg.players;
+        if (typeof players === 'string') {
+          try {
+            players = JSON.parse(players);
+          } catch (e) {
+            console.error('Error parsing players JSON', e);
+            players = [];
+          }
+        }
+        return {
+          ...reg,
+          players: players || []
+        };
+      });
+      
       setRegistrations(transformedRegistrations);
     } catch (error) {
       console.error('Error loading registrations:', error);
