@@ -24,12 +24,18 @@ const PlayerSelectionModal: React.FC<PlayerSelectionModalProps> = ({
   if (!isOpen) return null;
 
   const togglePlayerSelection = (player: Player) => {
-    const isSelected = selectedPlayers.some(p => p.id === player.id);
-    if (isSelected) {
-      setSelectedPlayers(prev => prev.filter(p => p.id !== player.id));
-    } else if (selectedPlayers.length < 2) {
-      setSelectedPlayers(prev => [...prev, player]);
-    }
+    setSelectedPlayers(prev => {
+      const isSelected = prev.some(p => p.id === player.id);
+
+      const next = isSelected
+        ? prev.filter(p => p.id !== player.id)
+        : prev.length < 2
+          ? [...prev, player]
+          : prev;  // if already 2 selected, do nothing
+
+      console.log('TOGGLE:', player.name, 'wasSelected=', isSelected, '→', next.map(p=>p.name));
+      return next;
+    });
   };
 
   const handleConfirm = () => {
