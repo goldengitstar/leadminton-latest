@@ -549,7 +549,7 @@ export default function TournamentsPage() {
             onClose={() => setShowPlayerSelection(false)}
             tournament={selectedTournament}
             eligiblePlayers={eligiblePlayers}
-            onSelectPlayer={handlePlayerSelection}
+            onSelectPlayers={handlePlayerSelection}
           />
         )}
       </div>
