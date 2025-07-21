@@ -1150,7 +1150,7 @@ export class InterclubService {
         .from('interclub_matches')
         .select('*')
         .or(`home_team_id.eq.${userId},away_team_id.eq.${userId}`)
-        .in('status', ['lineup_pending', 'ready'])
+        .in('status', ['lineup_pending', 'ready', 'scheduled'])
         .order('match_date', { ascending: true })
         .limit(1)
         .single();
