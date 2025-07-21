@@ -135,6 +135,8 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
           team_id,
           player:players(*)
         `);
+
+      console.log("Assignment Data", assignmentsData)
       
       if (assignmentsError) {
         console.error('Error loading player assignments:', assignmentsError);
