@@ -136,7 +136,7 @@ const InterclubPage: React.FC = () => {
       // Get next encounter if in active season
       if (currentStatus) {
         const nextMatch = await interclubService.getUserNextEncounter(user.id);
-        console.log(nextMatch)
+        console.log("Next match", nextMatch)
         setNextEncounter(nextMatch);
         setCurrentView('dashboard');
       }
