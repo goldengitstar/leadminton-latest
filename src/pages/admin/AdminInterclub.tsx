@@ -1471,13 +1471,6 @@ async function generateInterclubSchedule(seasonId: string) {
                       <div key={index} className="bg-gray-50 rounded-lg p-3 relative">
                         <div className="flex justify-between items-start mb-2">
                           <h5 className="font-medium">Groupe {index + 1}</h5>
-                          <button 
-                            onClick={() => setSelectedGroup(group)}
-                            className="text-blue-600 hover:text-blue-800 p-1"
-                            title="Manage group"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
                         </div>
                         <div className="space-y-1">
                           {group.teams?.map((team, teamIndex) => (
@@ -2490,7 +2483,6 @@ async function generateInterclubSchedule(seasonId: string) {
                       value={groupForm.seasonId}
                       onChange={(e) => {
                         setGroupForm({...groupForm, seasonId: e.target.value});
-                        // Load teams when season is selected
                         loadTeamsForSeason(e.target.value);
                       }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"

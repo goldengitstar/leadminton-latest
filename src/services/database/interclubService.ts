@@ -941,19 +941,17 @@ export class InterclubService {
   // ==========================================
   // STANDINGS & STATISTICS
   // ==========================================
-    async getGroupStandings(seasonId: string, groupNumber: number): Promise<GroupStanding[]> {
+  async getGroupStandings(seasonId: string, groupNumber: number): Promise<GroupStanding[]> {
     try {
       console.log("🏁 Start getGroupStandings", { seasonId, groupNumber });
 
-      // Fetch encounters
+      // Fetch completed encounters
       const { data: encounters, error } = await this.supabase
         .from('interclub_matches')
-        .select('*')
+        .select('home_team_id, away_team_id, results')
         .eq('season_id', seasonId)
         .eq('group_number', groupNumber)
         .eq('status', 'completed');
-      console.log("📥 Retrieved encounters:", { count: encounters?.length, error, encounters });
-
       if (error) {
         console.error('❌ Error fetching encounters:', error);
         return [];
@@ -962,11 +960,9 @@ export class InterclubService {
       // Fetch registrations
       const { data: registrations, error: regError } = await this.supabase
         .from('interclub_registrations')
-        .select('*')
+        .select('user_id, team_name')
         .eq('season_id', seasonId)
         .eq('group_assignment', groupNumber);
-      console.log("📥 Retrieved registrations:", { count: registrations?.length, regError, registrations });
-
       if (regError) {
         console.error('❌ Error fetching registrations:', regError);
         return [];
@@ -974,7 +970,7 @@ export class InterclubService {
 
       // Initialize standings
       const standings: Record<string, GroupStanding> = {};
-      registrations?.forEach(reg => {
+      registrations.forEach(reg => {
         standings[reg.user_id] = {
           team_id: reg.user_id,
           team_name: reg.team_name,
@@ -989,109 +985,66 @@ export class InterclubService {
           form: []
         };
       });
-      console.log("🔨 Initialized standings:", standings);
 
       // Process each encounter
-      encounters?.forEach((encounter, idx) => {
-        console.log(`➡️ Processing encounter[${idx}]`, encounter);
+      encounters.forEach((enc, idx) => {
+        const homeId = enc.home_team_id;
+        const awayId = enc.away_team_id;
+        standings[homeId].matches_played++;
+        standings[awayId].matches_played++;
 
-        const rawResults = encounter.results;
-        let results: any[] = [];
-
-        console.log("   🔍 Raw results value:", rawResults, "type:", typeof rawResults);
-
-        try {
-          if (Array.isArray(rawResults)) {
-            results = rawResults;
-          } else if (typeof rawResults === 'string') {
-            results = JSON.parse(rawResults || '[]');
-          } else {
-            console.warn("   ⚠️ Unexpected results type, defaulting to []");
-            results = [];
-          }
-        } catch (parseErr) {
-          console.error("   ❌ JSON.parse failed on results:", rawResults, parseErr);
-          results = [];
-        }
-
-        console.log("   ✅ Parsed results:", results);
-
-        const homeId = encounter.home_team_id;
-        const awayId = encounter.away_team_id;
-
-        // Update matches played
-        if (standings[homeId]) {
-          standings[homeId].matches_played++;
-          console.log(`   ➕ ${homeId} matches_played now`, standings[homeId].matches_played);
-        }
-        if (standings[awayId]) {
-          standings[awayId].matches_played++;
-          console.log(`   ➕ ${awayId} matches_played now`, standings[awayId].matches_played);
-        }
-
-        // Count individual wins
+        // Parse results object: one key per category
+        const raw = enc.results as Record<string, any>;
         let homeWins = 0;
         let awayWins = 0;
-        results.forEach((r: any, i: number) => {
-          if (r.winner === 'home') homeWins++;
-          else awayWins++;
-        });
-        console.log(`   🎯 homeWins=${homeWins}, awayWins=${awayWins}`);
 
-        // Update home stats
-        if (standings[homeId]) {
-          const s = standings[homeId];
-          s.individual_matches_won += homeWins;
-          s.individual_matches_lost += awayWins;
-          if (homeWins > awayWins) {
-            s.encounters_won++;
-            s.points += 3;
-            s.form.push('W');
-          } else {
-            s.encounters_lost++;
-            s.form.push('L');
-          }
-          console.log(`   🏠 Updated home (${homeId}) standing:`, s);
-        }
-        
-        // Update away stats
-        if (standings[awayId]) {
-          const s = standings[awayId];
-          s.individual_matches_won += awayWins;
-          s.individual_matches_lost += homeWins;
-          if (awayWins > homeWins) {
-            s.encounters_won++;
-            s.points += 3;
-            s.form.push('W');
-          } else {
-            s.encounters_lost++;
-            s.form.push('L');
-          }
-          console.log(`   🏁 Updated away (${awayId}) standing:`, s);
+        Object.values(raw).forEach(slot => {
+          // count points per individual match
+          // assume summary included in slot.score or similar;
+          if (slot.winner_team_id === homeId) homeWins++;
+          else if (slot.winner_team_id === awayId) awayWins++;
+        });
+
+        standings[homeId].individual_matches_won += homeWins;
+        standings[homeId].individual_matches_lost += awayWins;
+        standings[awayId].individual_matches_won += awayWins;
+        standings[awayId].individual_matches_lost += homeWins;
+
+        // Encounter outcome
+        if (homeWins > awayWins) {
+          standings[homeId].encounters_won++;
+          standings[homeId].points += 3;
+          standings[homeId].form.push('W');
+          standings[awayId].encounters_lost++;
+          standings[awayId].form.push('L');
+        } else if (awayWins > homeWins) {
+          standings[awayId].encounters_won++;
+          standings[awayId].points += 3;
+          standings[awayId].form.push('W');
+          standings[homeId].encounters_lost++;
+          standings[homeId].form.push('L');
+        } else {
+          // draw
+          standings[homeId].points += 1;
+          standings[awayId].points += 1;
+          standings[homeId].form.push('D');
+          standings[awayId].form.push('D');
         }
       });
 
-      console.log("📊 Completed processing all encounters. Standings before sort:", standings);
-
-      // Sort
+      // Sort and assign positions
       const sorted = Object.values(standings).sort((a, b) => {
         if (b.points !== a.points) return b.points - a.points;
         const diffA = a.individual_matches_won - a.individual_matches_lost;
         const diffB = b.individual_matches_won - b.individual_matches_lost;
         return diffB - diffA;
       });
-      console.log("🔀 After sort:", sorted);
-
-      // Assign positions & trim form
-      sorted.forEach((s, i) => {
-        s.position = i + 1;
+      sorted.forEach((s, idx) => {
+        s.position = idx + 1;
         s.form = s.form.slice(-5);
-        console.log(`   #${s.position} ${s.team_name} form:`, s.form);
       });
 
-      console.log("✅ Final standings:", sorted);
       return sorted;
-
     } catch (err) {
       console.error('🔥 Unexpected error in getGroupStandings:', err);
       return [];
