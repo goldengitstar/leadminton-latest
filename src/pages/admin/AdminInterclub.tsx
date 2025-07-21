@@ -436,7 +436,7 @@ const AdminInterclub: React.FC = () => {
         ...reg,
         players: reg.players || '[]'
       }));
-      console.log("Players", transformedRegistrations.players)
+      console.log("Players", transformedRegistrations[0].players)
       setRegistrations(transformedRegistrations);
     } catch (error) {
       console.error('Error loading registrations:', error);
