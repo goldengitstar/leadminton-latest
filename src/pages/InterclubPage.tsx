@@ -105,6 +105,10 @@ const InterclubPage: React.FC = () => {
   }, [nextEncounter]);
 
   useEffect(() => {
+    console.log(loading, selectedPlayers.length < 5, teamName, meetsGenderReqs)
+  })
+
+  useEffect(() => {
     const maleCount = gameState.players.filter(p => p.gender === 'male').length;
     const femaleCount  = gameState.players.filter(p => p.gender === 'female').length;
     const valid = (maleCount >= 4 && femaleCount >= 3);

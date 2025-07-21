@@ -82,8 +82,6 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      console.log(`[updateResources] ${source}:`, { changes, isAdd });
-
       try {
         // Record the resource transaction in database
         await recordResourceUpdate(user.id, source, changes, isAdd);
