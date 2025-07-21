@@ -310,7 +310,7 @@ export default function TournamentsPage() {
       setTimeout(() => setNotification(null), 3000);
 
     } catch (error) {
-      console.error('Error registering for tournament:', error);
+      console.log('Error registering for tournament:', error);
 
       let errorMessage = 'Failed to register for tournament';
 

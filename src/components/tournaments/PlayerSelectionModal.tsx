@@ -31,9 +31,8 @@ const PlayerSelectionModal: React.FC<PlayerSelectionModalProps> = ({
         ? prev.filter(p => p.id !== player.id)
         : prev.length < 2
           ? [...prev, player]
-          : prev;  // if already 2 selected, do nothing
+          : prev;
 
-      console.log('TOGGLE:', player.name, 'wasSelected=', isSelected, '→', next.map(p=>p.name));
       return next;
     });
   };
