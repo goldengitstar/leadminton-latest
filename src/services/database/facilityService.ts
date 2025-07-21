@@ -36,6 +36,7 @@ export class FacilityService {
     const { data, error } = await supabase
       .from(this.table)
       .select("*")
+      .eq("user_id", userId)
 
     if (error) {
       console.error("[FacilityService] Error fetching facilities:", error);
