@@ -16,6 +16,17 @@ interface Notification {
   message: string;
 }
 
+interface Match {
+  player1Id: string;
+  player2Id: string;
+  players?: Player[];
+}
+
+interface Round {
+  matches: Match[];
+}
+
+
 // Separate countdown timer component to isolate timer state updates
 const CountdownTimer = memo(({ 
   tournament, 
@@ -130,8 +141,8 @@ export default function TournamentsPage() {
       const playerMap = new Map(players.map(p => [p.id, p]));
 
       loadedTournaments?.forEach(tournament =>
-        tournament.rounds.forEach(round =>
-          round.matches.forEach(match => {
+        tournament.rounds.forEach((round:Round) =>
+          round.matches.forEach((match:Match) => {
             match.players = [playerMap.get(String(match.player1Id)), playerMap.get((match.player2Id))].filter(Boolean);
           })
         )
@@ -260,11 +271,10 @@ export default function TournamentsPage() {
     console.log('Modal should now be open, showPlayerSelection set to true');
   }, [gameState.players, showPlayerSelection]);
 
-  const handlePlayerSelection = async (player: Player) => {
+  const handlePlayerSelection = async (players: Player[]) => {
     if (!selectedTournament) return;
 
     try {
-      // Additional client-side validation before attempting registration
       if (selectedTournament.status !== 'upcoming') {
         throw new Error('Tournament is no longer accepting registrations');
       }
@@ -277,34 +287,33 @@ export default function TournamentsPage() {
         throw new Error('Tournament is full');
       }
 
-      // Register player in database (resource deduction is handled by the database function)
-      const res = await tournamentService.registerPlayerForTournament(selectedTournament.id, player.id);
+      for (const player of players) {
+        const res = await tournamentService.registerPlayerForTournament(
+          selectedTournament.id,
+          player.id
+        );
 
-      if(res.error){
-        throw new Error(res.error);
+        if (res.error) {
+          throw new Error(res.error);
+        }
+
+        setNotification({
+          type: 'success',
+          message: `Successfully registered ${player.name} for ${selectedTournament.name}!`
+        });
       }
 
-      // Update local state
       setRegisteredTournaments(prev => [...prev, selectedTournament.id]);
-      
-      // Reload tournaments to get updated participant count
       loadTournamentsData();
-
-      setNotification({ 
-        type: 'success', 
-        message: `Successfully registered ${player.name} for ${selectedTournament.name}!` 
-      });
-
-      // Close the player selection modal
       setShowPlayerSelection(false);
 
       setTimeout(() => setNotification(null), 3000);
+
     } catch (error) {
       console.error('Error registering for tournament:', error);
-      
-      // Provide user-friendly error messages
+
       let errorMessage = 'Failed to register for tournament';
-      
+
       if (error instanceof Error) {
         const message = error.message.toLowerCase();
         if (message.includes('already started')) {
@@ -314,7 +323,7 @@ export default function TournamentsPage() {
         } else if (message.includes('full') || message.includes('no more spots')) {
           errorMessage = 'Tournament is full';
         } else if (message.includes('already registered')) {
-          errorMessage = 'Player is already registered for this tournament';
+          errorMessage = 'One or more players are already registered';
         } else if (message.includes('level') && message.includes('too low')) {
           errorMessage = `Player level is too low (minimum: ${selectedTournament.min_player_level})`;
         } else if (message.includes('not found')) {
@@ -323,9 +332,9 @@ export default function TournamentsPage() {
           errorMessage = error.message;
         }
       }
-      
-      setNotification({ 
-        type: 'error', 
+
+      setNotification({
+        type: 'error',
         message: errorMessage
       });
       setTimeout(() => setNotification(null), 5000);
