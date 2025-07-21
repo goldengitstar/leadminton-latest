@@ -363,7 +363,7 @@ const AdminDashboard: React.FC = () => {
               <span className="text-2xl">🤖</span>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">CPU Teams & Players</p>
+              <p className="text-sm font-medium text-gray-600">CPU Teams</p>
               <p className="text-2xl font-bold text-gray-900">{stats.cpuTeams}</p>
             </div>
           </div>

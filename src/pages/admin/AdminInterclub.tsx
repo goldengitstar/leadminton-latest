@@ -432,7 +432,7 @@ const AdminInterclub: React.FC = () => {
         console.error('Error loading registrations:', error);
         return;
       }
-
+      console.log("players registrations ", data)
       const transformedRegistrations = (data || []).map(reg => ({
         ...reg,
         players: reg.players || '[]'
@@ -689,9 +689,9 @@ async function generateInterclubSchedule(seasonId: string) {
         .from('interclub_registrations')
         .insert({
           season_id: seasonId,
-          user_id: '00000000-0000-0000-0000-000000000000', // Special UUID for CPU teams
+          user_id: '00000000-0000-0000-0000-000000000000',
           team_name: cpuTeamName,
-          players: JSON.stringify([]), // CPU teams have generated players
+          players: JSON.stringify([]),
           status: 'approved',
           group_assignment: groupNumber
         })
