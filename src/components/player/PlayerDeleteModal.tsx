@@ -86,11 +86,13 @@ export default function PlayerDeleteModal({
 
     try {
       const success = await removePlayer(player.id);
+      console.log("Deleting players ", success)
       if (!success) {
         toast.error('Failed to remove player. Please try again.');
         return;
       }
-
+      
+      console.log("Updating resources")
       // Deduct the cost
       updateResources("manual_adjustment", { coins: cost }, false);
       
