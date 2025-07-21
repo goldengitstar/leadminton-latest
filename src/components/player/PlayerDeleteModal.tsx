@@ -18,8 +18,6 @@ export default function PlayerDeleteModal({
 
   const removePlayer = async (playerid: string) => {
     try {
-      // Delete in reverse order of dependencies
-      
       // Delete player equipment history
       await supabase
         .from("player_equipment_history")
@@ -29,12 +27,6 @@ export default function PlayerDeleteModal({
       // Delete player equipment
       await supabase
         .from("player_equipment")
-        .delete()
-        .eq("player_id", playerid);
-      
-      // Delete player training history  
-      await supabase
-        .from("player_training_history")
         .delete()
         .eq("player_id", playerid);
       

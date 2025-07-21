@@ -127,7 +127,6 @@ export default function ClubPage() {
       const result = await playerService.createPlayer(user.id);
       console.log('Recruit player result:', result);
       if (result.success && result.player) {
-        // Convert to frontend player format
         const player = {
           id: result.player.id,
           name: result.player.name,
