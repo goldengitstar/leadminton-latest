@@ -103,9 +103,9 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
   };
 
   const isPlayerWinner = (player: any, winner_id: any, matchCompleted: boolean) => {
-    console.log('isPlayerWinner check', { player, winner, matchCompleted });
-    if (!player || !winner || !matchCompleted) return false;
-    return winner_id === player.id || winner === player.id || winner === player;
+    console.log('isPlayerWinner check', { player, winner_id, matchCompleted });
+    if (!player || !winner_id || !matchCompleted) return false;
+    return winner_id === player.id;
   };
 
   return (
