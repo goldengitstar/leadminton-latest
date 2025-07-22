@@ -8,6 +8,7 @@ interface SimpleTournamentBracketProps {
   tournamentName: string;
   rounds: TournamentRound[];
   currentPlayerId: string;
+  status:number;
   onBack: () => void;
 }
 
@@ -16,6 +17,7 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
   tournamentName,
   rounds,
   currentPlayerId,
+  status,
   onBack,
 }) => {
   console.log('Component mount', { registeredPlayers, tournamentName, rounds, currentPlayerId });
@@ -75,9 +77,7 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
   };
 
   const isTournamentCompleted = () => {
-    const completed = rounds?.length > 0 && rounds.every((round) => round.matches.every((match) => match.completed));
-    console.log('isTournamentCompleted:', completed);
-    return completed;
+    return (status == 2)
   };
 
   useEffect(() => {

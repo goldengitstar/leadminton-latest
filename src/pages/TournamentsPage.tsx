@@ -516,6 +516,7 @@ export default function TournamentsPage() {
             tournamentName={detailViewTournament.name}
             rounds={detailViewTournament.rounds}
             currentPlayerId={gameState.players[0]?.id || ''}
+            status={detailViewTournament.status}
             onBack={handleBackToList}
           />
         )}
