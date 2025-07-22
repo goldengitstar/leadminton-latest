@@ -102,10 +102,10 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
     return tournamentWinner.name || getPlayerDisplay(tournamentWinner);
   };
 
-  const isPlayerWinner = (player: any, winner: any, matchCompleted: boolean) => {
+  const isPlayerWinner = (player: any, winner_id: any, matchCompleted: boolean) => {
     console.log('isPlayerWinner check', { player, winner, matchCompleted });
     if (!player || !winner || !matchCompleted) return false;
-    return winner.id === player.id || winner === player.id || winner === player;
+    return winner_id === player.id || winner === player.id || winner === player;
   };
 
   return (
@@ -164,8 +164,8 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                 {round.matches.map((match) => {
-                  const isPlayer1Winner = isPlayerWinner(match.players?.[0], match.winner, match.completed);
-                  const isPlayer2Winner = isPlayerWinner(match.players?.[1], match.winner, match.completed);
+                  const isPlayer1Winner = isPlayerWinner(match.players?.[0], match.winnerId, match.completed);
+                  const isPlayer2Winner = isPlayerWinner(match.players?.[1], match.winnerId, match.completed);
 
                   return (
                     <div
