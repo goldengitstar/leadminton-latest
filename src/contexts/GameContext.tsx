@@ -197,7 +197,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     const timer = setInterval(async () => {
        console.log('[GameContext] Periodic refresh triggered');
        await loadEverything();
-    }, 10000);
+    }, 600000);
 
     // return () => clearInterval(timer);
   }, [isLogin, user?.id]);
