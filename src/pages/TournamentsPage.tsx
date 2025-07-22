@@ -49,6 +49,8 @@ const CountdownTimer = memo(({
       console.log("Updating countdown", targetTime)
       
       const diff = Math.max(0, targetTime - now);
+
+      console.log("Time left", diff)
       setTimeLeft(diff);
     };
 
@@ -76,7 +78,9 @@ const CountdownTimer = memo(({
   };
 
   const hasStarted = timeLeft <= 0;
+  console.log("has started", hasStarted)
   const isStartingSoon = timeLeft > 0 && timeLeft <= 300000; // Less than 5 minutes
+  console.log("Starting soon", isStartingSoon)
 
   return (
     <div className={`flex items-center space-x-2 px-6 py-3 rounded-full ${
