@@ -78,7 +78,7 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
 
   const isTournamentCompleted = () => {
     console.log("Status ", status)
-    return (status == "completed")
+    return (status === "completed")
   };
 
   useEffect(() => {
