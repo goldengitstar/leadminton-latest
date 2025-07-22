@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Trophy, Clock, Crown, Star, CheckCircle } from 'lucide-react';
+import { Trophy, Clock, Crown, Star, CheckCircle, User } from 'lucide-react';
 import { TournamentRound } from '../../types/tournament';
 import { supabase } from '@/lib/supabase';
 
@@ -164,42 +164,77 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                 {round.matches.map((match) => {
-                  console.log('Rendering match', match.id, match);
+                  const isPlayer1Winner = isPlayerWinner(match.players?.[0], match.winner, match.completed);
+                  const isPlayer2Winner = isPlayerWinner(match.players?.[1], match.winner, match.completed);
+
                   return (
                     <div
                       key={match.id}
-                      className={`border rounded p-3 ${
+                      className={`border rounded-lg p-4 ${
                         match.completed ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
                       }`}
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-medium text-gray-600">Match {match.id}</span>
-                        {match.completed ? <CheckCircle className="w-4 h-4 text-green-500" /> : <Clock className="w-4 h-4 text-yellow-500" />}
+                      {/* Match Header */}
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-sm font-medium text-gray-600">Match</span>
+                        {match.completed ? (
+                          <CheckCircle className="w-4 h-4 text-green-500" />
+                        ) : (
+                          <Clock className="w-4 h-4 text-yellow-500" />
+                        )}
                       </div>
 
-                      <div className="space-y-1 text-sm">
-                        {[0, 1].map((i) => {
-                          console.log('Player slot', i, match.players && match.players[i]);
-                          return (
-                            <React.Fragment key={i}>
-                              <div
-                                className={`p-2 rounded-md ${
-                                  isPlayerWinner(match.players[i], match.winner, match.completed) ? 'bg-green-100 border border-green-300 ' : ''
-                                }`}
-                              >
-                                {match.players[i]?.name || 'TBD'}
-                                {isPlayerWinner(match.players[i], match.winner, match.completed) && (
-                                  <Trophy className="w-3 h-3 text-yellow-500 inline ml-1 float-right" />
-                                )}
-                                {match.players[i]?.id === currentPlayerId && <span className="text-xs text-blue-600 font-medium ml-1">(You)</span>}
-                              </div>
-                              {i === 0 && <div className="text-center text-xs text-gray-500">vs</div>}
-                            </React.Fragment>
-                          );
-                        })}
+                      {/* Players */}
+                      <div className="space-y-2 mb-4">
+                        {/* Player 1 */}
+                        <div
+                          className={`flex items-center justify-between p-2 rounded ${
+                            isPlayer1Winner ? 'bg-green-100 border border-green-300' : 'bg-white'
+                          }`}
+                        >
+                          <div className="flex items-center">
+                            <User className="w-4 h-4 mr-2 text-green-500" />
+                            <div>
+                              <span className="text-sm font-medium">
+                                {match.players?.[0]?.name || 'TBD'}
+                              </span>
+                              {match.players?.[0]?.id === currentPlayerId && (
+                                <span className="text-xs text-blue-600 font-medium ml-1">(You)</span>
+                              )}
+                            </div>
+                          </div>
+                          {isPlayer1Winner && <Trophy className="w-4 h-4 text-yellow-500" />}
+                        </div>
+
+                        <div className="text-center text-xs text-gray-500 py-1">vs</div>
+
+                        {/* Player 2 */}
+                        <div
+                          className={`flex items-center justify-between p-2 rounded ${
+                            isPlayer2Winner ? 'bg-green-100 border border-green-300' : 'bg-white'
+                          }`}
+                        >
+                          <div className="flex items-center">
+                            <User className="w-4 h-4 mr-2 text-green-500" />
+                            <div>
+                              <span className="text-sm font-medium">
+                                {match.players?.[1]?.name || 'TBD'}
+                              </span>
+                              {match.players?.[1]?.id === currentPlayerId && (
+                                <span className="text-xs text-blue-600 font-medium ml-1">(You)</span>
+                              )}
+                            </div>
+                          </div>
+                          {isPlayer2Winner && <Trophy className="w-4 h-4 text-yellow-500" />}
+                        </div>
                       </div>
 
-                      {match.score && <div className="text-xs text-gray-600 mt-4 text-center bg-white p-2">Score: {match.score}</div>}
+                      {/* Score */}
+                      {match.score && (
+                        <div className="text-xs text-gray-600 mb-3 p-2 bg-gray-100 rounded text-center">
+                          <strong>Score:</strong> {match.score}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
