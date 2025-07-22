@@ -45,6 +45,8 @@ const CountdownTimer = memo(({
       const targetTime = tournament.status === 'ongoing' && tournament.next_round_start_time 
         ? tournament.next_round_start_time 
         : tournament.start_date;
+
+      console.log("Updating countdown", targetTime)
       
       const diff = Math.max(0, targetTime - now);
       setTimeLeft(diff);

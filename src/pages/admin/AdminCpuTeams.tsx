@@ -920,7 +920,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
                         <div className="flex items-center">
                           <Users className="w-4 h-4 text-gray-400 mr-1" />
                           {team.players.length}/{team.playerCount}
-                          {team.players.length < team.playerCount && (
+                          {(team.players.length < team.playerCount) && (
                             <button
                               onClick={() => handleGenerateClick(team.id, team.name, team.skillLevel, team.playerCount - team.players.length, team.genderBalance)}
                               className="ml-2 text-xs text-blue-600 hover:text-blue-800"
