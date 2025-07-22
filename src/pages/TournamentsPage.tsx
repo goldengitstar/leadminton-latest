@@ -38,22 +38,25 @@ const CountdownTimer = memo(({
   const [timeLeft, setTimeLeft] = useState<number>(0);
 
   useEffect(() => {
-    const updateCountdown = () => {
+   const updateCountdown = () => {
       const now = Date.now();
-      
-      // Use next_round_start_time for ongoing tournaments with automation, otherwise use start_date
-      const targetTime = tournament.status === 'ongoing' && tournament.next_round_start_time 
-        ? tournament.next_round_start_time 
-        : tournament.start_date;
 
-      console.log("Updating countdown", targetTime)
-      
+      const rawTarget = 
+        tournament.status === 'ongoing' && tournament.next_round_start_time
+          ? tournament.next_round_start_time
+          : tournament.start_date;
+
+      // Convert the ISO string (or Date object) to a millisecond timestamp:
+      const targetTime = new Date(rawTarget).getTime();
+
+      if (Number.isNaN(targetTime)) {
+        console.error("Invalid tournament date:", rawTarget);
+        return;
+      }
+
       const diff = Math.max(0, targetTime - now);
-
-      console.log("Time left", diff)
       setTimeLeft(diff);
     };
-
     updateCountdown();
     const interval = setInterval(updateCountdown, 1000);
     return () => clearInterval(interval);
