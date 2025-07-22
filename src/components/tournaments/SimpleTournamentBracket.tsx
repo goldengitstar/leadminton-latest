@@ -8,7 +8,7 @@ interface SimpleTournamentBracketProps {
   tournamentName: string;
   rounds: TournamentRound[];
   currentPlayerId: string;
-  status:number;
+  status:any;
   onBack: () => void;
 }
 
@@ -77,6 +77,7 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
   };
 
   const isTournamentCompleted = () => {
+    console.log("Status ", status)
     return (status == 2)
   };
 

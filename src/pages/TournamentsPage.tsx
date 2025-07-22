@@ -158,10 +158,7 @@ export default function TournamentsPage() {
       );
 
       setTournaments(loadedTournaments);
-
-      console.log('loadedTournaments', loadedTournaments);
-      console.log('gameState.players', gameState.players);
-
+      
       const registeredTournamentIds = loadedTournaments.filter((tournament: any) => 
         {
           const isIncluded = tournament.registered_players.some((player: any) => gameState.players.some((userPlayer: any) => userPlayer.id === player.player_id));
