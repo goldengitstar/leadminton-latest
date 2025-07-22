@@ -20,7 +20,7 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
   status,
   onBack,
 }) => {
-  console.log('Component mount', { registeredPlayers, tournamentName, rounds, currentPlayerId });
+  console.log('Component mount', { registeredPlayers, tournamentName, rounds, status, currentPlayerId });
 
   const [tournamentWinner, setTournamentWinner] = useState<any | null>(null);
 
