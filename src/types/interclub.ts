@@ -100,6 +100,8 @@ export interface InterclubEncounter {
   season_id: string;
   week_number: number;
   matchday_number: number;
+  home_team_id:any;
+  away_team_id:any;
   group_number: number;
   home_team: InterclubTeam;
   away_team: InterclubTeam;

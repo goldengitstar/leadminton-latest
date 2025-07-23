@@ -135,8 +135,38 @@ const InterclubPage: React.FC = () => {
       // Get next encounter if in active season
       if (currentStatus) {
         const nextMatch = await interclubService.getUserNextEncounter(user.id);
-        console.log("Next match", nextMatch)
         setNextEncounter(nextMatch);
+        console.log("Next match", nextMatch)
+        let rawLineup = null;
+        if(nextMatch){
+          if (nextMatch.home_team_id === user.id && nextMatch.home_lineup) {
+            rawLineup = nextMatch.home_lineup;
+          } else if (nextMatch.away_team_id === user.id && nextMatch.away_lineup) {
+            rawLineup = nextMatch.away_lineup;
+          }
+
+          if (!rawLineup) return;
+
+          const lineupData = typeof rawLineup === 'string' ? JSON.parse(rawLineup) : rawLineup;
+
+          setLineup({
+            mens_singles: lineupData?.mens_singles?.id || '',
+            womens_singles: lineupData?.womens_singles?.id || '',
+            mens_doubles: [
+              lineupData?.mens_doubles?.[0]?.id || '',
+              lineupData?.mens_doubles?.[1]?.id || ''
+            ],
+            womens_doubles: [
+              lineupData?.womens_doubles?.[0]?.id || '',
+              lineupData?.womens_doubles?.[1]?.id || ''
+            ],
+            mixed_doubles: [
+              lineupData?.mixed_doubles?.[0]?.id || '',
+              lineupData?.mixed_doubles?.[1]?.id || ''
+            ]
+          });
+        }
+        
         setCurrentView('dashboard');
       }
       
@@ -880,9 +910,7 @@ const InterclubPage: React.FC = () => {
               </div>
 
               <div className="grid md:grid-cols-2 gap-6">
-                {/* Match Types */}
                 <div className="space-y-4">
-                  {/* Men's Singles */}
                   <div>
                     <label className="block text-sm font-medium mb-2">Men's Singles (MS)</label>
                     <select
