@@ -222,8 +222,10 @@ const InterclubPage: React.FC = () => {
 
       const teamData = {
         name: teamName,
+        user_id: user.id,
         club_name: clubData?.club_name,
         players_count: selectedPlayers.length,
+        is_cpu: false,
         registration_status:'pending',
         registration_date: new Date(),
         created_at: new Date(),

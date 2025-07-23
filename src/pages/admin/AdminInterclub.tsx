@@ -908,8 +908,10 @@ const handleCpuRegistrationSubmit = async () => {
     const teamData = {
       name: teamName,
       club_name: clubData?.club_name,
+      user_id: '00000000-0000-0000-0000-000000000000',
       players_count: playersData.length,
       registration_status:'pending',
+      is_cpu: true,
       registration_date: new Date(),
       created_at: new Date(),
     }
