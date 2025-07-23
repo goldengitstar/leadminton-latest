@@ -496,7 +496,7 @@ const handleSaveGroup = async () => {
     // Get current teams in the group from the database
     const { data: currentTeams } = await supabase
       .from('interclub_teams')
-      .select('id, group_id')
+      .select('id, user_id')
       .eq('group_id', selectedGroup.id);
 
     const allCurrentTeams = [
