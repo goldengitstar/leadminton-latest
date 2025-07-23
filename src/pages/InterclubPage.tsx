@@ -149,6 +149,8 @@ const InterclubPage: React.FC = () => {
 
           const lineupData = typeof rawLineup === 'string' ? JSON.parse(rawLineup) : rawLineup;
 
+          console.log("Lineup data ", lineupData)
+
           setLineup({
             mens_singles: lineupData?.mens_singles?.id || '',
             womens_singles: lineupData?.womens_singles?.id || '',
