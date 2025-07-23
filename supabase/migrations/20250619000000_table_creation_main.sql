@@ -201,6 +201,7 @@ create table public.resource_transactions (
           'equipment_purchase'::text,
           'tournament_reward'::text,
           'shop_purchase'::text
+          'manual_adjustment'::text
         ]
       )
     )

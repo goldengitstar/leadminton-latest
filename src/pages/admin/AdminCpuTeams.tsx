@@ -584,7 +584,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
             max_level: playerData.maxLevel,
             injuries: playerData.injuries,
             is_cpu: true,
-            user_id: user.id
+            user_id: '00000000-0000-0000-0000-000000000000'
           })
           .select()
           .single();
@@ -661,7 +661,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
         throw new Error('No authenticated user found');
       }
       
-      const cpuUserId = user.id;
+      const cpuUserId = '00000000-0000-0000-0000-000000000000';
       console.log('[AdminCpuTeams] Using current admin user ID for CPU players:', cpuUserId);
 
       const result = await playerService.generateCpuPlayersForTeam(

@@ -144,13 +144,10 @@ const AdminInterclub: React.FC = () => {
     try {
       setLoading(true);
       
-      // Generate a unique club name if not provided
       const clubName = cpuClubForm.club_name || `CPU CLUB ${Math.floor(Math.random() * 1000)}`;
       
-      // Standard CPU user ID (you might want to create a real user for this)
       const cpuUserId = '00000000-0000-0000-0000-000000000000';
       
-      // Insert the club manager record
       const { error } = await supabase
         .from('club_managers')
         .insert({
@@ -163,7 +160,6 @@ const AdminInterclub: React.FC = () => {
       
       if (error) throw error;
       
-      // Insert resource transactions
       await Promise.all(
         Object.entries(cpuClubForm.resources).map(async ([type, amount]) => {
           if (amount > 0) {
@@ -171,7 +167,7 @@ const AdminInterclub: React.FC = () => {
               .from('resource_transactions')
               .insert({
                 user_id: cpuUserId,
-                source: "initial_setup",
+                source: "initial_resources",
                 resource_type: type,
                 amount: amount
               });
@@ -183,7 +179,7 @@ const AdminInterclub: React.FC = () => {
       setShowCpuClubForm(false);
       await loadClubs();
     } catch (error) {
-      console.error('Error creating CPU club:', error);
+      console.log('Error creating CPU club:', error);
     } finally {
       setLoading(false);
     }
