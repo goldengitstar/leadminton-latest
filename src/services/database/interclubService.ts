@@ -396,11 +396,15 @@ export class InterclubService {
       // Get player details for lineup
       const lineupWithDetails = await this.buildLineupWithPlayerDetails(submission.lineup);
 
+      const lineupData = {
+        lineup: lineupWithDetails
+      }
+
       // Update encounter with lineup
       const { error: updateError } = await this.supabase
         .from('interclub_matches')
         .update({
-          [lineupField]: lineupWithDetails,
+          [lineupField]: JSON.stringify(lineupData),
           status: this.calculateEncounterStatus(encounter, lineupField)
         })
         .eq('id', submission.encounter_id);
