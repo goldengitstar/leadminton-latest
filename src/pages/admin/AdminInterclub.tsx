@@ -1903,6 +1903,7 @@ async function generateInterclubSchedule(seasonId: string) {
               <h2 className="text-xl font-bold">Create CPU Club</h2>
               <button
                 onClick={() => setShowCpuClubForm(false)}
+                disabled={isClubUnavailable}
                 className="text-gray-400 hover:text-gray-600"
               >
                 <XCircle className="w-6 h-6" />
