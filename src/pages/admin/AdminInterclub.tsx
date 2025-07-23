@@ -509,6 +509,8 @@ const handleSaveGroup = async () => {
     );
 
     console.log("Group Edit Form Teams", groupEditForm.teams);
+    console.log("Teams to add", teamsToAdd);
+    console.log("Teams to remove", teamsToRemove);
 
     // Process removals - set group assignment to null
     const removePromises = teamsToRemove.map(async (team) => {
