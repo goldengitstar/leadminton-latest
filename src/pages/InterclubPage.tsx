@@ -659,19 +659,21 @@ const InterclubPage: React.FC = () => {
               {nextEncounter ? (
                 <>
                   <div className="p-4 mb-4">
-                    <div className="text-center mb-2 flex justify-center">
-                      <div className='justify-center flex'>
+                    <div className="flex justify-center items-center text-center mb-2 gap-8">
+                      <div className="flex flex-col items-center">
                         <div className="w-12 h-12 bg-blue-200 rounded-full flex items-center justify-center">
                           <Trophy className="w-6 h-6 text-blue-500" />
                         </div>
-                        <h3 className='text-center font-bold my-2'>{nextEncounter.home_club}</h3>
+                        <h3 className="font-bold my-2">{nextEncounter.home_club}</h3>
                       </div>
-                      <h2 className='mx-4 bold mt-[auto] mb-[auto]'>VS</h2>
-                      <div className='justify-center flex'>
+
+                      <h2 className="text-xl font-bold">VS</h2>
+
+                      <div className="flex flex-col items-center">
                         <div className="w-12 h-12 bg-pink-200 rounded-full flex items-center justify-center">
                           <Trophy className="w-6 h-6 text-pink-500" />
                         </div>
-                        <h3 className='text-center font-bold my-2'>{nextEncounter.away_club}</h3>
+                        <h3 className="font-bold my-2">{nextEncounter.away_club}</h3>
                       </div>
                     </div>
                     
