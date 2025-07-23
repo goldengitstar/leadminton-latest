@@ -126,6 +126,11 @@ const AdminInterclub: React.FC = () => {
     team_name: '',
     players: [] as string[],
   });
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+
+  const toggleGroup = (id: string) => {
+    setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
+  };
 
   const [showCpuClubForm, setShowCpuClubForm] = useState(false);
   const [cpuClubForm, setCpuClubForm] = useState({
@@ -1831,32 +1836,62 @@ const handleCpuRegistrationSubmit = async () => {
         </div>
       )}
 
-      {activeTab === 'groups' && (
-        <div className="space-y-6">
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Group Management</h3>
-              <button
-                onClick={() => setShowGroupForm(true)}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center space-x-2"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Create Group</span>
-              </button>
+    {activeTab === 'groups' && (
+      <div className="space-y-6">
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold">Group Management</h3>
+            <button
+              onClick={() => setShowGroupForm(true)}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center space-x-2"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Create Group</span>
+            </button>
+          </div>
+
+          {groups.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <TableCellsMerge className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+              <p>No groups created yet</p>
             </div>
-            
-            {groups.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <TableCellsMerge className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                <p>No groups created yet</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {groups.map((group) => (
-                  <div key={group.id} className="border rounded-lg p-4 bg-gray-50">
-                    <div className="flex justify-between items-center mb-3">
-                      <h4 className="font-medium">{group.name}</h4>
-                      <div className="flex space-x-2">
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {groups.map(group => (
+                <div key={group.id} className="border rounded-lg bg-gray-50">
+                  <button
+                    onClick={() => toggleGroup(group.id)}
+                    className="w-full flex justify-between items-center px-4 py-3 bg-white rounded-t-lg hover:bg-gray-100"
+                  >
+                    <h4 className="font-medium">{group.name}</h4>
+                    {expanded[group.id] ? (
+                      <ChevronUp className="w-4 h-4" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4" />
+                    )}
+                  </button>
+
+                  {expanded[group.id] && (
+                    <div className="p-4 space-y-3 max-h-48 overflow-y-auto">
+                      {group.teams && group.teams.length > 0 ? (
+                        group.teams.map(team => (
+                          <div
+                            key={team.id}
+                            className="flex items-center justify-between p-2 bg-white rounded shadow-sm"
+                          >
+                            <span>{team.team_name}</span>
+                            <span className="text-xs text-gray-500">
+                              {team.user_id === '00000000-0000-0000-0000-000000000000'
+                                ? 'CPU'
+                                : 'Player'}
+                            </span>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-sm text-gray-500">No teams assigned</p>
+                      )}
+
+                      <div className="flex justify-end space-x-2 mt-2">
                         <button
                           onClick={() => {
                             setSelectedGroup(group);
@@ -1869,7 +1904,9 @@ const handleCpuRegistrationSubmit = async () => {
                         </button>
                         <button
                           onClick={async () => {
-                            if (confirm(`Delete ${group.name}? This will unassign all teams.`)) {
+                            if (
+                              confirm(`Delete ${group.name}? This will unassign all teams.`)
+                            ) {
                               await supabase
                                 .from('interclub_groups')
                                 .delete()
@@ -1884,28 +1921,14 @@ const handleCpuRegistrationSubmit = async () => {
                         </button>
                       </div>
                     </div>
-                    
-                    <div className="space-y-2">
-                      {group.teams?.length > 0 ? (
-                        group.teams.map((team) => (
-                          <div key={team.id} className="flex items-center justify-between p-2 bg-white rounded">
-                            <span>{team.team_name}</span>
-                            <span className="text-xs text-gray-500">
-                              {team.user_id === '00000000-0000-0000-0000-000000000000' ? 'CPU' : 'Player'}
-                            </span>
-                          </div>
-                        ))
-                      ) : (
-                        <p className="text-sm text-gray-500">No teams assigned</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      )}
+      </div>
+    )}
 
       {/* Matches Management */}
       {activeTab === 'matches' && (
