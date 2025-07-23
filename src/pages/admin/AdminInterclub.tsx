@@ -89,6 +89,7 @@ const AdminInterclub: React.FC = () => {
     name: '',
     teams: [] as Team[]
   });
+  const [isClubUnavailable, setIsClubUnavailable] = useState(false);
   const [seasons, setSeasons] = useState<InterclubSeason[]>([]);
   const [registrations, setRegistrations] = useState<AdminRegistration[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
@@ -316,6 +317,19 @@ const AdminInterclub: React.FC = () => {
     ]);
 
   };
+
+  useEffect(() => {
+    const checkClubAvailability = async () => {
+      const { data: clubData } = await supabase
+        .from('club_manager')
+        .select('*')
+        .eq('user_id', '00000000-0000-0000-0000-000000000000');
+
+      setIsClubUnavailable(!!clubData && clubData.length > 0);
+    };
+
+    checkClubAvailability();
+  }, []);
 
   const updateClubResources = async () => {
     if (!editingClub) return;
@@ -988,6 +1002,7 @@ async function generateInterclubSchedule(seasonId: string) {
         {activeTab === 'clubs' ? (
           <button
             onClick={() => setShowCpuClubForm(true)}
+            disabled={isClubUnavailable}
             className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center space-x-2"
           >
             <Plus className="w-4 h-4" />
