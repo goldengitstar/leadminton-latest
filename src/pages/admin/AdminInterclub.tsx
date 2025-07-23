@@ -416,24 +416,14 @@ const AdminInterclub: React.FC = () => {
       
       if (error) throw error;
       
-      // Fetch CPU teams not assigned to any group
-      const { data: cpuTeams } = await supabase
-        .from('cpu_teams')
-        .select('id, name')
-        .is('group_id', null);
-      
       setGroupForm(prev => ({
         ...prev,
         availableTeams: [
           ...(approvedTeams?.map(t => ({ 
             id: t.id, 
             name: t.team_name, 
-            type: 'player' as const 
-          }))) || [],
-          ...(cpuTeams?.map(t => ({ 
-            id: t.id, 
-            name: t.name, 
-            type: 'cpu' as const 
+            type: t.user_id === '00000000-0000-0000-0000-000000000000' ? 'cpu' as const : 'player' as const
+ 
           }))) || []
         ]
       }));
@@ -476,23 +466,12 @@ const AdminInterclub: React.FC = () => {
         .eq('season_id', groupData.season_id)
         .eq('status', 'approved');
       
-      // Fetch all CPU teams (both assigned and unassigned)
-      const { data: cpuTeams } = await supabase
-        .from('cpu_teams')
-        .select('id, name, group_id');
-      
       setAvailableTeams([
         ...(playerTeams?.map(t => ({ 
           id: t.id, 
           team_name: t.team_name, 
-          type: 'player' as const,
+          type: t.user_id === '00000000-0000-0000-0000-000000000000' ? 'cpu' as const : 'player' as const,
           group_assignment: t.group_assignment
-        })) || []),
-        ...(cpuTeams?.map(t => ({ 
-          id: t.id, 
-          team_name: t.name, 
-          type: 'cpu' as const,
-          group_id: t.group_id
         })) || [])
       ]);
     } catch (error) {
@@ -3282,9 +3261,8 @@ const handleCpuRegistrationSubmit = async () => {
                       .filter(
                         (team) =>
                           (team.type === "player" &&
-                            team.group_assignment !==
-                              selectedGroup.group_number) ||
-                          (team.type === "cpu" && team.group_id !== selectedGroup.id)
+                            !team.group_assignment) ||
+                          (team.type === "cpu" && !team.group_id)
                       )
                       .map((team) => (
                         <div
