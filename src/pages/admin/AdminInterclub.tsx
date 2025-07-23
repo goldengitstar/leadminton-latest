@@ -321,7 +321,7 @@ const AdminInterclub: React.FC = () => {
         .from('club_managers')
         .select('*')
         .eq('user_id', '00000000-0000-0000-0000-000000000000');
-
+      console.log("club manager ", clubData)
       setIsClubUnavailable(!!clubData && clubData.length > 0);
     };
 
