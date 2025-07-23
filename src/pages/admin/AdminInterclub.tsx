@@ -528,12 +528,12 @@ const handleSaveGroup = async () => {
       await supabase
           .from('interclub_registrations')
           .update({ group_assignment: null })
-          .eq('id', team.id);
+          .eq('team_id', team.id);
       
       await supabase
           .from('interclub_teams')
           .update({ group_id: null })
-          .eq('id', team.id);
+          .eq('team_id', team.id);
     });
     
     await Promise.all([...addPromises, ...removePromises]);
