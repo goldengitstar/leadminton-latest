@@ -1733,7 +1733,7 @@ const handleCpuRegistrationSubmit = async () => {
                         Groupe {match.group_number}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        J{index + 1}
+                        J {index + 1}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {formatDate(match.match_date)}
