@@ -115,6 +115,67 @@ const AdminInterclub: React.FC = () => {
     shuttlecocks: 0,
     coins: 0
   });
+
+  const [showCpuClubForm, setShowCpuClubForm] = useState(false);
+  const [cpuClubForm, setCpuClubForm] = useState({
+    name: '',
+    club_name: '',
+    resources: {
+      diamonds: 0,
+      meals: 0,
+      shuttlecocks: 0,
+      coins: 0
+    }
+  });
+
+  const handleCreateCpuClub = async () => {
+    try {
+      setLoading(true);
+      
+      // Generate a unique club name if not provided
+      const clubName = cpuClubForm.club_name || `CPU CLUB ${Math.floor(Math.random() * 1000)}`;
+      
+      // Standard CPU user ID (you might want to create a real user for this)
+      const cpuUserId = '00000000-0000-0000-0000-000000000000';
+      
+      // Insert the club manager record
+      const { error } = await supabase
+        .from('club_managers')
+        .insert({
+          manager_name: cpuClubForm.name || 'CPU Manager',
+          name: cpuClubForm.name || 'CPU',
+          surname: 'Manager',
+          user_id: cpuUserId,
+          club_name: clubName
+        });
+      
+      if (error) throw error;
+      
+      // Insert resource transactions
+      await Promise.all(
+        Object.entries(cpuClubForm.resources).map(async ([type, amount]) => {
+          if (amount > 0) {
+            await supabase
+              .from('resource_transactions')
+              .insert({
+                user_id: cpuUserId,
+                source: "initial_setup",
+                resource_type: type,
+                amount: amount
+              });
+          }
+        })
+      );
+      
+      logActivity('cpu_club_created');
+      setShowCpuClubForm(false);
+      await loadClubs();
+    } catch (error) {
+      console.error('Error creating CPU club:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   
   // Enhanced form state for tier-based seasons
   const [seasonForm, setSeasonForm] = useState({
@@ -551,57 +612,69 @@ const AdminInterclub: React.FC = () => {
       setLoading(false);
     }
   };
-    type Registration = {
-    user_id: string;
-    players: any;
-  };
 
 async function createInterclubGroups(seasonId: string) {
-  const { data: season, error: seasonErr } = await supabase
+  const { data: season } = await supabase
     .from('interclub_seasons')
     .select('max_teams_per_group')
     .eq('id', seasonId)
     .single();
-  if (seasonErr || !season) throw seasonErr || new Error('Season not found');
-  const maxPerGroup = season.max_teams_per_group;
+  if (!season) throw new Error('Season not found');
+  const maxPerGroup = Math.min(season.max_teams_per_group, 8);
 
-  const { data: regs, error: regErr } = await supabase
+  const { data: approvedRegs } = await supabase
     .from('interclub_registrations')
     .select('user_id')
     .eq('season_id', seasonId)
-    .eq('status', 'approved');
-  if (regErr) throw regErr;
-  if (!regs || regs.length < 4) {
-    throw new Error('Minimum 4 approved teams required to create groups');
+    .eq('status', 'approved')
+    .eq('is_cpu', false);
+  if (!approvedRegs) throw new Error('Error fetching real team registrations');
+  const realTeams = approvedRegs.map(r => r.user_id);
+
+  const { data: cpuRegs } = await supabase
+    .from('interclub_registrations')
+    .select('user_id')
+    .eq('season_id', seasonId)
+    .eq('status', 'approved')
+    .eq('is_cpu', true);
+  const cpuTeams = cpuRegs?.map(r => r.user_id) ?? [];
+
+  if (realTeams.length + cpuTeams.length < 5) {
+    throw new Error('Not enough teams to form a group');
   }
 
-  const shuffled = regs.map(r => r.user_id).sort(() => Math.random() - 0.5);
-  const groupedRegs: string[][] = [];
-  while (shuffled.length) {
-    groupedRegs.push(shuffled.splice(0, maxPerGroup));
+  const shuffled = realTeams.sort(() => Math.random() - 0.5);
+  const groups: string[][] = [];
+
+  while (shuffled.length > 0) {
+    const groupSize = Math.min(maxPerGroup, shuffled.length);
+    groups.push(shuffled.splice(0, groupSize));
   }
 
-  const groupRecords = groupedRegs.map(() => ({ season_id: seasonId }));
-  const { data: createdGroups, error: grpErr } = await supabase
+  for (const group of groups) {
+    while (group.length < 5) {
+      if (cpuTeams.length === 0) {
+        throw new Error('Not enough CPU teams to reach minimum group size');
+      }
+      group.push(cpuTeams.shift()!);
+    }
+  }
+
+  const { data: createdGroups } = await supabase
     .from('interclub_groups')
-    .insert(groupRecords)
+    .insert(groups.map(() => ({ season_id: seasonId })))
     .select('id, group_number');
-  if (grpErr) throw grpErr;
   if (!createdGroups) throw new Error('Failed to create groups');
 
-  // 1.5) Update each team's registration with its group_number
-  for (let i = 0; i < groupedRegs.length; i++) {
-    const userIds = groupedRegs[i];
-    const groupNumber = createdGroups[i].group_number;
-    const { error: updateErr } = await supabase
+  for (let i = 0; i < groups.length; i++) {
+    await supabase
       .from('interclub_registrations')
-      .update({ group_assignment: groupNumber })
+      .update({ group_assignment: createdGroups[i].group_number })
       .eq('season_id', seasonId)
-      .in('user_id', userIds);
-    if (updateErr) throw updateErr;
+      .in('user_id', groups[i]);
   }
 
-  return { groupedRegs, createdGroups };
+  return { groups, createdGroups };
 }
 
 async function generateInterclubSchedule(seasonId: string) {
@@ -827,14 +900,23 @@ async function generateInterclubSchedule(seasonId: string) {
           <Trophy className="w-8 h-8 text-blue-500" />
           <h1 className="text-2xl font-bold">Interclub Administration</h1>
         </div>
-        
-        <button
-          onClick={handleCreateSeason}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center space-x-2"
-        >
-          <Plus className="w-4 h-4" />
-          <span>New Season</span>
-        </button>
+        {activeTab === 'clubs' ? (
+          <button
+            onClick={() => setShowCpuClubForm(true)}
+            className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center space-x-2"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Create CPU Club</span>
+          </button>
+        ) : (
+          <button
+            onClick={handleCreateSeason}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center space-x-2"
+          >
+            <Plus className="w-4 h-4" />
+            <span>New Season</span>
+          </button>
+        )}
       </div>
 
       {/* Enhanced Navigation Tabs */}
@@ -1698,6 +1780,147 @@ async function generateInterclubSchedule(seasonId: string) {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCpuClubForm && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold">Create CPU Club</h2>
+              <button
+                onClick={() => setShowCpuClubForm(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <XCircle className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Manager Name (Optional)</label>
+                <input
+                  type="text"
+                  value={cpuClubForm.name}
+                  onChange={(e) => setCpuClubForm({...cpuClubForm, name: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  placeholder="CPU Manager"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Club Name (Optional)</label>
+                <input
+                  type="text"
+                  value={cpuClubForm.club_name}
+                  onChange={(e) => setCpuClubForm({...cpuClubForm, club_name: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  placeholder="Will generate if empty"
+                />
+              </div>
+              
+              <div className="pt-2">
+                <h3 className="text-sm font-medium mb-3">Initial Resources</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1 flex items-center">
+                      <Diamond className="w-4 h-4 mr-1 text-purple-500" />
+                      Diamonds
+                    </label>
+                    <input
+                      type="number"
+                      value={cpuClubForm.resources.diamonds}
+                      onChange={(e) => setCpuClubForm({
+                        ...cpuClubForm,
+                        resources: {
+                          ...cpuClubForm.resources,
+                          diamonds: parseInt(e.target.value) || 0
+                        }
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                      min="0"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-1 flex items-center">
+                      <UtensilsCrossed className="w-4 h-4 mr-1 text-green-500" />
+                      Meals
+                    </label>
+                    <input
+                      type="number"
+                      value={cpuClubForm.resources.meals}
+                      onChange={(e) => setCpuClubForm({
+                        ...cpuClubForm,
+                        resources: {
+                          ...cpuClubForm.resources,
+                          meals: parseInt(e.target.value) || 0
+                        }
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                      min="0"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-1 flex items-center">
+                      <Feather className="w-4 h-4 mr-1 text-blue-500" />
+                      Shuttlecocks
+                    </label>
+                    <input
+                      type="number"
+                      value={cpuClubForm.resources.shuttlecocks}
+                      onChange={(e) => setCpuClubForm({
+                        ...cpuClubForm,
+                        resources: {
+                          ...cpuClubForm.resources,
+                          shuttlecocks: parseInt(e.target.value) || 0
+                        }
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                      min="0"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-1 flex items-center">
+                      <Coins className="w-4 h-4 mr-1 text-yellow-500" />
+                      Coins
+                    </label>
+                    <input
+                      type="number"
+                      value={cpuClubForm.resources.coins}
+                      onChange={(e) => setCpuClubForm({
+                        ...cpuClubForm,
+                        resources: {
+                          ...cpuClubForm.resources,
+                          coins: parseInt(e.target.value) || 0
+                        }
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                      min="0"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => setShowCpuClubForm(false)}
+                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateCpuClub}
+                disabled={loading}
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
+              >
+                {loading ? 'Creating...' : 'Create Club'}
+              </button>
             </div>
           </div>
         </div>
