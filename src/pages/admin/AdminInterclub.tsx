@@ -96,7 +96,6 @@ const AdminInterclub: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'seasons' | 'registrations' | 'groups' | 'matches' | 'stats' | 'clubs'>('seasons');
   const [searchTerm, setSearchTerm] = useState('');
-  const [cpuClubName, setCpuClubName] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [showSeasonForm, setShowSeasonForm] = useState(false);
   const [editingSeason, setEditingSeason] = useState<InterclubSeason | null>(null);
@@ -696,15 +695,6 @@ const fetchCpuTeamsAndCpuClubName = async () => {
     
     if (teamsError) throw teamsError;
     setCpuTeams(teamsData || []);
-
-     // Fetch CPU club name
-    const { data: clubData, error: clubError } = await supabase
-      .from('club_managers')
-      .select('name')
-      .eq('user_id', '00000000-0000-0000-0000-000000000000')
-
-    if(clubError) throw clubError;
-    setCpuClubName(clubData.name)
     
     if (teamsError) throw teamsError;
     setCpuTeams(teamsData || []);
@@ -2625,8 +2615,7 @@ async function generateInterclubSchedule(seasonId: string) {
                   onChange={(e) => {
                     setCpuRegistrationForm({
                       ...cpuRegistrationForm,
-                      team_name: e.target.value,
-                      club_name: cpuClubName || ''
+                      team_name: e.target.value
                     });
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg"
@@ -2638,16 +2627,6 @@ async function generateInterclubSchedule(seasonId: string) {
                     </option>
                   ))}
                 </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">Club Name</label>
-                <input
-                  type="text"
-                  value={cpuRegistrationForm.club_name}
-                  onChange={(e) => setCpuRegistrationForm({...cpuRegistrationForm, club_name: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                />
               </div>
 
               {registrationError && (
