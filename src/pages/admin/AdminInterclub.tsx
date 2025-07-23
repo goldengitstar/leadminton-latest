@@ -506,45 +506,43 @@ const handleSaveGroup = async () => {
       })) || [])
     ];
     console.log("All current teams", allCurrentTeams)
+    
     // Determine teams to add and remove
     const teamsToAdd = groupEditForm.teams.filter(team => 
       !allCurrentTeams.some(t => t.id === team.id && t.type === team.type)
     );
 
     const teamsToRemove = allCurrentTeams.filter(team => 
-      !groupEditForm.teams.some(t => t.id === team.id && t.type === team.type)
+      !teamsToAdd.some(t => t.id === team.id && t.type === team.type)
     );
+
     console.log("Teams to add", teamsToAdd)
     console.log("Teams to remove", teamsToRemove)
     
     // Process additions
     const addPromises = teamsToAdd.map(async (team) => {
-      if (team.type === 'player') {
-        await supabase
+      await supabase
           .from('interclub_registrations')
           .update({ group_assignment: selectedGroup.group_number })
           .eq('id', team.id);
-      } else {
-        await supabase
-          .from('cpu_teams')
+      
+      await supabase
+          .from('interclub_teams')
           .update({ group_id: selectedGroup.id })
-          .eq('id', team.id);
-      }
+          .eq('id', team.id)
     });
     
     // Process removals - set group assignment to null
     const removePromises = teamsToRemove.map(async (team) => {
-      if (team.type === 'player') {
-        await supabase
+      await supabase
           .from('interclub_registrations')
           .update({ group_assignment: null })
           .eq('id', team.id);
-      } else {
-        await supabase
-          .from('cpu_teams')
+      
+      await supabase
+          .from('interclub_teams')
           .update({ group_id: null })
           .eq('id', team.id);
-      }
     });
     
     await Promise.all([...addPromises, ...removePromises]);
