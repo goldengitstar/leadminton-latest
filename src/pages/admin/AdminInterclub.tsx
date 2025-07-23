@@ -3058,9 +3058,8 @@ const handleCpuRegistrationSubmit = async () => {
 
                 // Update all selected teams with the new group_id
                 const updates = groupForm.selectedTeams.map(async (team) => {
-                  const table = team.type === 'cpu' ? 'cpu_teams' : 'interclub_teams';
                   const { error } = await supabase
-                    .from(table)
+                    .from("interclub_teams")
                     .update({ group_id: groupData.id })
                     .eq('id', team.id);
 
