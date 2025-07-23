@@ -267,7 +267,6 @@ const AdminInterclub: React.FC = () => {
           resources
         };
       }));
-      console.log("clubs data", clubsData)
       setClubs(clubsData);
     } catch (error) {
       console.error('Error loading clubs:', error);
@@ -313,10 +312,8 @@ const AdminInterclub: React.FC = () => {
 
     try {
       setLoading(true);
-      console.log(editingClub.user_id)
       await Promise.all(
         Object.entries(resourceForm).map(async ([type, amount]) => {
-          console.log(type, amount)
           const { error } = await supabase
             .from('resource_transactions')
             .insert({
@@ -456,8 +453,6 @@ const AdminInterclub: React.FC = () => {
         .select('id, team_name, team_id, group_assignment')
         .eq('season_id', groupData.season_id)
         .eq('status', 'approved');
-      
-      console.log("Player teams", playerTeams)
 
       setAvailableTeams([
         ...(playerTeams?.map(t => ({ 
@@ -498,7 +493,6 @@ const handleSaveGroup = async () => {
         type: t.user_id === '00000000-0000-0000-0000-000000000000' ? 'cpu' as const : 'player' as const
       })) || [])
     ];
-    console.log("All current teams", allCurrentTeams)
     
     // Determine teams to add: in the form but not in DB
     const teamsToAdd = groupEditForm.teams.filter(team =>
@@ -509,10 +503,6 @@ const handleSaveGroup = async () => {
     const teamsToRemove = allCurrentTeams.filter(current =>
       !groupEditForm.teams.some(team => team.id === current.id)
     );
-
-    console.log("Group Edit Form Teams", groupEditForm.teams);
-    console.log("Teams to add", teamsToAdd);
-    console.log("Teams to remove", teamsToRemove);
 
     // Process removals - set group assignment to null
     const removePromises = teamsToRemove.map(async (team) => {
@@ -526,7 +516,6 @@ const handleSaveGroup = async () => {
           .update({ group_id: null })
           .eq('id', team.id);
     });
-    console.log("Selected group", selectedGroup)
 
     // Process additions
     const addPromises = teamsToAdd.map(async (team) => {
@@ -575,7 +564,6 @@ const handleSaveGroup = async () => {
       `)
       .order('created_at', { ascending: false });
 
-      console.log("Seasons data", seasonsData)
       if (error) throw error;
       if (!seasonsData) return setSeasons([]);
 
@@ -899,9 +887,6 @@ const handleCpuRegistrationSubmit = async () => {
       .eq('user_id', '00000000-0000-0000-0000-000000000000');
 
     if(clubError) return;
-
-    console.log("club data ", clubData)
-    console.log("Season id ", cpuRegistrationForm.season_id)
 
     //add team to interclub_teams
     const teamData = {
@@ -3059,9 +3044,6 @@ const handleCpuRegistrationSubmit = async () => {
                 if (groupError) throw groupError;
 
                 // Update all selected teams with the new group_id
-                console.log("Selected teams in the group", groupForm.selectedTeams)
-                console.log("Group data id", groupData.id)
-
                 await Promise.all(
                   groupForm.selectedTeams.map(async (team) => {
                     const { error } = await supabase
@@ -3181,7 +3163,6 @@ const handleCpuRegistrationSubmit = async () => {
                         <button
                           type="button"
                           onClick={(e) => {
-                            console.log("Removing team", team)
                             e.stopPropagation();
                             setGroupForm(prev => ({
                               ...prev,
@@ -3327,7 +3308,7 @@ const handleCpuRegistrationSubmit = async () => {
                           className="p-2 hover:bg-gray-100 rounded flex items-center justify-between"
                         >
                           <div className="flex items-center">
-                            <span className="truncate">{team.team_name}</span>
+                            <span className="truncate">{team.name}</span>
                             <span className="ml-2 text-xs text-gray-500 whitespace-nowrap">
                               ({team.user_id === '00000000-0000-0000-0000-000000000000' ? 'cpu' as const : 'player' as const})
                             </span>
