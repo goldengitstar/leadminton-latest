@@ -487,12 +487,12 @@ const handleSaveGroup = async () => {
     // Get current teams in the group from the database
     const { data: currentTeams } = await supabase
       .from('interclub_teams')
-      .select('id, user_id')
+      .select('id, user_id, team_id')
       .eq('group_id', selectedGroup.id);
 
     const allCurrentTeams = [
       ...(currentTeams?.map(t => ({
-        id: t.id,
+        id: t.team_id,
         type: t.user_id === '00000000-0000-0000-0000-000000000000' ? 'cpu' as const : 'player' as const
       })) || [])
     ];
@@ -500,11 +500,11 @@ const handleSaveGroup = async () => {
     
     // Determine teams to add and remove
     const teamsToAdd = groupEditForm.teams.filter(team => 
-      !allCurrentTeams.some(t => t.id === team.id && t.type === team.type)
+      !allCurrentTeams.some(t => t.id === team.id)
     );
 
     const teamsToRemove = allCurrentTeams.filter(team => 
-      !teamsToAdd.some(t => t.id === team.id && t.type === team.type)
+      !teamsToAdd.some(t => t.id === team.id)
     );
 
     console.log("Teams to add", teamsToAdd)
