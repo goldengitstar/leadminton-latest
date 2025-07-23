@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAdmin } from '../../contexts/AdminContext';
-import { User, ChevronDown } from 'lucide-react';
+import { User, ChevronDown, ChevronUp} from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { InterclubService } from '../../services/database/interclubService';
 import { 
