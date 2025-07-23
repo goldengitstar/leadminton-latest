@@ -1744,9 +1744,7 @@ const handleCpuRegistrationSubmit = async () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {match.home_score !== undefined && match.away_score !== undefined 
-                          ? `${match.home_score}-${match.away_score}` 
-                          : '-'}
+                        {match.final_score}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                         <button className="text-blue-600 hover:text-blue-900">
