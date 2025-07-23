@@ -453,13 +453,13 @@ const AdminInterclub: React.FC = () => {
       // Fetch all approved teams for this season (both assigned and unassigned)
       const { data: playerTeams } = await supabase
         .from('interclub_registrations')
-        .select('id, team_name, group_assignment')
+        .select('id, team_name, team_id, group_assignment')
         .eq('season_id', groupData.season_id)
         .eq('status', 'approved');
       
       setAvailableTeams([
         ...(playerTeams?.map(t => ({ 
-          id: t.id, 
+          id: t.team_id, 
           team_name: t.team_name, 
           type: t.user_id === '00000000-0000-0000-0000-000000000000' ? 'cpu' : 'player',
           group_assignment: t.group_assignment
