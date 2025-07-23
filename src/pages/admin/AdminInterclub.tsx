@@ -525,6 +525,7 @@ const handleSaveGroup = async () => {
           .eq('id', team.id);
     });
     console.log("Selected group", selectedGroup)
+
     // Process additions
     const addPromises = teamsToAdd.map(async (team) => {
       await supabase
@@ -669,20 +670,20 @@ const handleSaveGroup = async () => {
 
       // 2) Fetch all registrations (including the group_assignment field)
       const { data: regsData, error: regsErr } = await supabase
-        .from('interclub_registrations')
+        .from('interclub_teams')
         .select(`
           id,
-          team_name,
+          name,
           user_id,
-          status,
-          group_assignment
+          registration_status,
+          group_id
         `);
       if (regsErr) throw regsErr;
 
       // 3) Merge registrations into their groups manually
       const groupsWithTeams = (groupsData || []).map(group => ({
         ...group,
-        teams: (regsData || []).filter(r => r.group_assignment === group.group_number)
+        teams: (regsData || []).filter(r => r.group_id === group.id)
       }));
 
       setGroups(groupsWithTeams);
