@@ -505,14 +505,14 @@ const handleSaveGroup = async () => {
         type: t.user_id === '00000000-0000-0000-0000-000000000000' ? 'cpu' as const : 'player' as const
       })) || [])
     ];
-    
+    console.log("All current teams", allCurrentTeams)
     // Determine teams to add and remove
     const teamsToAdd = groupEditForm.teams.filter(team => 
-      !allCurrentTeams.some(t => t.id === team.id)
+      !allCurrentTeams.some(t => t.id === team.id && t.type === team.type)
     );
-    
+
     const teamsToRemove = allCurrentTeams.filter(team => 
-      !groupEditForm.teams.some(t => t.id === team.id)
+      !groupEditForm.teams.some(t => t.id === team.id && t.type === team.type)
     );
     console.log("Teams to add", teamsToAdd)
     console.log("Teams to remove", teamsToRemove)
