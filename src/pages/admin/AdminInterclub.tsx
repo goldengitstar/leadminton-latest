@@ -498,17 +498,18 @@ const handleSaveGroup = async () => {
     ];
     console.log("All current teams", allCurrentTeams)
     
-    // Determine teams to add and remove
-    const teamsToAdd = groupEditForm.teams.filter(team => 
-      !allCurrentTeams.some(t => t.id === team.id)
+    // Determine teams to add: in the form but not in DB
+    const teamsToAdd = groupEditForm.teams.filter(team =>
+      !allCurrentTeams.some(current => current.id === team.id && current.type === team.type)
     );
 
-    const teamsToRemove = allCurrentTeams.filter(team => 
-      !teamsToAdd.some(t => t.id === team.id)
+    // Determine teams to remove: in DB but not in the form
+    const teamsToRemove = allCurrentTeams.filter(current =>
+      !groupEditForm.teams.some(team => team.id === current.id && team.type === current.type)
     );
 
-    console.log("Teams to add", teamsToAdd)
-    console.log("Teams to remove", teamsToRemove)
+    console.log("Teams to add", teamsToAdd);
+    console.log("Teams to remove", teamsToRemove);
     
     // Process removals - set group assignment to null
     const removePromises = teamsToRemove.map(async (team) => {
