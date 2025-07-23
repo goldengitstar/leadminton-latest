@@ -105,13 +105,8 @@ const InterclubPage: React.FC = () => {
   }, [nextEncounter]);
 
   useEffect(() => {
-    console.log(loading, selectedPlayers.length < 5, teamName, meetsGenderReqs)
-  })
-
-  useEffect(() => {
     const maleCount = gameState.players.filter(p => p.gender === 'male').length;
     const femaleCount  = gameState.players.filter(p => p.gender === 'female').length;
-    console.log("Male count", maleCount, "Female count", femaleCount)
     const valid = (maleCount >= 4 && femaleCount >= 3);
     setMeetsGenderReqs(valid);
   }, [selectedPlayers, gameState.players]);
@@ -135,7 +130,6 @@ const InterclubPage: React.FC = () => {
       
       // Check current season status
       const currentStatus = await interclubService.getUserCurrentSeasonStatus(user.id);
-      console.log("Current season status ", currentStatus)
       setCurrentSeasonStatus(currentStatus);
       
       // Get next encounter if in active season
@@ -565,7 +559,6 @@ const InterclubPage: React.FC = () => {
     const malePlayersAvailable = gameState.players.filter(p => p.gender === 'male');
     const femalePlayersAvailable = gameState.players.filter(p => p.gender === 'female');
     const endDate = new Date(currentSeasonStatus.registration.season.end_date);
-    console.log("Season details", currentSeasonStatus.registration.season)
     const today = new Date();
     const daysRemaining = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
