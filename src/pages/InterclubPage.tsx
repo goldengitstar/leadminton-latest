@@ -223,6 +223,7 @@ const InterclubPage: React.FC = () => {
       const teamData = {
         name: teamName,
         user_id: user.id,
+        season_id: selectedSeason.id,
         club_name: clubData?.[0]?.club_name,
         players_count: selectedPlayers.length,
         is_cpu: false,

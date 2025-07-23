@@ -901,6 +901,7 @@ const handleCpuRegistrationSubmit = async () => {
     const teamData = {
       name: teamName,
       club_name: clubData?.[0]?.club_name,
+      season_id: cpuRegistrationForm.season_id,
       user_id: '00000000-0000-0000-0000-000000000000',
       players_count: playersData.length,
       registration_status:'pending',
@@ -3052,6 +3053,7 @@ const handleCpuRegistrationSubmit = async () => {
                 if (groupError) throw groupError;
 
                 // Update all selected teams with the new group_id
+                console.log("Selected teams in the group", groupForm.selectedTeams)
                 const updates = groupForm.selectedTeams.map(async (team) => {
                   const { error } = await supabase
                     .from("interclub_teams")
