@@ -904,10 +904,12 @@ const handleCpuRegistrationSubmit = async () => {
 
     if(clubError) return;
 
+    console.log("club data ", clubData)
+
     //add team to interclub_teams
     const teamData = {
       name: teamName,
-      club_name: clubData?.club_name,
+      club_name: clubData?.[0]?.club_name,
       user_id: '00000000-0000-0000-0000-000000000000',
       players_count: playersData.length,
       registration_status:'pending',
