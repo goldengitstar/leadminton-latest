@@ -2,6 +2,7 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { ResourceService } from './resourceService';
 import { PlayerService } from './playerService';
 import { MatchService } from './matchService';
+import { supabase } from '@/lib/supabase';
 import {
   InterclubSeason,
   InterclubRegistration,
@@ -422,7 +423,7 @@ export class InterclubService {
       console.log('[InterclubService] Lineup submitted successfully');
       return { success: true };
     } catch (error) {
-      console.error('Error in submitLineup:', error);
+      console.log('Error in submitLineup:', error);
       return { success: false, error: 'Failed to submit lineup' };
     }
   }
@@ -653,30 +654,60 @@ export class InterclubService {
   /**
    * Build lineup with full player details
    */
-  private async buildLineupWithPlayerDetails(lineup: LineupSubmission['lineup']): Promise<any> {
+  private async buildLineupWithPlayerDetails(
+    lineup: LineupSubmission['lineup']
+  ): Promise<{
+    mens_singles: any;
+    womens_singles: any;
+    mens_doubles: any[];
+    womens_doubles: any[];
+    mixed_doubles: any[];
+  }> {
+    // 1) Collect all the IDs we need
     const allPlayerIds = [
       lineup.mens_singles,
       lineup.womens_singles,
       ...lineup.mens_doubles,
       ...lineup.womens_doubles,
-      ...lineup.mixed_doubles
+      ...lineup.mixed_doubles,
     ];
 
-    const playerDetails = await Promise.all(
-      allPlayerIds.map(id => this.playerService.getPlayerWithDetails(id))
-    );
+    // 2) Batch‑fetch everything in parallel
+    const [
+      { data: players, error: playersErr },
+      { data: levels, error: levelsErr },
+      { data: stats, error: statsErr },
+      { data: equipments, error: equipErr },
+    ] = await Promise.all([
+      supabase.from('players').select('*').in('id', allPlayerIds),
+      supabase.from('player_levels').select('*').in('player_id', allPlayerIds),
+      supabase.from('player_stats').select('*').in('player_id', allPlayerIds),
+      supabase.from('player_equipment').select('*').in('player_id', allPlayerIds),
+    ]);
 
-    const playerMap = playerDetails.reduce((map, player) => {
-      map[player.id] = player;
-      return map;
-    }, {} as Record<string, any>);
+    if (playersErr) throw playersErr;
+    if (levelsErr)  throw levelsErr;
+    if (statsErr)   throw statsErr;
+    if (equipErr)   throw equipErr;
 
+    // 3) Build a lookup map so we can merge in O(1)
+    const playerMap: Record<string, any> = {};
+    players!.forEach(p => {
+      playerMap[p.id] = {
+        ...p,
+        player_levels: levels!.find(l => l.player_id === p.id) || {},
+        strategy:       stats!.find(s => s.player_id === p.id) || {},
+        equipments:     equipments!.filter(e => e.player_id === p.id),
+      };
+    });
+
+    // 4) Re‑assemble the structure
     return {
-      mens_singles: playerMap[lineup.mens_singles],
+      mens_singles:  playerMap[lineup.mens_singles],
       womens_singles: playerMap[lineup.womens_singles],
-      mens_doubles: lineup.mens_doubles.map(id => playerMap[id]),
+      mens_doubles:  lineup.mens_doubles.map(id => playerMap[id]),
       womens_doubles: lineup.womens_doubles.map(id => playerMap[id]),
-      mixed_doubles: lineup.mixed_doubles.map(id => playerMap[id])
+      mixed_doubles: lineup.mixed_doubles.map(id => playerMap[id]),
     };
   }
 
@@ -1119,8 +1150,19 @@ export class InterclubService {
         .single();
 
       if (error || !encounter) {
-        return null;
+        throw new Error('Match not found or error occurred');
       }
+
+      // Step 2: Get club name from club_managers
+      const { data: clubData, error: clubError } = await this.supabase
+        .from('club_managers')
+        .select('club_name')
+        .eq('user_id', userId)
+        .single();
+
+      
+      // Use "DUMMY CLUB" if no club manager record exists
+      const clubName = clubData?.club_name ?? 'DUMMY CLUB';
 
       // Step 2: Fetch team names using the IDs from the encounter
       const { data: teams, error: teamError } = await this.supabase
@@ -1146,15 +1188,15 @@ export class InterclubService {
 
       console.log("Home lineup", homeLineup, "Away team ", awayLineup)
 
-
       // Step 5: Return enriched encounter object
       return {
         ...encounter,
+        club_name: clubName,
         home_lineup: homeLineup,
         away_lineup: awayLineup,
         home_team_name: homeTeamName,
         away_team_name: awayTeamName,
-        matches: [] // populate separately as needed
+        matches: []
       } as InterclubEncounter;
     } catch (error) {
       console.error('Error in getUserNextEncounter:', error);

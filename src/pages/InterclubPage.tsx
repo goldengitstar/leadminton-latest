@@ -226,7 +226,7 @@ const InterclubPage: React.FC = () => {
         setShowLineupBuilder(false);
       }
     } catch (error) {
-      console.error('Lineup submission error:', error);
+      console.log('Lineup submission error:', error);
     } finally {
       setLoading(false);
     }
@@ -664,14 +664,14 @@ const InterclubPage: React.FC = () => {
                         <div className="w-12 h-12 bg-blue-200 rounded-full flex items-center justify-center">
                           <Trophy className="w-6 h-6 text-blue-500" />
                         </div>
-                        <h3 className='text-center font-bold my-2'>{nextEncounter.home_team_name}</h3>
+                        <h3 className='text-center font-bold my-2'>{nextEncounter.club_name}</h3>
                       </div>
                       <h2 className='mx-4 bold mt-[auto] mb-[auto]'>VS</h2>
                       <div className='justify-center'>
                         <div className="w-12 h-12 bg-pink-200 rounded-full flex items-center justify-center">
                           <Trophy className="w-6 h-6 text-pink-500" />
                         </div>
-                        <h3 className='text-center font-bold my-2'>{nextEncounter.away_team_name}</h3>
+                        <h3 className='text-center font-bold my-2'>{nextEncounter.club_name}</h3>
                       </div>
                     </div>
                     
