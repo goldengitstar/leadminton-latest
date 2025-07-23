@@ -281,7 +281,7 @@ const AdminInterclub: React.FC = () => {
     loadPendingRegistrations();
     loadGroups();
     loadMatches();
-    loadClubs(); // Add this
+    loadClubs();
     logActivity('admin_interclub_enhanced_viewed');
   }, []);
 
@@ -294,15 +294,6 @@ const AdminInterclub: React.FC = () => {
       fetchAvailableTeams(selectedGroup.id);
     }
   }, [selectedGroup]);
-
-  useEffect(() => {
-    loadSeasons();
-    loadPendingRegistrations();
-    loadGroups();
-    loadMatches();
-    logActivity('admin_interclub_enhanced_viewed');
-  }, []);
-
 
   useEffect(() => {
     const checkClubAvailability = async () => {
@@ -951,6 +942,8 @@ const handleCpuRegistrationSubmit = async () => {
       team_name: '',
       players: [],
     });
+
+    loadPendingRegistrations();
 
   } catch (error) {
     console.error('CPU registration error:', error);
