@@ -296,24 +296,6 @@ const AdminInterclub: React.FC = () => {
     logActivity('admin_interclub_enhanced_viewed');
   }, []);
 
-  const fetchAvailableTeams = async (groupId: string) => {
-
-    const { data: cpuTeams } = await supabase
-      .from('cpu_teams')
-      .select('id, name, group_id')
-      .or(`group_id.eq.${groupId},group_id.is.null`)
-
-    const { data: playerTeams } = await supabase
-      .from('interclub_teams')
-      .select('id, team_name, group_id')
-      .or(`group_id.eq.${groupId},group_id.is.null`)
-
-    setAvailableTeams([
-      ...(cpuTeams?.map(t => ({ id: t.id, type: 'cpu', team_name: t.name })) || []),
-      ...(playerTeams?.map(t => ({ id: t.id, type: 'player', team_name: t.team_name })) || [])
-    ]);
-
-  };
 
   useEffect(() => {
     const checkClubAvailability = async () => {
@@ -362,27 +344,92 @@ const AdminInterclub: React.FC = () => {
     }
   };
 
+  const handleCreateGroup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      setLoading(true);
+      
+      // First create the group and get the group number
+      const { data: groupData, error: groupError } = await supabase
+        .from('interclub_groups')
+        .insert({
+          name: groupForm.name,
+          season_id: groupForm.seasonId
+        })
+        .select('id, group_number')
+        .single();
+      
+      if (groupError) throw groupError;
+
+      // Update all selected teams with the group assignment
+      const updatePromises = groupForm.selectedTeams.map(async (team) => {
+        if (team.type === 'player') {
+          // Update player team registration
+          const { error } = await supabase
+            .from('interclub_registrations')
+            .update({ group_assignment: groupData.group_number })
+            .eq('id', team.id);
+          
+          if (error) throw error;
+        } else {
+          // Update CPU team
+          const { error } = await supabase
+            .from('cpu_teams')
+            .update({ group_id: groupData.id })
+            .eq('id', team.id);
+          
+          if (error) throw error;
+        }
+      });
+
+      await Promise.all(updatePromises);
+      
+      logActivity('interclub_group_created', 'group', groupData.id);
+      setShowGroupForm(false);
+      await loadGroups();
+    } catch (error) {
+      console.error('Error creating group:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const loadTeamsForSeason = async (seasonId: string) => {
     try {
       setLoading(true);
       
+      // Fetch approved registrations for the season
+      const { data: approvedTeams, error } = await supabase
+        .from('interclub_registrations')
+        .select('id, team_name, user_id')
+        .eq('season_id', seasonId)
+        .eq('status', 'approved')
+        .is('group_assignment', null);
+      
+      if (error) throw error;
+      
+      // Fetch CPU teams not assigned to any group
       const { data: cpuTeams } = await supabase
         .from('cpu_teams')
         .select('id, name')
         .is('group_id', null);
-
-      const { data: playerTeams } = await supabase
-        .from('interclub_teams')
-        .select('id, name')
-        .is('group_id', null);
-
-     setGroupForm(prev => ({
-      ...prev,
-      availableTeams: [
-        ...(cpuTeams ? cpuTeams.map(t => ({ id: t.id, name: t.name, type: 'cpu' as const })) : []),
-        ...(playerTeams ? playerTeams.map(t => ({ id: t.id, name: t.name, type: 'player' as const })) : [])
-      ]
-    }));
+      
+      setGroupForm(prev => ({
+        ...prev,
+        availableTeams: [
+          ...(approvedTeams?.map(t => ({ 
+            id: t.id, 
+            name: t.team_name, 
+            type: 'player' as const 
+          })) || []),
+          ...(cpuTeams?.map(t => ({ 
+            id: t.id, 
+            name: t.name, 
+            type: 'cpu' as const 
+          })) || [])
+        ]
+      }));
     } catch (error) {
       console.error('Error loading teams:', error);
     } finally {
@@ -402,28 +449,115 @@ const AdminInterclub: React.FC = () => {
     });
   };
 
+  const fetchAvailableTeams = async (groupId: string) => {
+    try {
+      setLoading(true);
+      
+      // Get the season ID for this group
+      const { data: groupData } = await supabase
+        .from('interclub_groups')
+        .select('season_id')
+        .eq('id', groupId)
+        .single();
+      
+      if (!groupData) return;
+      
+      // Fetch all approved teams for this season (both assigned and unassigned)
+      const { data: playerTeams } = await supabase
+        .from('interclub_registrations')
+        .select('id, team_name, group_assignment')
+        .eq('season_id', groupData.season_id)
+        .eq('status', 'approved');
+      
+      // Fetch all CPU teams (both assigned and unassigned)
+      const { data: cpuTeams } = await supabase
+        .from('cpu_teams')
+        .select('id, name, group_id');
+      
+      setAvailableTeams([
+        ...(playerTeams?.map(t => ({ 
+          id: t.id, 
+          team_name: t.team_name, 
+          type: 'player' as const,
+          group_assignment: t.group_assignment
+        })) || []),
+        ...(cpuTeams?.map(t => ({ 
+          id: t.id, 
+          team_name: t.name, 
+          type: 'cpu' as const,
+          group_id: t.group_id
+        })) || [])
+      ]);
+    } catch (error) {
+      console.error('Error fetching teams:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSaveGroup = async () => {
     try {
+      if (!selectedGroup) return;
+      
+      setLoading(true);
+      
+      // First update the group name
       await supabase
         .from('interclub_groups')
         .update({ name: groupEditForm.name })
-        .eq('id', selectedGroup?.id);
-
-      const updatePromises = groupEditForm.teams.map(team => {
-        console.log(team)
-        return supabase
-          .from(team.type === 'cpu' ? 'cpu_teams' : 'interclub_registrations')
-          .update({ group_id: selectedGroup?.id })
-          .eq('id', team.id);
-      });
-
-      await Promise.all(updatePromises);
+        .eq('id', selectedGroup.id);
       
-      // Refresh data
-      await loadSeasons();
+      // Get current teams in the group
+      const currentTeams = selectedGroup.teams || [];
+      
+      // Determine teams to add and remove
+      const teamsToAdd = groupEditForm.teams.filter(team => 
+        !currentTeams.some(t => t.id === team.id && t.type === team.type)
+      );
+      
+      const teamsToRemove = currentTeams.filter(team => 
+        !groupEditForm.teams.some(t => t.id === team.id && t.type === team.type)
+      );
+      
+      // Process additions
+      const addPromises = teamsToAdd.map(async (team) => {
+        if (team.type === 'player') {
+          await supabase
+            .from('interclub_registrations')
+            .update({ group_assignment: selectedGroup.group_number })
+            .eq('id', team.id);
+        } else {
+          await supabase
+            .from('cpu_teams')
+            .update({ group_id: selectedGroup.id })
+            .eq('id', team.id);
+        }
+      });
+      
+      // Process removals
+      const removePromises = teamsToRemove.map(async (team) => {
+        if (team.type === 'player') {
+          await supabase
+            .from('interclub_registrations')
+            .update({ group_assignment: null })
+            .eq('id', team.id);
+        } else {
+          await supabase
+            .from('cpu_teams')
+            .update({ group_id: null })
+            .eq('id', team.id);
+        }
+      });
+      
+      await Promise.all([...addPromises, ...removePromises]);
+      
+      logActivity('interclub_group_updated', 'group', selectedGroup.id);
       setSelectedGroup(null);
+      await loadGroups();
     } catch (error) {
       console.error('Error saving group:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -535,8 +669,38 @@ const AdminInterclub: React.FC = () => {
 
   const loadGroups = async () => {
     try {
+      setLoading(true);
+
+      // 1) Fetch all groups
+      const { data: groupsData, error: groupsErr } = await supabase
+        .from('interclub_groups')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (groupsErr) throw groupsErr;
+
+      // 2) Fetch all registrations (including the group_assignment field)
+      const { data: regsData, error: regsErr } = await supabase
+        .from('interclub_registrations')
+        .select(`
+          id,
+          team_name,
+          user_id,
+          status,
+          group_assignment
+        `);
+      if (regsErr) throw regsErr;
+
+      // 3) Merge registrations into their groups manually
+      const groupsWithTeams = (groupsData || []).map(group => ({
+        ...group,
+        teams: (regsData || []).filter(r => r.group_assignment === group.group_number)
+      }));
+
+      setGroups(groupsWithTeams);
     } catch (error) {
       console.error('Error loading groups:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -1652,7 +1816,6 @@ const handleCpuRegistrationSubmit = async () => {
         </div>
       )}
 
-      {/* Groups Management */}
       {activeTab === 'groups' && (
         <div className="space-y-6">
           <div className="bg-white rounded-lg shadow-sm p-6">
@@ -1662,60 +1825,69 @@ const handleCpuRegistrationSubmit = async () => {
                 onClick={() => setShowGroupForm(true)}
                 className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center space-x-2"
               >
-                <UserPlus className="w-4 h-4" />
-                <span>Create Groups</span>
+                <Plus className="w-4 h-4" />
+                <span>Create Group</span>
               </button>
             </div>
             
-            {seasons.map((season) => (
-              <div key={season.id} className="border rounded-lg p-4 mb-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center space-x-3">
-                    {getTierIcon(season.tier)}
-                    <h4 className="font-medium">{season.name}</h4>
-                    <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(season.status)}`}>
-                      {season.status}
-                    </span>
-                  </div>
-                                     <div className="text-sm text-gray-500">
-                     {registrations.filter(r => r.season_id === season.id && r.status === 'approved').length} approved teams
-                   </div>
-                </div>
-                
-                {season.groups && season.groups.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {season.groups.map((group, index) => (
-                      <div key={index} className="bg-gray-50 rounded-lg p-3 relative">
-                        <div className="flex justify-between items-start mb-2">
-                          <h5 className="font-medium">Groupe {index + 1}</h5>
-                        </div>
-                        <div className="space-y-1">
-                          {group.teams?.map((team, teamIndex) => (
-                            <div key={`${team.id}-${teamIndex}`} className="text-sm text-gray-600 flex items-center">
-                              <Users className="w-3 h-3 mr-1" />
-                              {team.team_name || `Team ${teamIndex + 1}`}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ): (
-                  <div className="text-center py-8 text-gray-500">
-                    <Target className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                                         <p>No groups created for this season</p>
-                     {season.status === 'registration_closed' && (
-                       <button
-                         onClick={() => createInterclubGroups(season.id)}
-                         className="mt-3 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
-                       >
-                         Generate Groups
-                       </button>
-                     )}
-                  </div>
-                )}
+            {groups.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <TableCellsMerge className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                <p>No groups created yet</p>
               </div>
-            ))}
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {groups.map((group) => (
+                  <div key={group.id} className="border rounded-lg p-4 bg-gray-50">
+                    <div className="flex justify-between items-center mb-3">
+                      <h4 className="font-medium">{group.name}</h4>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => {
+                            setSelectedGroup(group);
+                            fetchAvailableTeams(group.id);
+                          }}
+                          className="text-blue-600 hover:text-blue-900"
+                          title="Edit group"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={async () => {
+                            if (confirm(`Delete ${group.name}? This will unassign all teams.`)) {
+                              await supabase
+                                .from('interclub_groups')
+                                .delete()
+                                .eq('id', group.id);
+                              await loadGroups();
+                            }
+                          }}
+                          className="text-red-600 hover:text-red-900"
+                          title="Delete group"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      {group.teams?.length > 0 ? (
+                        group.teams.map((team) => (
+                          <div key={team.id} className="flex items-center justify-between p-2 bg-white rounded">
+                            <span>{team.team_name}</span>
+                            <span className="text-xs text-gray-500">
+                              {team.user_id === '00000000-0000-0000-0000-000000000000' ? 'CPU' : 'Player'}
+                            </span>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-sm text-gray-500">No teams assigned</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -3024,57 +3196,109 @@ const handleCpuRegistrationSubmit = async () => {
 
         {/* Group Management Modal */}
         {selectedGroup && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-bold">Manage Group</h3>
-                <button onClick={() => setSelectedGroup(null)} className="text-gray-500 hover:text-gray-700">
-                  <X className="w-5 h-5" />
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold">Edit Group: {selectedGroup.name}</h2>
+                <button
+                  onClick={() => setSelectedGroup(null)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <XCircle className="w-6 h-6" />
                 </button>
               </div>
-
+              
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-1">Group Name</label>
                 <input
                   type="text"
                   value={groupEditForm.name}
                   onChange={(e) => setGroupEditForm({...groupEditForm, name: e.target.value})}
-                  className="w-full px-3 py-2 border rounded"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                 />
               </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">Teams</label>
-                <div className="max-h-60 overflow-y-auto border rounded p-2">
-                  {availableTeams.map(team => (
-                    <div key={team.id} className="flex items-center justify-between py-2">
-                      <div className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={groupEditForm.teams.some(t => t.id === team.id && t.type === team.type)}
-                          onChange={() => handleTeamToggle(team)}
-                          className="mr-2"
-                        />
-                        <span>{team.team_name}</span>
-                        <span className="ml-2 text-xs text-gray-500">({team.type})</span>
-                      </div>
-                    </div>
-                  ))}
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h3 className="text-sm font-medium mb-2">Available Teams</h3>
+                  <div className="border rounded-lg p-3 max-h-60 overflow-y-auto">
+                    {availableTeams
+                      .filter(team => 
+                        (team.type === 'player' && team.group_assignment !== selectedGroup.group_number) ||
+                        (team.type === 'cpu' && team.group_id !== selectedGroup.id)
+                      )
+                      .map(team => (
+                        <div 
+                          key={`${team.type}-${team.id}`}
+                          className="p-2 hover:bg-gray-100 rounded cursor-pointer"
+                          onClick={() => handleTeamToggle(team)}
+                        >
+                          <div className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={groupEditForm.teams.some(t => t.id === team.id && t.type === team.type)}
+                              className="mr-2"
+                              readOnly
+                            />
+                            <span>{team.team_name}</span>
+                            <span className="ml-2 text-xs text-gray-500">
+                              ({team.type === 'cpu' ? 'CPU Team' : 'Player Team'})
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+                
+                <div>
+                  <h3 className="text-sm font-medium mb-2">Selected Teams ({groupEditForm.teams.length})</h3>
+                  <div className="border rounded-lg p-3 max-h-60 overflow-y-auto">
+                    {groupEditForm.teams.length === 0 ? (
+                      <p className="text-gray-500 text-center py-4">No teams selected</p>
+                    ) : (
+                      groupEditForm.teams.map(team => (
+                        <div 
+                          key={`selected-${team.type}-${team.id}`}
+                          className="p-2 hover:bg-gray-100 rounded cursor-pointer"
+                          onClick={() => handleTeamToggle(team)}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <span>{team.team_name}</span>
+                              <span className="ml-2 text-xs text-gray-500">
+                                ({team.type === 'cpu' ? 'CPU Team' : 'Player Team'})
+                              </span>
+                            </div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleTeamToggle(team);
+                              }}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
                 </div>
               </div>
-
-              <div className="flex justify-end space-x-3">
+              
+              <div className="flex justify-end space-x-3 mt-6">
                 <button
                   onClick={() => setSelectedGroup(null)}
-                  className="px-4 py-2 bg-gray-200 rounded"
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSaveGroup}
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  disabled={loading}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
                 >
-                  Save Changes
+                  {loading ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
             </div>
