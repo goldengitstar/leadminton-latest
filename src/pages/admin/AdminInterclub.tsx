@@ -769,72 +769,77 @@ const handleCpuRegistrationSubmit = async () => {
   }
 };
 
-async function generateInterclubSchedule(seasonId: string) {
-  const { data: season, error: seasonErr } = await supabase
-    .from('interclub_seasons')
-    .select('start_date')
-    .eq('id', seasonId)
-    .single();
-  if (seasonErr || !season) throw seasonErr || new Error('Season not found');
-  const seasonStart = new Date(season.start_date);
+  async function generateInterclubSchedule(seasonId: string) {
+    // 1) Fetch season start date
+    const { data: season, error: seasonErr } = await supabase
+      .from('interclub_seasons')
+      .select('start_date')
+      .eq('id', seasonId)
+      .single();
+    if (seasonErr || !season) throw seasonErr || new Error('Season not found');
+    const seasonStart = new Date(season.start_date);
 
-  const { data: groups, error: grpErr } = await supabase
-    .from('interclub_groups')
-    .select('group_number')
-    .eq('season_id', seasonId);
-  if (grpErr) throw grpErr;
-  if (!groups || groups.length === 0) {
-    throw new Error('No groups found—run createInterclubGroups first');
-  }
-
-  const weekSchedule: { group: number; week: number; date: string }[] = [];
-  const service = new InterclubService(supabase);
-
-  for (const { group_number } of groups) {
-    const { data: regs, error: regErr } = await supabase
-      .from('interclub_registrations')
-      .select('user_id')
-      .eq('season_id', seasonId)
-      .eq('group_assignment', group_number);
-    if (regErr) throw regErr;
-    const teamIds = regs!.map(r => r.user_id);
-
-    const computeMatchDate = (week: number) =>
-      new Date(seasonStart.getTime() + (week - 1) * 7 * 86400_000).toISOString();
-
-    const result = await service.generateAndPersistMatchSchedule(
-      seasonId,
-      teamIds,
-      group_number
-    );
-    if (!result.success) {
-      throw new Error(result.error || 'Failed to persist match schedule');
+    // 2) Fetch all groups for this season
+    const { data: groups, error: grpErr } = await supabase
+      .from('interclub_groups')
+      .select('group_number')
+      .eq('season_id', seasonId);
+    if (grpErr) throw grpErr;
+    if (!groups || groups.length === 0) {
+      throw new Error('No groups found—run createInterclubGroups first');
     }
 
-    // double round robin → (n−1)*2 weeks
-    const totalWeeks = (teamIds.length - 1) * 2;
-    for (let w = 1; w <= totalWeeks; w++) {
-      weekSchedule.push({
-        group: group_number,
-        week: w,
-        date: computeMatchDate(w),
-      });
+    // 3) Prepare to accumulate the full season schedule
+    const weekSchedule: { group: number; week: number; date: string }[] = [];
+    const service = new InterclubService(supabase);
+
+    // 4) For each group: insert fixtures & get back its per-week dates
+    for (const { group_number } of groups) {
+      // 4a) Fetch registered teams for this group
+      const { data: regs, error: regErr } = await supabase
+        .from('interclub_registrations')
+        .select('user_id')
+        .eq('season_id', seasonId)
+        .eq('group_assignment', group_number);
+      if (regErr) throw regErr;
+      const teamIds = regs!.map(r => r.user_id);
+
+      // 4b) Generate + persist matches, and receive the group's week‐date buckets
+      const result = await service.generateAndPersistMatchSchedule(
+        seasonId,
+        teamIds,
+        group_number,
+        seasonStart
+      );
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to persist match schedule');
+      }
+
+      // 4c) Accumulate into the season‐level weekSchedule
+      for (const bucket of result.weekSchedule!) {
+        for (const date of bucket.dates) {
+          weekSchedule.push({
+            group: group_number,
+            week: bucket.week,
+            date
+          });
+        }
+      }
     }
+
+    // 5) Persist the aggregated week_schedule JSON on the season record
+    const { error: updErr } = await supabase
+      .from('interclub_seasons')
+      .update({
+        week_schedule: JSON.stringify(weekSchedule),
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', seasonId);
+    if (updErr) throw updErr;
+
+    logActivity('interclub_schedule_generated', 'season', seasonId);
+    await loadSeasons();
   }
-
-  // 2.4) Persist the aggregate week_schedule JSON on the season
-  const { error: updErr } = await supabase
-    .from('interclub_seasons')
-    .update({
-      week_schedule: JSON.stringify(weekSchedule),
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', seasonId);
-  if (updErr) throw updErr;
-
-  logActivity('interclub_schedule_generated', 'season', seasonId);
-  await loadSeasons();
-}
 
   const handleResourceChange = (section: 'entry_fee' | 'prize_pool', position: string | null, resource: keyof { coins: number; shuttlecocks: number; meals: number; diamonds: number }, value: number) => {
     setSeasonForm(prev => ({
