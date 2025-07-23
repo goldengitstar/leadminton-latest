@@ -520,7 +520,7 @@ const handleSaveGroup = async () => {
       await supabase
           .from('interclub_teams')
           .update({ group_id: null })
-          .eq('team_id', team.id);
+          .eq('id', team.id);
     });
 
     // Process additions
@@ -528,7 +528,7 @@ const handleSaveGroup = async () => {
       await supabase
           .from('interclub_registrations')
           .update({ group_assignment: selectedGroup.group_number })
-          .eq('id', team.id);
+          .eq('team_id', team.id);
       
       await supabase
           .from('interclub_teams')
