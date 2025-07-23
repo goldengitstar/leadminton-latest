@@ -91,12 +91,24 @@ const InterclubPage: React.FC = () => {
         return;
       }
 
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const days    = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours   = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-      setTimeRemaining(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+      const segments: string[] = [];
+      if (days > 0) {
+        segments.push(`${days}d`);
+      }
+      if (hours > 0 || segments.length > 0) {
+        segments.push(`${hours}h`);
+      }
+      if (minutes > 0 || segments.length > 0) {
+        segments.push(`${minutes}m`);
+      }
+      segments.push(`${seconds}s`);
+
+      setTimeRemaining(segments.join(' '));
     };
 
     updateCountdown();
@@ -157,8 +169,6 @@ const InterclubPage: React.FC = () => {
 
           if (rawLineup) {
               const lineupData = typeof rawLineup === 'string' ? JSON.parse(rawLineup) : rawLineup;
-
-              console.log("Lineup data ", lineupData)
 
               setLineup({
                 mens_singles: lineupData?.lineup.mens_singles?.id || '',
