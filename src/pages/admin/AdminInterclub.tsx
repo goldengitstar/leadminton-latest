@@ -1017,7 +1017,7 @@ async function generateInterclubSchedule(seasonId: string) {
             className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center space-x-2"
           >
             <Plus className="w-4 h-4" />
-            <span>Add Registration</span>
+            <span>Add CPU Registration</span>
           </button>
         ) : (
           <button
