@@ -3181,6 +3181,7 @@ const handleCpuRegistrationSubmit = async () => {
                         <button
                           type="button"
                           onClick={(e) => {
+                            console.log("Removing team", team)
                             e.stopPropagation();
                             setGroupForm(prev => ({
                               ...prev,
