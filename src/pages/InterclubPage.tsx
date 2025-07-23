@@ -152,19 +152,19 @@ const InterclubPage: React.FC = () => {
           console.log("Lineup data ", lineupData)
 
           setLineup({
-            mens_singles: lineupData?.mens_singles?.id || '',
-            womens_singles: lineupData?.womens_singles?.id || '',
+            mens_singles: lineupData?.lineup.mens_singles?.id || '',
+            womens_singles: lineupData?.lineup.womens_singles?.id || '',
             mens_doubles: [
-              lineupData?.mens_doubles?.[0]?.id || '',
-              lineupData?.mens_doubles?.[1]?.id || ''
+              lineupData?.lineup.mens_doubles?.[0]?.id || '',
+              lineupData?.lineup.mens_doubles?.[1]?.id || ''
             ],
             womens_doubles: [
-              lineupData?.womens_doubles?.[0]?.id || '',
-              lineupData?.womens_doubles?.[1]?.id || ''
+              lineupData?.lineup.womens_doubles?.[0]?.id || '',
+              lineupData?.lineup.womens_doubles?.[1]?.id || ''
             ],
             mixed_doubles: [
-              lineupData?.mixed_doubles?.[0]?.id || '',
-              lineupData?.mixed_doubles?.[1]?.id || ''
+              lineupData?.lineup.mixed_doubles?.[0]?.id || '',
+              lineupData?.lineup.mixed_doubles?.[1]?.id || ''
             ]
           });
         }
