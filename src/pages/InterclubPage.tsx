@@ -202,8 +202,32 @@ const InterclubPage: React.FC = () => {
 
     try {
       setLoading(true);
+
+      const {data: clubData, error: clubError} = await supabase
+      .from('club_managers')
+      .select('club_name')
+      .eq('user_id', user.id);
+
+      if(clubError) return;
+
+      const teamData = {
+        name: teamName,
+        club_name: clubData?.club_name,
+        players_count: selectedPlayers.length,
+        registration_status:'pending',
+        registration_date: new Date(),
+        created_at: new Date(),
+      }
+
+      const { data: team, error: teamError } = await supabase
+      .from('interclub_teams')
+      .insert(teamData)
+      .select('id')
+      .single();
+
       const request: InterclubRegistrationRequest = {
         season_id: selectedSeason.id,
+        team_id: team?.id,
         team_name: teamName.trim(),
         selected_players: selectedPlayers
       };

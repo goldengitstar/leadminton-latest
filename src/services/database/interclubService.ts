@@ -25,6 +25,7 @@ export class InterclubService {
   private resourceService: ResourceService;
   private playerService: PlayerService;
   private matchService: MatchService;
+  
 
   constructor(supabaseClient: SupabaseClient) {
     this.supabase = supabaseClient;

@@ -176,6 +176,7 @@ export interface GroupStanding {
 export interface InterclubRegistrationRequest {
   season_id: string;
   team_name: string;
+  team_id: any;
   selected_players: string[]; // player IDs
 }
 
