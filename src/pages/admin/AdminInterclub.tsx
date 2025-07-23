@@ -457,6 +457,8 @@ const AdminInterclub: React.FC = () => {
         .eq('season_id', groupData.season_id)
         .eq('status', 'approved');
       
+      console.log("Player teams", playerTeams)
+
       setAvailableTeams([
         ...(playerTeams?.map(t => ({ 
           id: t.team_id, 
