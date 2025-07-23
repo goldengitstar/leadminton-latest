@@ -411,7 +411,7 @@ const AdminInterclub: React.FC = () => {
         ...prev,
         availableTeams: [
           ...(approvedTeams?.map(t => ({
-            id: t.team_id, 
+            id: t.team_id,
             name: t.team_name, 
             type: t.user_id === '00000000-0000-0000-0000-000000000000' ? 'cpu' as const : 'player' as const
  
@@ -1859,7 +1859,7 @@ const handleCpuRegistrationSubmit = async () => {
                             key={team.id}
                             className="flex items-center justify-between p-2 bg-white rounded shadow-sm"
                           >
-                            <span>{team.team_name}</span>
+                            <span>{team.name}</span>
                             <span className="text-xs text-gray-500">
                               {team.user_id === '00000000-0000-0000-0000-000000000000'
                                 ? 'CPU'
@@ -3177,7 +3177,7 @@ const handleCpuRegistrationSubmit = async () => {
                         key={`selected-${team.type}-${team.id}`}
                         className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800"
                       >
-                        {team.team_name}
+                        {team.name}
                         <button
                           type="button"
                           onClick={(e) => {
