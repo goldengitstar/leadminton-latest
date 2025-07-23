@@ -1153,16 +1153,24 @@ export class InterclubService {
         throw new Error('Match not found or error occurred');
       }
 
-      // Step 2: Get club name from club_managers
-      const { data: clubData, error: clubError } = await this.supabase
-        .from('club_managers')
-        .select('club_name')
-        .eq('user_id', userId)
-        .single();
-
       
-      // Use "DUMMY CLUB" if no club manager record exists
-      const clubName = clubData?.club_name ?? 'DUMMY CLUB';
+      // Step 2: Get home and away club names
+      const [homeRes, awayRes] = await Promise.all([
+        this.supabase
+          .from('club_managers')
+          .select('club_name')
+          .eq('user_id', encounter.home_team_id)
+          .single(),
+
+        this.supabase
+          .from('club_managers')
+          .select('club_name')
+          .eq('user_id', encounter.away_team_id)
+          .single(),
+      ]);
+
+      const home_club = homeRes.data?.club_name ?? 'DUMMY CLUB';
+      const away_club = awayRes.data?.club_name ?? 'DUMMY CLUB';
 
       // Step 2: Fetch team names using the IDs from the encounter
       const { data: teams, error: teamError } = await this.supabase
@@ -1191,7 +1199,8 @@ export class InterclubService {
       // Step 5: Return enriched encounter object
       return {
         ...encounter,
-        club_name: clubName,
+        home_club: home_club,
+        away_club: away_club,
         home_lineup: homeLineup,
         away_lineup: awayLineup,
         home_team_name: homeTeamName,
