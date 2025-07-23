@@ -3066,10 +3066,14 @@ const handleCpuRegistrationSubmit = async () => {
 
                     if (error) throw error;
 
-                    console.log("updated team Id ", team.id)
+                    const { error: iterror } = await supabase
+                      .from("interclub_registrations")
+                      .update({ group_assignment: groupData.group_number })
+                      .eq("team_id", team.id);
+
+                    if (iterror) throw iterror;
                   })
                 );
-
                 logActivity('interclub_group_created_with_teams', 'group', groupData.id);
                 setShowGroupForm(false);
                 await loadGroups();
