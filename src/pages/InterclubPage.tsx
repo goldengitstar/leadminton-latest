@@ -220,6 +220,8 @@ const InterclubPage: React.FC = () => {
 
       if(clubError) return;
 
+      console.log("Season id ", selectedSeason.id)
+      
       const teamData = {
         name: teamName,
         user_id: user.id,

@@ -896,6 +896,7 @@ const handleCpuRegistrationSubmit = async () => {
     if(clubError) return;
 
     console.log("club data ", clubData)
+    console.log("Season id ", cpuRegistrationForm.season_id)
 
     //add team to interclub_teams
     const teamData = {
@@ -3055,7 +3056,7 @@ const handleCpuRegistrationSubmit = async () => {
                 // Update all selected teams with the new group_id
                 console.log("Selected teams in the group", groupForm.selectedTeams)
                 console.log("Group data id", groupData.id)
-                
+
                 await Promise.all(
                   groupForm.selectedTeams.map(async (team) => {
                     const { error } = await supabase
