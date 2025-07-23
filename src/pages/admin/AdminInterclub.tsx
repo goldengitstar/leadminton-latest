@@ -498,15 +498,12 @@ const handleSaveGroup = async () => {
       .from('interclub_teams')
       .select('id, group_id')
       .eq('group_id', selectedGroup.id);
-    
-    const { data: currentCpuTeams } = await supabase
-      .from('cpu_teams')
-      .select('id, group_id')
-      .eq('group_id', selectedGroup.id);
-    
+
     const allCurrentTeams = [
-      ...(currentTeams?.map(t => ({ id: t.id, type: 'player' as const }))) || [],
-      ...(currentCpuTeams?.map(t => ({ id: t.id, type: 'cpu' as const }))) || []
+      ...(currentTeams?.map(t => ({
+        id: t.id,
+        type: t.user_id === '00000000-0000-0000-0000-000000000000' ? 'cpu' as const : 'player' as const
+      })) || [])
     ];
     
     // Determine teams to add and remove
@@ -517,6 +514,8 @@ const handleSaveGroup = async () => {
     const teamsToRemove = allCurrentTeams.filter(team => 
       !groupEditForm.teams.some(t => t.id === team.id && t.type === team.type)
     );
+    console.log("Teams to add", teamsToAdd)
+    console.log("Teams to remove", teamsToRemove)
     
     // Process additions
     const addPromises = teamsToAdd.map(async (team) => {
@@ -554,7 +553,7 @@ const handleSaveGroup = async () => {
     setSelectedGroup(null);
     await loadGroups();
   } catch (error) {
-    console.error('Error saving group:', error);
+    console.log('Error saving group:', error);
   } finally {
     setLoading(false);
   }
