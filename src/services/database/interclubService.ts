@@ -425,87 +425,65 @@ export class InterclubService {
   async generateAndPersistMatchSchedule(
     seasonId: string,
     teamIds: string[],
-    computeMatchDate: (matchday: number) => string,
     groupNumber: number
   ): Promise<{ success: boolean; error?: string }> {
-    // 1) Build one‐leg round robin (Berger tables)
-    const n = teamIds.length;
-    if (n % 2 !== 0) {
-      teamIds = [...teamIds, 'BYE']; // add dummy for odd count
-    }
+    let ids = [...teamIds];
+    if (ids.length % 2 !== 0) ids.push('BYE');
     const rounds: { home: string; away: string }[][] = [];
-    const teams = [...teamIds];
-    const fixed = teams[0];
-    const rotating = teams.slice(1);
-
-    for (let r = 0; r < teams.length - 1; r++) {
-      const pairings: { home: string; away: string }[] = [];
+    const fixed = ids[0];
+    const rotating = ids.slice(1);
+    for (let r = 0; r < ids.length - 1; r++) {
       const current = [fixed, ...rotating];
+      const pairings: { home: string; away: string }[] = [];
       for (let i = 0; i < current.length / 2; i++) {
         const t1 = current[i];
         const t2 = current[current.length - 1 - i];
         if (t1 !== 'BYE' && t2 !== 'BYE') {
-          // alternate home/away each round
-          if (r % 2 === 0) pairings.push({ home: t1, away: t2 });
-          else pairings.push({ home: t2, away: t1 });
+          pairings.push(r % 2 === 0 ? { home: t1, away: t2 } : { home: t2, away: t1 });
         }
       }
       rounds.push(pairings);
-      // rotate
       rotating.unshift(rotating.pop()!);
     }
-
-    // 2) Duplicate for second leg (swap home/away)
-    const fullSchedule = [
-      ...rounds,
-      ...rounds.map(day => day.map(m => ({ home: m.away, away: m.home })))
-    ];
-
-    // 3) Bucket matchdays into 4 weeks (spread 10 MDs into 4 buckets of 2–3)
-    const totalMD = fullSchedule.length;         // e.g. 10
+    const fullSchedule = [...rounds, ...rounds.map(d => d.map(m => ({ home: m.away, away: m.home })))];
+    const total = fullSchedule.length;
     const weeks = 4;
-    const perWeek = Math.floor(totalMD / weeks); // 2
-    const extras = totalMD % weeks;               // 2
-    const weekBuckets = Array.from({ length: weeks }, (_, i) =>
-      perWeek + (i < extras ? 1 : 0)
-    );
-
-    // 4) Build fixturesToInsert
-    let md = 1, cursor = 0;
-    const fixturesToInsert: any[] = [];
+    const perWeek = Math.floor(total / weeks);
+    const extras = total % weeks;
+    const weekBuckets = Array.from({ length: weeks }, (_, i) => perWeek + (i < extras ? 1 : 0));
+    const now = new Date();
+    const startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    const fixtures: any[] = [];
+    let md = 1;
     for (let w = 0; w < weeks; w++) {
-      for (let k = 0; k < weekBuckets[w]; k++, md++) {
+      const count = weekBuckets[w];
+      for (let k = 0; k < count; k++, md++) {
+        const offset = Math.floor((k * 7) / count);
+        const d = new Date(startDate);
+        d.setDate(startDate.getDate() + w * 7 + offset);
+        const iso = d.toISOString();
         for (const m of fullSchedule[md - 1]) {
-          fixturesToInsert.push({
+          fixtures.push({
             season_id: seasonId,
             week_number: w + 1,
             home_team_id: m.home,
             away_team_id: m.away,
-            match_date: computeMatchDate(md),
+            match_date: iso,
             status: 'lineup_pending',
             group_number: groupNumber
           });
         }
       }
     }
-
-    // 5) Bulk insert
     const { error: insertError } = await this.supabase
       .from('interclub_matches')
-      .insert(fixturesToInsert);
-    if (insertError) {
-      console.log('Error inserting fixtures:', insertError);
-      return { success: false, error: insertError.message };
-    }
-
-    // 6) Persist week_schedule JSON
-    // rebuild week_schedule structure for storage
+      .insert(fixtures);
+    if (insertError) return { success: false, error: insertError.message };
     let idx = 1;
-    const week_schedule = weekBuckets.map((count, w) => {
-      const matchdays = Array.from({ length: count }, () => idx++);
+    const week_schedule = weekBuckets.map((c, w) => {
+      const matchdays = Array.from({ length: c }, () => idx++);
       return { week: w + 1, matchdays };
     });
-
     const { error: updateError } = await this.supabase
       .from('interclub_seasons')
       .update({
@@ -513,11 +491,7 @@ export class InterclubService {
         updated_at: new Date().toISOString()
       })
       .eq('id', seasonId);
-    if (updateError) {
-      console.log('Error updating week_schedule:', updateError);
-      return { success: false, error: updateError.message };
-    }
-
+    if (updateError) return { success: false, error: updateError.message };
     return { success: true };
   }
 
