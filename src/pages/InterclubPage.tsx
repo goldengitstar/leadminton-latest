@@ -117,6 +117,16 @@ const InterclubPage: React.FC = () => {
     }
   }, [user?.id]);
 
+  const isLineupFilled = () => {
+    return (
+      lineup.mens_singles ||
+      lineup.womens_singles ||
+      lineup.mens_doubles.some(Boolean) ||
+      lineup.womens_doubles.some(Boolean) ||
+      lineup.mixed_doubles.some(Boolean)
+    );
+  };
+
   const loadInterclubData = async () => {
     if (!user?.id) return;
     
@@ -715,7 +725,7 @@ const InterclubPage: React.FC = () => {
                         }`}
                       >
                         <Settings className="w-4 h-4" />
-                        <span>Set Lineup</span>
+                        <span>{isLineupFilled() ? 'Edit Lineup' : 'Set Lineup'}</span>
                       </button>
                     </div>
                   </div>
