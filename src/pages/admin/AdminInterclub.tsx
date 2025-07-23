@@ -470,7 +470,7 @@ const AdminInterclub: React.FC = () => {
         ...(playerTeams?.map(t => ({ 
           id: t.id, 
           team_name: t.team_name, 
-          type: t.user_id === '00000000-0000-0000-0000-000000000000' ? 'cpu' as const : 'player' as const,
+          type: t.user_id === '00000000-0000-0000-0000-000000000000' ? 'cpu' : 'player',
           group_assignment: t.group_assignment
         })) || [])
       ]);
@@ -3280,7 +3280,7 @@ const handleCpuRegistrationSubmit = async () => {
                           />
                           <span className="truncate">{team.team_name}</span>
                           <span className="ml-2 text-xs text-gray-500 whitespace-nowrap">
-                            ({team.type === "cpu" ? "CPU" : "Player"})
+                            ({team.user_id === '00000000-0000-0000-0000-000000000000' ? 'cpu' as const : 'player' as const})
                           </span>
                         </div>
                       ))}
@@ -3319,7 +3319,7 @@ const handleCpuRegistrationSubmit = async () => {
                           <div className="flex items-center">
                             <span className="truncate">{team.team_name}</span>
                             <span className="ml-2 text-xs text-gray-500 whitespace-nowrap">
-                              ({team.type === "cpu" ? "CPU" : "Player"})
+                              ({team.user_id === '00000000-0000-0000-0000-000000000000' ? 'cpu' as const : 'player' as const})
                             </span>
                           </div>
                           <button
