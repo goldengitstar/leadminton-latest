@@ -510,19 +510,6 @@ const handleSaveGroup = async () => {
     console.log("Teams to add", teamsToAdd)
     console.log("Teams to remove", teamsToRemove)
     
-    // Process additions
-    const addPromises = teamsToAdd.map(async (team) => {
-      await supabase
-          .from('interclub_registrations')
-          .update({ group_assignment: selectedGroup.group_number })
-          .eq('id', team.id);
-      
-      await supabase
-          .from('interclub_teams')
-          .update({ group_id: selectedGroup.id })
-          .eq('id', team.id)
-    });
-    
     // Process removals - set group assignment to null
     const removePromises = teamsToRemove.map(async (team) => {
       await supabase
@@ -534,6 +521,19 @@ const handleSaveGroup = async () => {
           .from('interclub_teams')
           .update({ group_id: null })
           .eq('team_id', team.id);
+    });
+
+    // Process additions
+    const addPromises = teamsToAdd.map(async (team) => {
+      await supabase
+          .from('interclub_registrations')
+          .update({ group_assignment: selectedGroup.group_number })
+          .eq('id', team.id);
+      
+      await supabase
+          .from('interclub_teams')
+          .update({ group_id: selectedGroup.id })
+          .eq('id', team.id)
     });
     
     await Promise.all([...addPromises, ...removePromises]);
