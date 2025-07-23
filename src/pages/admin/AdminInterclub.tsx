@@ -400,7 +400,7 @@ const AdminInterclub: React.FC = () => {
       // Fetch approved registrations for the season that aren't in any group
       const { data: approvedTeams, error } = await supabase
         .from('interclub_registrations')
-        .select('id, team_name, user_id')
+        .select('id, team_name, user_id, team_id')
         .eq('season_id', seasonId)
         .eq('status', 'approved')
         .is('group_assignment', null);
@@ -410,8 +410,8 @@ const AdminInterclub: React.FC = () => {
       setGroupForm(prev => ({
         ...prev,
         availableTeams: [
-          ...(approvedTeams?.map(t => ({ 
-            id: t.id, 
+          ...(approvedTeams?.map(t => ({
+            id: t.team_id, 
             name: t.team_name, 
             type: t.user_id === '00000000-0000-0000-0000-000000000000' ? 'cpu' as const : 'player' as const
  
