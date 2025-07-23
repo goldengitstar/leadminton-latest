@@ -101,6 +101,7 @@ const AdminInterclub: React.FC = () => {
   const [editingSeason, setEditingSeason] = useState<InterclubSeason | null>(null);
   const [selectedSeason, setSelectedSeason] = useState<InterclubSeason | null>(null);
   const [showGroupForm, setShowGroupForm] = useState(false);
+  const [registrationError, setRegistrationError] = useState('');
   const [groupForm, setGroupForm] = useState({
     name: '',
     seasonId: '',
@@ -114,6 +115,16 @@ const AdminInterclub: React.FC = () => {
     meals: 0,
     shuttlecocks: 0,
     coins: 0
+  });
+  const [showCpuRegistrationPopup, setShowCpuRegistrationPopup] = useState(false);
+  const [cpuTeams, setCpuTeams] = useState<any[]>([]);
+  const [cpuRegistrationForm, setCpuRegistrationForm] = useState({
+    season_id: '',
+    team_name: '',
+    club_name: '',
+    captain_name: '',
+    captain_email: '',
+    players: [] as string[],
   });
 
   const [showCpuClubForm, setShowCpuClubForm] = useState(false);
@@ -677,6 +688,82 @@ async function createInterclubGroups(seasonId: string) {
   return { groups, createdGroups };
 }
 
+const fetchCpuTeamsAndSeasons = async () => {
+  try {
+    setLoading(true);
+    
+    // Fetch CPU teams
+    const { data: teamsData, error: teamsError } = await supabase
+      .from('cpu_teams')
+      .select('*');
+    
+    if (teamsError) throw teamsError;
+    setCpuTeams(teamsData || []);
+
+  } catch (error) {
+    console.error('Error fetching CPU data:', error);
+  } finally {
+    setLoading(false);
+  }
+};
+
+const handleCpuRegistrationSubmit = async () => {
+  if (!cpuRegistrationForm.season_id || !cpuRegistrationForm.team_name) {
+    setRegistrationError('Please select a season and team');
+    return;
+  }
+
+  try {
+    setLoading(true);
+    
+    // Get CPU players for the selected team
+    const teamName = cpuRegistrationForm.team_name;
+    const { data: playersData, error: playersError } = await supabase
+      .from('players')
+      .select('*')
+      .ilike('name', `${teamName}%`)
+      .eq('user_id', '00000000-0000-0000-0000-000000000000');
+    
+    if (playersError) throw playersError;
+
+    // Prepare registration data
+    const registrationData = {
+      season_id: cpuRegistrationForm.season_id,
+      team_name: teamName,
+      club_name: cpuRegistrationForm.club_name,
+      captain_name: cpuRegistrationForm.captain_name,
+      captain_email: cpuRegistrationForm.captain_email,
+      players: playersData || [],
+      status: 'pending',
+      is_cpu: true
+    };
+
+    // Insert registration
+    const { error } = await supabase
+      .from('interclub_registrations')
+      .insert(registrationData);
+    
+    if (error) throw error;
+
+    // Close popup and reset form
+    setShowCpuRegistrationPopup(false);
+    setCpuRegistrationForm({
+      season_id: '',
+      team_name: '',
+      club_name: '',
+      captain_name: '',
+      captain_email: '',
+      players: [],
+    });
+
+  } catch (error) {
+    console.error('CPU registration error:', error);
+    setRegistrationError('Failed to register CPU team');
+  } finally {
+    setLoading(false);
+  }
+};
+
 async function generateInterclubSchedule(seasonId: string) {
   const { data: season, error: seasonErr } = await supabase
     .from('interclub_seasons')
@@ -713,7 +800,6 @@ async function generateInterclubSchedule(seasonId: string) {
     const result = await service.generateAndPersistMatchSchedule(
       seasonId,
       teamIds,
-      computeMatchDate,
       group_number
     );
     if (!result.success) {
@@ -907,6 +993,14 @@ async function generateInterclubSchedule(seasonId: string) {
           >
             <Plus className="w-4 h-4" />
             <span>Create CPU Club</span>
+          </button>
+        ) : activeTab === 'registrations' ? (
+          <button
+            onClick={() => setShowCpuRegistrationPopup(true)}
+            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center space-x-2"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Registration</span>
           </button>
         ) : (
           <button
@@ -1597,7 +1691,7 @@ async function generateInterclubSchedule(seasonId: string) {
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Season</th>
+                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Season</th>
                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Group</th>
                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Encounter</th>
                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
@@ -2475,6 +2569,111 @@ async function generateInterclubSchedule(seasonId: string) {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* CPU Registration Popup */}
+      {showCpuRegistrationPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-2xl">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold">Register CPU Team</h3>
+              <button 
+                onClick={() => setShowCpuRegistrationPopup(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Season</label>
+                <select
+                  value={cpuRegistrationForm.season_id}
+                  onChange={(e) => setCpuRegistrationForm({...cpuRegistrationForm, season_id: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                >
+                  <option value="">Select season</option>
+                  {seasons.map(season => (
+                    <option key={season.id} value={season.id}>
+                      {season.name} ({new Date(season.start_date).toLocaleDateString()})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">CPU Team</label>
+                <select
+                  value={cpuRegistrationForm.team_name}
+                  onChange={(e) => {
+                    const team = cpuTeams.find(t => t.name === e.target.value);
+                    setCpuRegistrationForm({
+                      ...cpuRegistrationForm,
+                      team_name: e.target.value,
+                      club_name: team?.name || '',
+                      captain_name: `${team?.name} Captain`,
+                      captain_email: `${team?.name.toLowerCase().replace(/\s+/g, '_')}@example.com`
+                    });
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                >
+                  <option value="">Select team</option>
+                  {cpuTeams.map(team => (
+                    <option key={team.id} value={team.name}>
+                      {team.name} ({team.skill_level})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Club Name</label>
+                <input
+                  type="text"
+                  value={cpuRegistrationForm.club_name}
+                  onChange={(e) => setCpuRegistrationForm({...cpuRegistrationForm, club_name: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Captain Name</label>
+                  <input
+                    type="text"
+                    value={cpuRegistrationForm.captain_name}
+                    onChange={(e) => setCpuRegistrationForm({...cpuRegistrationForm, captain_name: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Captain Email</label>
+                  <input
+                    type="email"
+                    value={cpuRegistrationForm.captain_email}
+                    onChange={(e) => setCpuRegistrationForm({...cpuRegistrationForm, captain_email: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  />
+                </div>
+              </div>
+
+              {registrationError && (
+                <div className="text-red-500 text-sm">{registrationError}</div>
+              )}
+
+              <button
+                onClick={handleCpuRegistrationSubmit}
+                disabled={loading}
+                className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              >
+                {loading ? 'Registering...' : 'Register CPU Team'}
+              </button>
+            </div>
           </div>
         </div>
       )}
