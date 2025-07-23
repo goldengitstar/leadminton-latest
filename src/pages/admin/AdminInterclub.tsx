@@ -3,7 +3,6 @@ import { useAdmin } from '../../contexts/AdminContext';
 import { User } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { InterclubService } from '../../services/database/interclubService';
-import { useAuth } from '../../contexts/AuthContext';
 import { 
   Plus, 
   Search, 
@@ -82,7 +81,6 @@ interface ClubData {
 const AdminInterclub: React.FC = () => {
   const { logActivity } = useAdmin();
   const [interclubService] = useState(() => new InterclubService(supabase));
-  const {user} = useAuth()
   
   // Enhanced state management
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
@@ -140,13 +138,12 @@ const AdminInterclub: React.FC = () => {
   });
 
   const handleCreateCpuClub = async () => {
-    if(!user?.id) return;
     try {
       setLoading(true);
       
       const clubName = cpuClubForm.club_name || `CPU CLUB ${Math.floor(Math.random() * 1000)}`;
       
-      const cpuUserId = user.id
+      const cpuUserId = '00000000-0000-0000-0000-000000000000';
       
       const { error } = await supabase
         .from('club_managers')
@@ -323,7 +320,7 @@ const AdminInterclub: React.FC = () => {
       const { data: clubData } = await supabase
         .from('club_manager')
         .select('*')
-        .eq('user_id', user?.id);
+        .eq('user_id', '00000000-0000-0000-0000-000000000000');
 
       setIsClubUnavailable(!!clubData && clubData.length > 0);
     };
@@ -735,14 +732,14 @@ const handleCpuRegistrationSubmit = async () => {
       .from('players')
       .select('*')
       .ilike('name', `${teamName}%`)
-      .eq('user_id', user?.id);
+      .eq('user_id', '00000000-0000-0000-0000-000000000000');
     
     if (playersError) throw playersError;
 
     // Prepare registration data
     const registrationData = {
       season_id: cpuRegistrationForm.season_id,
-      user_id: user?.id,
+      user_id: '00000000-0000-0000-0000-000000000000',
       team_name: teamName,
       players: playersData || [],
       status: 'pending',

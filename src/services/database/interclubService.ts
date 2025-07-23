@@ -1132,7 +1132,6 @@ export class InterclubService {
         throw new Error('Match not found or error occurred');
       }
 
-      
       // Step 2: Get home and away club names
       const [homeRes, awayRes] = await Promise.all([
         this.supabase
