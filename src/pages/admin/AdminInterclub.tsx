@@ -3177,7 +3177,7 @@ const handleCpuRegistrationSubmit = async () => {
                         key={`selected-${team.type}-${team.id}`}
                         className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800"
                       >
-                        {team.name}
+                        {team.team_name}
                         <button
                           type="button"
                           onClick={(e) => {
