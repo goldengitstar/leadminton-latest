@@ -122,9 +122,6 @@ const AdminInterclub: React.FC = () => {
   const [cpuRegistrationForm, setCpuRegistrationForm] = useState({
     season_id: '',
     team_name: '',
-    club_name: '',
-    captain_name: '',
-    captain_email: '',
     players: [] as string[],
   });
 
@@ -742,10 +739,8 @@ const handleCpuRegistrationSubmit = async () => {
     // Prepare registration data
     const registrationData = {
       season_id: cpuRegistrationForm.season_id,
+      user_id: '00000000-0000-0000-0000-000000000000',
       team_name: teamName,
-      club_name: cpuRegistrationForm.club_name,
-      captain_name: cpuRegistrationForm.captain_name,
-      captain_email: cpuRegistrationForm.captain_email,
       players: playersData || [],
       status: 'pending',
       is_cpu: true
@@ -763,9 +758,6 @@ const handleCpuRegistrationSubmit = async () => {
     setCpuRegistrationForm({
       season_id: '',
       team_name: '',
-      club_name: '',
-      captain_name: '',
-      captain_email: '',
       players: [],
     });
 
