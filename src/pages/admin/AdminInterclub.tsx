@@ -3054,16 +3054,20 @@ const handleCpuRegistrationSubmit = async () => {
 
                 // Update all selected teams with the new group_id
                 console.log("Selected teams in the group", groupForm.selectedTeams)
-                const updates = groupForm.selectedTeams.map(async (team) => {
-                  const { error } = await supabase
-                    .from("interclub_teams")
-                    .update({ group_id: groupData.id })
-                    .eq('id', team.id);
+                console.log("Group data id", groupData.id)
+                
+                await Promise.all(
+                  groupForm.selectedTeams.map(async (team) => {
+                    const { error } = await supabase
+                      .from("interclub_teams")
+                      .update({ group_id: groupData.id })
+                      .eq("id", team.id);
 
-                  if (error) throw error;
-                });
+                    if (error) throw error;
 
-                await Promise.all(updates);
+                    console.log("updated team Id ", team.id)
+                  })
+                );
 
                 logActivity('interclub_group_created_with_teams', 'group', groupData.id);
                 setShowGroupForm(false);
