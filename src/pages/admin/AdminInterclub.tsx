@@ -508,11 +508,11 @@ const handleSaveGroup = async () => {
     
     // Determine teams to add and remove
     const teamsToAdd = groupEditForm.teams.filter(team => 
-      !allCurrentTeams.some(t => t.id === team.id && t.type === team.type)
+      !allCurrentTeams.some(t => t.id === team.id)
     );
     
     const teamsToRemove = allCurrentTeams.filter(team => 
-      !groupEditForm.teams.some(t => t.id === team.id && t.type === team.type)
+      !groupEditForm.teams.some(t => t.id === team.id)
     );
     console.log("Teams to add", teamsToAdd)
     console.log("Teams to remove", teamsToRemove)
