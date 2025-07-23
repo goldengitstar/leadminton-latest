@@ -524,7 +524,7 @@ const handleSaveGroup = async () => {
           .update({ group_id: null })
           .eq('id', team.id);
     });
-
+    console.log("Selected group", selectedGroup)
     // Process additions
     const addPromises = teamsToAdd.map(async (team) => {
       await supabase
