@@ -485,7 +485,7 @@ const InterclubPage: React.FC = () => {
   // Registration View
   if (currentView === 'registration' && selectedSeason) {
     const tierInfo = getTierInfo(selectedSeason.tier);
-
+    console.log("in registration view")
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center space-x-3 mb-8">

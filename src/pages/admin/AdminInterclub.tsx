@@ -1730,10 +1730,10 @@ const handleCpuRegistrationSubmit = async () => {
                         {seasons.find(s => s.id === match.season_id)?.name || 'N/A'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        Groupe {index + 1}
+                        Groupe {match.group_number}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        J{match.matchday_number}
+                        J{index + 1}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {formatDate(match.match_date)}
