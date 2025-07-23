@@ -96,6 +96,7 @@ const AdminInterclub: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'seasons' | 'registrations' | 'groups' | 'matches' | 'stats' | 'clubs'>('seasons');
   const [searchTerm, setSearchTerm] = useState('');
+  const [cpuClubName, setCpuClubName] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [showSeasonForm, setShowSeasonForm] = useState(false);
   const [editingSeason, setEditingSeason] = useState<InterclubSeason | null>(null);
@@ -688,7 +689,7 @@ async function createInterclubGroups(seasonId: string) {
   return { groups, createdGroups };
 }
 
-const fetchCpuTeamsAndSeasons = async () => {
+const fetchCpuTeamsAndCpuClubName = async () => {
   try {
     setLoading(true);
     
@@ -696,6 +697,18 @@ const fetchCpuTeamsAndSeasons = async () => {
     const { data: teamsData, error: teamsError } = await supabase
       .from('cpu_teams')
       .select('*');
+    
+    if (teamsError) throw teamsError;
+    setCpuTeams(teamsData || []);
+
+     // Fetch CPU club name
+    const { data: clubData, error: clubError } = await supabase
+      .from('club_managers')
+      .select('name')
+      .eq('user_id', '00000000-0000-0000-0000-000000000000')
+
+    if(clubError) throw clubError;
+    setCpuClubName(clubData.name)
     
     if (teamsError) throw teamsError;
     setCpuTeams(teamsData || []);
@@ -996,7 +1009,10 @@ async function generateInterclubSchedule(seasonId: string) {
           </button>
         ) : activeTab === 'registrations' ? (
           <button
-            onClick={() => setShowCpuRegistrationPopup(true)}
+            onClick={() => {
+            fetchCpuTeamsAndCpuClubName();
+            setShowCpuRegistrationPopup(true);
+          }}
             className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center space-x-2"
           >
             <Plus className="w-4 h-4" />
@@ -2611,13 +2627,10 @@ async function generateInterclubSchedule(seasonId: string) {
                 <select
                   value={cpuRegistrationForm.team_name}
                   onChange={(e) => {
-                    const team = cpuTeams.find(t => t.name === e.target.value);
                     setCpuRegistrationForm({
                       ...cpuRegistrationForm,
                       team_name: e.target.value,
-                      club_name: team?.name || '',
-                      captain_name: `${team?.name} Captain`,
-                      captain_email: `${team?.name.toLowerCase().replace(/\s+/g, '_')}@example.com`
+                      club_name: cpuClubName || ''
                     });
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg"
@@ -2639,27 +2652,6 @@ async function generateInterclubSchedule(seasonId: string) {
                   onChange={(e) => setCpuRegistrationForm({...cpuRegistrationForm, club_name: e.target.value})}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                 />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Captain Name</label>
-                  <input
-                    type="text"
-                    value={cpuRegistrationForm.captain_name}
-                    onChange={(e) => setCpuRegistrationForm({...cpuRegistrationForm, captain_name: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Captain Email</label>
-                  <input
-                    type="email"
-                    value={cpuRegistrationForm.captain_email}
-                    onChange={(e) => setCpuRegistrationForm({...cpuRegistrationForm, captain_email: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  />
-                </div>
               </div>
 
               {registrationError && (
