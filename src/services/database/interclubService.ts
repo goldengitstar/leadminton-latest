@@ -1001,10 +1001,20 @@ export class InterclubService {
 
       // Initialize standings
       const standings: Record<string, GroupStanding> = {};
-      registrations.forEach(reg => {
+
+      for (const reg of registrations) {
+        // Try to get the club name from `club_managers` table
+        const { data: clubData, error } = await supabase
+          .from('club_managers')
+          .select('club_name')
+          .eq('user_id', reg.user_id)
+          .single();
+
+        const clubName = error || !clubData ? 'DUMMY CLUB' : clubData.club_name;
         standings[reg.user_id] = {
           team_id: reg.user_id,
           team_name: reg.team_name,
+          club_name: clubName,
           is_cpu: false,
           position: 0,
           matches_played: 0,
@@ -1015,7 +1025,7 @@ export class InterclubService {
           points: 0,
           form: []
         };
-      });
+      };
 
       // Process each encounter
       encounters.forEach((enc, idx) => {

@@ -159,6 +159,7 @@ export interface SetResult {
 export interface GroupStanding {
   team_id: string;
   team_name: string;
+  club_name: string;
   is_cpu: boolean;
   position: number;
   matches_played: number;

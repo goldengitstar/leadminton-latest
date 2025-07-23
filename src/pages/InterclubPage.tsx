@@ -804,7 +804,7 @@ const InterclubPage: React.FC = () => {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pos</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Team</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Club</th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pts</th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">P</th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">W</th>
@@ -841,7 +841,7 @@ const InterclubPage: React.FC = () => {
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <div className="flex items-center">
-                          <span>{standing.team_name}</span>
+                          <span>{standing.club_name}</span>
                           {standing.team_id === user?.id && (
                             <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">YOU</span>
                           )}
