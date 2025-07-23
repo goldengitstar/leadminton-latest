@@ -3174,7 +3174,7 @@ const handleCpuRegistrationSubmit = async () => {
                             e.stopPropagation();
                             setGroupForm(prev => ({
                               ...prev,
-                              selectedTeams: prev.selectedTeams.filter(t => !(t.id === team.id && t.type === team.type))
+                              selectedTeams: prev.selectedTeams.filter(t => !(t.id === team.id))
                             }));
                           }}
                           className="ml-2 text-blue-600 hover:text-blue-900"
