@@ -155,28 +155,28 @@ const InterclubPage: React.FC = () => {
             rawLineup = nextMatch.away_lineup;
           }
 
-          if (!rawLineup) return;
+          if (rawLineup) {
+              const lineupData = typeof rawLineup === 'string' ? JSON.parse(rawLineup) : rawLineup;
 
-          const lineupData = typeof rawLineup === 'string' ? JSON.parse(rawLineup) : rawLineup;
+              console.log("Lineup data ", lineupData)
 
-          console.log("Lineup data ", lineupData)
-
-          setLineup({
-            mens_singles: lineupData?.lineup.mens_singles?.id || '',
-            womens_singles: lineupData?.lineup.womens_singles?.id || '',
-            mens_doubles: [
-              lineupData?.lineup.mens_doubles?.[0]?.id || '',
-              lineupData?.lineup.mens_doubles?.[1]?.id || ''
-            ],
-            womens_doubles: [
-              lineupData?.lineup.womens_doubles?.[0]?.id || '',
-              lineupData?.lineup.womens_doubles?.[1]?.id || ''
-            ],
-            mixed_doubles: [
-              lineupData?.lineup.mixed_doubles?.[0]?.id || '',
-              lineupData?.lineup.mixed_doubles?.[1]?.id || ''
-            ]
-          });
+              setLineup({
+                mens_singles: lineupData?.lineup.mens_singles?.id || '',
+                womens_singles: lineupData?.lineup.womens_singles?.id || '',
+                mens_doubles: [
+                  lineupData?.lineup.mens_doubles?.[0]?.id || '',
+                  lineupData?.lineup.mens_doubles?.[1]?.id || ''
+                ],
+                womens_doubles: [
+                  lineupData?.lineup.womens_doubles?.[0]?.id || '',
+                  lineupData?.lineup.womens_doubles?.[1]?.id || ''
+                ],
+                mixed_doubles: [
+                  lineupData?.lineup.mixed_doubles?.[0]?.id || '',
+                  lineupData?.lineup.mixed_doubles?.[1]?.id || ''
+                ]
+              });
+          };
         }
         
         setCurrentView('dashboard');
@@ -485,7 +485,6 @@ const InterclubPage: React.FC = () => {
   // Registration View
   if (currentView === 'registration' && selectedSeason) {
     const tierInfo = getTierInfo(selectedSeason.tier);
-    console.log("in registration view")
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center space-x-3 mb-8">
