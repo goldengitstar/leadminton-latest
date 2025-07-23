@@ -661,7 +661,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
         throw new Error('No authenticated user found');
       }
       
-      const cpuUserId = '00000000-0000-0000-0000-000000000000';
+      const cpuUserId = '00000000-0000-0000-0000-000000000000'; 
       console.log('[AdminCpuTeams] Using current admin user ID for CPU players:', cpuUserId);
 
       const result = await playerService.generateCpuPlayersForTeam(

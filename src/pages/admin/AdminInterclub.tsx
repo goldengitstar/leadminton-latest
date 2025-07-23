@@ -89,7 +89,7 @@ const AdminInterclub: React.FC = () => {
     name: '',
     teams: [] as Team[]
   });
-  const [isClubUnavailable, setIsClubUnavailable] = useState(false);
+  const [isClubAvailable, setIsClubAvailable] = useState(false);
   const [seasons, setSeasons] = useState<InterclubSeason[]>([]);
   const [registrations, setRegistrations] = useState<AdminRegistration[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
@@ -321,8 +321,7 @@ const AdminInterclub: React.FC = () => {
         .from('club_managers')
         .select('*')
         .eq('user_id', '00000000-0000-0000-0000-000000000000');
-      console.log("club manager ", clubData)
-      setIsClubUnavailable(!!clubData && clubData.length > 0);
+      setIsClubAvailable(!!clubData && clubData.length > 0)
     };
 
     checkClubAvailability();
@@ -994,7 +993,7 @@ async function generateInterclubSchedule(seasonId: string) {
         {activeTab === 'clubs' ? (
           <button
             onClick={() => setShowCpuClubForm(true)}
-            disabled={isClubUnavailable}
+            disabled={isClubAvailable}
             className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center space-x-2"
           >
             <Plus className="w-4 h-4" />
@@ -1895,7 +1894,7 @@ async function generateInterclubSchedule(seasonId: string) {
               <h2 className="text-xl font-bold">Create CPU Club</h2>
               <button
                 onClick={() => setShowCpuClubForm(false)}
-                disabled={isClubUnavailable}
+                disabled={isClubAvailable}
                 className="text-gray-400 hover:text-gray-600"
               >
                 <XCircle className="w-6 h-6" />
