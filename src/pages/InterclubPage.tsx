@@ -230,10 +230,12 @@ const InterclubPage: React.FC = () => {
       }
 
       const { data: team, error: teamError } = await supabase
-      .from('interclub_teams')
-      .insert(teamData)
-      .select('id')
-      .single();
+        .from('interclub_teams')
+        .insert(teamData)
+        .select('id')
+        .single();
+ 
+      if(teamError) return;
 
       const request: InterclubRegistrationRequest = {
         season_id: selectedSeason.id,

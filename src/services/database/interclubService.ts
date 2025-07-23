@@ -220,6 +220,7 @@ export class InterclubService {
         season_id: request.season_id,
         user_id: userId,
         team_name: request.team_name,
+        team_id: request.team_id,
         players: JSON.stringify(playerDetails),
         status: 'pending'
       };

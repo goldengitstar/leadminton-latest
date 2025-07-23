@@ -725,9 +725,10 @@ const handleCpuRegistrationSubmit = async () => {
 
   try {
     setLoading(true);
-    
-    // Get CPU players for the selected team
+
     const teamName = cpuRegistrationForm.team_name;
+
+    // Get CPU players for the selected team
     const { data: playersData, error: playersError } = await supabase
       .from('players')
       .select('*')
@@ -736,11 +737,37 @@ const handleCpuRegistrationSubmit = async () => {
     
     if (playersError) throw playersError;
 
+    const {data: clubData, error: clubError} = await supabase
+      .from('club_managers')
+      .select('club_name')
+      .eq('user_id', '00000000-0000-0000-0000-000000000000');
+
+    if(clubError) return;
+
+    //add team to interclub_teams
+    const teamData = {
+      name: teamName,
+      club_name: clubData?.club_name,
+      players_count: playersData.length,
+      registration_status:'pending',
+      registration_date: new Date(),
+      created_at: new Date(),
+    }
+
+    const { data: team, error: teamError } = await supabase
+      .from('interclub_teams')
+      .insert(teamData)
+      .select('id')
+      .single();
+
+    if(teamError) return;
+
     // Prepare registration data
     const registrationData = {
       season_id: cpuRegistrationForm.season_id,
       user_id: '00000000-0000-0000-0000-000000000000',
       team_name: teamName,
+      team_id: team?.id,
       players: playersData || [],
       status: 'pending',
       is_cpu: true
