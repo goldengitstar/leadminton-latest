@@ -487,7 +487,7 @@ export class InterclubService {
             home_team_id: m.home,
             away_team_id: m.away,
             match_date: computeMatchDate(md),
-            status: 'scheduled',
+            status: 'lineup_pending',
             group_number: groupNumber
           });
         }

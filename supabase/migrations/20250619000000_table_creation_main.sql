@@ -279,8 +279,6 @@ create table public.player_strategy (
 ) TABLESPACE pg_default;
 
 
-
-
 create table public.player_equipment (
   id uuid not null default gen_random_uuid (),
   player_id uuid not null,
