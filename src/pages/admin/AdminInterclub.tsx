@@ -1724,13 +1724,13 @@ const handleCpuRegistrationSubmit = async () => {
                     </td>
                   </tr>
                 ) : (
-                  matches.map((match) => (
+                  matches.map((match, index) => (
                     <tr key={match.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {seasons.find(s => s.id === match.season_id)?.name || 'N/A'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        Groupe {match.group_id}
+                        Groupe {index + 1}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         J{match.matchday_number}
