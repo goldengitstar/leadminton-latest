@@ -2910,7 +2910,7 @@ const handleCpuRegistrationSubmit = async () => {
                   </div>
                 </div>
                 
-                                 {/* Tier Requirements */}
+                {/* Tier Requirements */}
                  <div className="bg-gray-50 rounded-lg p-4">
                    <h3 className="font-semibold mb-3">Tier Requirements</h3>
                    <div className="space-y-2">

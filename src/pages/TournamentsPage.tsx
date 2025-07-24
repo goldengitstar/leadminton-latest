@@ -363,7 +363,37 @@ export default function TournamentsPage() {
     setDetailViewTournament(null);
   }, []);
 
-  setInterval(loadTournamentsData, 20_000); //refresh tournaments here at intervals
+  let refreshIntervalId = null;
+  const REFRESH_MS = 20_000;
+
+  function startRefresh() {
+    // don’t double‑start
+    if (refreshIntervalId !== null) return;
+    refreshIntervalId = setInterval(() => {
+      // only fire when the page is in the foreground
+      if (document.visibilityState === 'visible') {
+        loadTournamentsData();
+      }
+    }, REFRESH_MS);
+  }
+
+  function stopRefresh() {
+    if (refreshIntervalId !== null) {
+      clearInterval(refreshIntervalId);
+      refreshIntervalId = null;
+    }
+  }
+
+  startRefresh();
+
+  // pause/resume on tab visibility changes
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      startRefresh();
+    } else {
+      stopRefresh();
+    }
+  });
 
   if (loading) {
     return (

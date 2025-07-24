@@ -348,7 +348,39 @@ const InterclubPage: React.FC = () => {
            lineup.mixed_doubles[0] && lineup.mixed_doubles[1];
   };
 
-  setInterval(loadInterclubData, 20_000); //refresh interclub data here at intervals
+  let refreshIntervalId = null;
+  const REFRESH_MS = 20_000;
+
+  function startRefresh() {
+    // don’t double‑start
+    if (refreshIntervalId !== null) return;
+    refreshIntervalId = setInterval(() => {
+      // only fire when the page is in the foreground
+      if (document.visibilityState === 'visible') {
+        loadInterclubData()
+      }
+    }, REFRESH_MS);
+  }
+
+  function stopRefresh() {
+    if (refreshIntervalId !== null) {
+      clearInterval(refreshIntervalId);
+      refreshIntervalId = null;
+    }
+  }
+
+  // kick it off when the script loads
+  startRefresh();
+
+  // pause/resume on tab visibility changes
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      startRefresh();
+    } else {
+      stopRefresh();
+    }
+  });
+
 
   if (loading) {
     return (
