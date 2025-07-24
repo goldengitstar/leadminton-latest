@@ -2323,7 +2323,7 @@ const handleCpuRegistrationSubmit = async () => {
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold">Edit Club Resources</h2>
+              <h2 className="text-xl font-bold">Add Club Resources</h2>
               <button
                 onClick={() => setEditingClub(null)}
                 className="text-gray-400 hover:text-gray-600"
