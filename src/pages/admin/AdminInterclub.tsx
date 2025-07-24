@@ -976,11 +976,11 @@ const handleCpuRegistrationSubmit = async () => {
       // 4a) Fetch registered teams for this group
       const { data: regs, error: regErr } = await supabase
         .from('interclub_registrations')
-        .select('user_id')
+        .select('team_id')
         .eq('season_id', seasonId)
         .eq('group_assignment', group_number);
       if (regErr) throw regErr;
-      const teamIds = regs!.map(r => r.user_id);
+      const teamIds = regs!.map(r => r.team_id);
 
       // 4b) Generate + persist matches, and receive the group's week‐date buckets
       const result = await service.generateAndPersistMatchSchedule(
