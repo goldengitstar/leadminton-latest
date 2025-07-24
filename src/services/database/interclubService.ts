@@ -1013,6 +1013,7 @@ export class InterclubService {
 
       // Initialize standings
       const standings: Record<string, GroupStanding> = {};
+      console.log("Registrations", registrations)
       for (const reg of registrations) {
         // Try to get the club name from `club_managers` table
         console.log("Getting club manager for", reg)
