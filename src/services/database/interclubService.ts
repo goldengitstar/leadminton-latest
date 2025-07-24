@@ -1132,13 +1132,21 @@ export class InterclubService {
   /**
    * Get user's next encounter
    */
-  async getUserNextEncounter(userId: string): Promise<InterclubEncounter | null> {
+  async getUserNextEncounter(userId: string, seasonId: string): Promise<InterclubEncounter | null> {
     try {
+      const {data: teamsIds, error: teamsError} = await this.supabase
+        .from('interclub_teams')
+        .select('team_id')
+        .eq('user_id', userId)
+        .eq('season_id', seasonId)
+
+      if(teamsError) throw new Error('Team not found')
+
       // Step 1: Fetch next encounter match
       const { data: encounter, error } = await this.supabase
         .from('interclub_matches')
         .select('*')
-        .or(`home_team_id.eq.${userId},away_team_id.eq.${userId}`)
+        .or(`home_team_id.eq.${teamsIds[0].team_id},away_team_id.eq.${teamsIds[0].team_id}`)
         .in('status', ['lineup_pending'])
         .order('match_date', { ascending: true })
         .limit(1)
