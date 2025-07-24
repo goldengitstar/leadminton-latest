@@ -303,6 +303,7 @@ const AdminInterclub: React.FC = () => {
       if(clubError) return;
       const clubAv = (clubData?.length > 0)
       setIsClubAvailable(clubAv);
+      console.log(clubAv)
       console.log("Club available? ", isClubAvailable)
     };
 
