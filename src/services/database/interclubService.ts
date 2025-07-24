@@ -1187,13 +1187,13 @@ export class InterclubService {
 
       // Step 1: Get home and away team rows to retrieve their user_ids
       const { data: homeTeam, error: homeErr } = await this.supabase
-        .from('teams')
+        .from('interclub_teams')
         .select('user_id')
         .eq('id', encounter.home_team_id)
         .single();
 
       const { data: awayTeam, error: awayErr } = await this.supabase
-        .from('teams')
+        .from('interclub_teams')
         .select('user_id')
         .eq('id', encounter.away_team_id)
         .single();
