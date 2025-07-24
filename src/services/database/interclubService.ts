@@ -1011,8 +1011,6 @@ export class InterclubService {
         return [];
       }
 
-      console.log("Registrations ", registrations)
-
       // Initialize standings
       const standings: Record<string, GroupStanding> = {};
 
@@ -1052,24 +1050,38 @@ export class InterclubService {
           form: []
         };
       };
-      console.log("Available standings ", standings)
+
+      const { data: teams } = await supabase
+        .from('interclub_teams')
+        .select('id, user_id');
+
+      if (!teams) throw new Error("Failed to load interclub teams");
+
+      const teamIdToUserId: Record<string, string> = {};
+      teams.forEach(team => {
+        teamIdToUserId[team.id] = team.user_id;
+      });
+
       // Process each encounter
       encounters.forEach((enc, idx) => {
-        const homeId = enc.home_team_id;
-        const awayId = enc.away_team_id;
+        const homeId = teamIdToUserId[enc.home_team_id];
+        const awayId = teamIdToUserId[enc.away_team_id];
+
+        if (!homeId || !awayId) {
+          console.warn(`Missing user_id for team ${enc.home_team_id} or ${enc.away_team_id}`);
+          return; // Skip this encounter if mapping fails
+        }
+
         standings[homeId].matches_played++;
         standings[awayId].matches_played++;
 
-        // Parse results object: one key per category
         const raw = enc.results as Record<string, any>;
         let homeWins = 0;
         let awayWins = 0;
 
         Object.values(raw).forEach(slot => {
-          // count points per individual match
-          // assume summary included in slot.score or similar;
-          if (slot.winner_team_id === homeId) homeWins++;
-          else if (slot.winner_team_id === awayId) awayWins++;
+          if (slot.winner_team_id === enc.home_team_id) homeWins++;
+          else if (slot.winner_team_id === enc.away_team_id) awayWins++;
         });
 
         standings[homeId].individual_matches_won += homeWins;
@@ -1077,7 +1089,6 @@ export class InterclubService {
         standings[awayId].individual_matches_won += awayWins;
         standings[awayId].individual_matches_lost += homeWins;
 
-        // Encounter outcome
         if (homeWins > awayWins) {
           standings[homeId].encounters_won++;
           standings[homeId].points += 3;
@@ -1091,7 +1102,6 @@ export class InterclubService {
           standings[homeId].encounters_lost++;
           standings[homeId].form.push('L');
         } else {
-          // draw
           standings[homeId].points += 1;
           standings[awayId].points += 1;
           standings[homeId].form.push('D');
