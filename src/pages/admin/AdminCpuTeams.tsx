@@ -546,23 +546,21 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
           })
           .eq('player_id', editingPlayer.id);
 
-
-        const strategy = playerFormData.strategy!;
           await supabase
             .from('player_strategy')
             .update({
-              physical_commitment: strategy.physicalCommitment,
-              play_style: strategy.playStyle,
-              movement_speed: strategy.movementSpeed,
-              fatigue_management: strategy.fatigueManagement,
-              rally_consistency: strategy.rallyConsistency,
-              risk_taking: strategy.riskTaking,
-              attack: strategy.attack,
-              soft_attack: strategy.softAttack,
-              serving: strategy.serving,
-              court_defense: strategy.courtDefense,
-              mental_toughness: strategy.mentalToughness,
-              self_confidence: strategy.selfConfidence
+              physical_commitment: strategy?.physicalCommitment,
+              play_style: strategy?.playStyle,
+              movement_speed: strategy?.movementSpeed,
+              fatigue_management: strategy?.fatigueManagement,
+              rally_consistency: strategy?.rallyConsistency,
+              risk_taking: strategy?.riskTaking,
+              attack: strategy?.attack,
+              soft_attack: strategy?.softAttack,
+              serving: strategy?.serving,
+              court_defense: strategy?.courtDefense,
+              mental_toughness: strategy?.mentalToughness,
+              self_confidence: strategy?.selfConfidence
             })
             .eq('player_id', editingPlayer.id);
 
@@ -638,7 +636,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
       loadCpuPlayers();
     } catch (error) {
       console.error('Error saving CPU player:', error);
-      toast.error('Failed to save CPU player. Please try again.');
+      toast.error('Failed to save CPU player. Please try again.',);
     } finally {
       setLoading(false);
     }
