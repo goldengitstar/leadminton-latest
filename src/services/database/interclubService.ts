@@ -1027,6 +1027,7 @@ export class InterclubService {
         if(error) console.log("Error fetching club managers", error);
 
         const clubName = error || !clubData ? 'DUMMY CLUB' : clubData?[0]?.club_name;
+        console.log(clubName)
         standings[reg.user_id] = {
           team_id: reg.user_id,
           team_name: reg.team_name,
