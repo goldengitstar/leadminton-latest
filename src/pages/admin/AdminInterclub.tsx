@@ -296,11 +296,13 @@ const AdminInterclub: React.FC = () => {
 
   useEffect(() => {
     const checkClubAvailability = async () => {
-      const { data: clubData } = await supabase
+      const { data: clubData , error : clubError} = await supabase
         .from('club_managers')
         .select('*')
         .eq('user_id', '00000000-0000-0000-0000-000000000000');
-      setIsClubAvailable(!!(clubData && clubData.length > 0));
+      if(clubError) return;
+      const clubAv = (clubData?.length > 0)
+      setIsClubAvailable(clubAv);
       console.log("Club available? ", isClubAvailable)
     };
 
