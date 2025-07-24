@@ -194,10 +194,10 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     console.log("Triggering load everything")
     loadEverything();
     
-    const timer = setInterval(async () => {
+    setInterval(async () => {
        console.log('[GameContext] Periodic refresh triggered');
        await loadEverything();
-    }, 600000);
+    }, 20000);
 
     // return () => clearInterval(timer);
   }, [isLogin, user?.id]);
