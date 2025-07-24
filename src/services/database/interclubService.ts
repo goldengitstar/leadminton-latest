@@ -1015,14 +1015,13 @@ export class InterclubService {
 
       // Initialize standings
       const standings: Record<string, GroupStanding> = {};
-
       for (const reg of registrations) {
         // Try to get the club name from `club_managers` table
         const { data: clubData, error } = await supabase
           .from('club_managers')
           .select('club_name')
           .eq('user_id', reg.user_id)
-          .single();
+          .limit(1);
 
         if(error) console.log("Error fetching club managers", error);
 
