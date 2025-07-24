@@ -1153,7 +1153,7 @@ export class InterclubService {
     try {
       const {data: teamsIds, error: teamsError} = await this.supabase
         .from('interclub_teams')
-        .select('team_id')
+        .select('id')
         .eq('user_id', userId)
         .eq('season_id', seasonId)
 
@@ -1163,7 +1163,7 @@ export class InterclubService {
       const { data: encounter, error } = await this.supabase
         .from('interclub_matches')
         .select('*')
-        .or(`home_team_id.eq.${teamsIds[0].team_id},away_team_id.eq.${teamsIds[0].team_id}`)
+        .or(`home_team_id.eq.${teamsIds[0].id},away_team_id.eq.${teamsIds[0].id}`)
         .in('status', ['lineup_pending'])
         .order('match_date', { ascending: true })
         .limit(1)
