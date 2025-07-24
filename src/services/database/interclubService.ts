@@ -465,6 +465,21 @@ export class InterclubService {
       ...rounds.map(rdg => rdg.map(m => ({ home: m.away, away: m.home })))
     ].slice(0, matchdaysCount);
 
+    const { data: teamRows, error: teamErr } = await this.supabase
+      .from('interclub_teams')
+      .select('id, is_cpu')
+      .in('id', teamIds);
+
+    if (teamErr) {
+      return { success: false, error: teamErr.message };
+    }
+
+    // build lookup: team_id → 'cpu' | 'user'
+    const typeMap: Record<string, 'cpu' | 'user'> = {};
+    for (const t of teamRows!) {
+      typeMap[t.id] = t.is_cpu ? 'cpu' : 'user';
+    }
+
     // 3) Compute how many matchdays per week over 4 weeks
     const weeks = 4;
     const perWeek = Math.floor(matchdaysCount / weeks);
@@ -494,6 +509,8 @@ export class InterclubService {
             week_number: w + 1,
             home_team_id: match.home,
             away_team_id: match.away,
+            home_team_type: typeMap[match.home],
+            away_team_type: typeMap[match.away],
             match_date: iso,
             status: 'lineup_pending',
             group_number: groupNumber
