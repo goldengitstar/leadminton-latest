@@ -343,27 +343,17 @@ export default function TournamentsPage() {
   const getTimeUntilStart = useCallback((startDate: number): string => {
     const now = Date.now();
     const diff = new Date(startDate).getTime() - now;
-
-    if (diff <= 0) {
-      // Already started
-      loadTournamentsData();
-      return 'Started';
-    }
-
+    
+    if (diff <= 0) return 'Started';
+    
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
-    // If exactly zero remaining, fire refresh
-    if (days === 0 && hours === 0 && minutes === 0) {
-      loadTournamentsData();
-      return 'Starts now';
-    }
-
-    if (days > 0)   return `Starts in ${days}d ${hours}h`;
-    if (hours > 0)  return `Starts in ${hours}h ${minutes}m`;
-                    return `Starts in ${minutes}m`;
-  }, [loadTournamentsData]);
+    
+    if (days > 0) return `Starts in ${days}d ${hours}h`;
+    if (hours > 0) return `Starts in ${hours}h ${minutes}m`;
+    return `Starts in ${minutes}m`;
+  }, []);
 
   const handleTournamentClick = useCallback((tournament: Tournament) => {
     setDetailViewTournament(tournament);
