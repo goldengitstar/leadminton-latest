@@ -186,7 +186,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       console.log('[GameContext] Loading complete game state and resources');
       await Promise.all([
         loadState(),
-        loadResource()
+        loadResource(),
       ]);
     };
 
@@ -197,6 +197,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     setInterval(async () => {
        console.log('[GameContext] Periodic refresh triggered');
        await loadEverything();
+       await updatePlayerRank();
     }, 20000);
 
     // return () => clearInterval(timer);
@@ -213,6 +214,12 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       console.error("Failed to equip item:", error);
     }
   };
+
+  function updatePlayerRank(): void {
+    gameState.players.forEach(player => {
+      playerService.updatePlayerRank(player.id);
+    });
+  }
 
   const updatePlayerName = (playerId: string, name: string) => {
     dispatch({ type: "UPDATE_PLAYER_NAME", payload: { playerId, name } });
