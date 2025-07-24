@@ -1025,7 +1025,13 @@ export class InterclubService {
           .eq('user_id', reg.user_id)
           .limit(1);
 
-        if(error) console.log("Error fetching club managers", error);
+        if (error) {
+          console.error("❌ Supabase error:", error.message);
+        } else if (clubData.length === 0) {
+          console.warn("⚠️ No club manager found for user_id:", reg.user_id);
+        } else {
+          console.log("✅ Club name:", clubData[0].club_name);
+        }
 
         const clubName = error || !clubData ? 'DUMMY CLUB' : clubData?[0]?.club_name;
 
