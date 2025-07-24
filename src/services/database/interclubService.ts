@@ -1052,7 +1052,7 @@ export class InterclubService {
           form: []
         };
       };
-
+      console.log("Available standings ", standings)
       // Process each encounter
       encounters.forEach((enc, idx) => {
         const homeId = enc.home_team_id;
