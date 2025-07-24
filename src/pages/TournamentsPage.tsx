@@ -343,17 +343,27 @@ export default function TournamentsPage() {
   const getTimeUntilStart = useCallback((startDate: number): string => {
     const now = Date.now();
     const diff = new Date(startDate).getTime() - now;
-    
-    if (diff <= 0) return 'Started';
-    
+
+    if (diff <= 0) {
+      // Already started
+      loadTournamentsData();
+      return 'Started';
+    }
+
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    
-    if (days > 0) return `Starts in ${days}d ${hours}h`;
-    if (hours > 0) return `Starts in ${hours}h ${minutes}m`;
-    return `Starts in ${minutes}m`;
-  }, []);
+
+    // If exactly zero remaining, fire refresh
+    if (days === 0 && hours === 0 && minutes === 0) {
+      loadTournamentsData();
+      return 'Starts now';
+    }
+
+    if (days > 0)   return `Starts in ${days}d ${hours}h`;
+    if (hours > 0)  return `Starts in ${hours}h ${minutes}m`;
+                    return `Starts in ${minutes}m`;
+  }, [loadTournamentsData]);
 
   const handleTournamentClick = useCallback((tournament: Tournament) => {
     setDetailViewTournament(tournament);
@@ -362,39 +372,7 @@ export default function TournamentsPage() {
   const handleBackToList = useCallback(() => {
     setDetailViewTournament(null);
   }, []);
-
-  let refreshIntervalId = null;
-  const REFRESH_MS = 20_000;
-
-  function startRefresh() {
-    // don’t double‑start
-    if (refreshIntervalId !== null) return;
-    refreshIntervalId = setInterval(() => {
-      // only fire when the page is in the foreground
-      if (document.visibilityState === 'visible') {
-        loadTournamentsData();
-      }
-    }, REFRESH_MS);
-  }
-
-  function stopRefresh() {
-    if (refreshIntervalId !== null) {
-      clearInterval(refreshIntervalId);
-      refreshIntervalId = null;
-    }
-  }
-
-  startRefresh();
-
-  // pause/resume on tab visibility changes
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') {
-      startRefresh();
-    } else {
-      stopRefresh();
-    }
-  });
-
+  
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
