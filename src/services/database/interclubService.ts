@@ -1022,7 +1022,7 @@ export class InterclubService {
           .eq('user_id', reg.user_id)
           .single();
 
-        const clubName = error || !clubData ? 'DUMMY CLUB' : clubData.club_name;
+        const clubName = error || !clubData ? 'DUMMY CLUB' : clubData?[0]?.club_name;
         standings[reg.user_id] = {
           team_id: reg.user_id,
           team_name: reg.team_name,
