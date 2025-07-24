@@ -1018,8 +1018,22 @@ export class InterclubService {
 
       for (const reg of registrations) {
         // Try to get the club name from `club_managers` table
+        console.log("Getting club manager for", reg)
+        const { data: clubData, error } = await supabase
+          .from('club_managers')
+          .select('club_name')
+          .eq('user_id', reg.user_id)
+          .limit(1);
 
-        const clubName = "DUMMY"
+        if (error) {
+          console.error("❌ Supabase error:", error.message);
+        } else if (clubData.length === 0) {
+          console.warn("⚠️ No club manager found for user_id:", reg.user_id);
+        } else {
+          console.log("✅ Club name:", clubData[0].club_name);
+        }
+
+        const clubName = error || !clubData ? 'DUMMY CLUB' : clubData?[0]?.club_name;
 
         standings[reg.user_id] = {
           team_id: reg.user_id,
@@ -1171,20 +1185,42 @@ export class InterclubService {
         throw new Error('Match not found or error occurred');
       }
 
-      // Step 2: Get home and away club names
+      // Step 1: Get home and away team rows to retrieve their user_ids
+      const { data: homeTeam, error: homeErr } = await this.supabase
+        .from('teams')
+        .select('user_id')
+        .eq('id', encounter.home_team_id)
+        .single();
+
+      const { data: awayTeam, error: awayErr } = await this.supabase
+        .from('teams')
+        .select('user_id')
+        .eq('id', encounter.away_team_id)
+        .single();
+
+      if (homeErr || awayErr || !homeTeam || !awayTeam) {
+        console.error("Failed to fetch user_ids from teams table", { homeErr, awayErr });
+      }
+
+      // Step 2: Use those user_ids to get club names
       const [homeRes, awayRes] = await Promise.all([
         this.supabase
           .from('club_managers')
           .select('club_name')
-          .eq('user_id', encounter.home_team_id)
+          .eq('user_id', homeTeam?.user_id)
           .single(),
 
         this.supabase
           .from('club_managers')
           .select('club_name')
-          .eq('user_id', encounter.away_team_id)
+          .eq('user_id', awayTeam?.user_id)
           .single(),
       ]);
+
+      if (homeRes.error || awayRes.error) {
+        console.error("Failed to fetch club names", homeRes.error, awayRes.error);
+      }
+
 
       const home_club = homeRes.data?.club_name ?? 'DUMMY CLUB';
       const away_club = awayRes.data?.club_name ?? 'DUMMY CLUB';
