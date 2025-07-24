@@ -1178,7 +1178,7 @@ const handleCpuRegistrationSubmit = async () => {
           <button
             onClick={() => setShowCpuClubForm(true)}
             disabled={isClubAvailable}
-            style={{cursor:  isClubAvailable ? 'not-allowed' : 'pointer'}}
+            style={{opacity: isClubAvailable ? 0.5 : 1, cursor:  isClubAvailable ? 'not-allowed' : 'pointer'}}
             className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center space-x-2"
           >
             <Plus className="w-4 h-4" />
