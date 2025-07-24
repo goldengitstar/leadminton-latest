@@ -153,11 +153,12 @@ const InterclubPage: React.FC = () => {
       
       // Check current season status
       const currentStatus = await interclubService.getUserCurrentSeasonStatus(user.id);
+      console.log("Current status", currentStatus, "user id", user.id)
       setCurrentSeasonStatus(currentStatus);
       
       // Get next encounter if in active season
       if (currentStatus) {
-        console.log("Current status", currentStatus)
+        
         const nextMatch = await interclubService.getUserNextEncounter(user.id, currentStatus.registration.season.id);
         setNextEncounter(nextMatch);
         console.log("Next match", nextMatch)
