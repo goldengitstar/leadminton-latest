@@ -580,21 +580,21 @@ const InterclubPage: React.FC = () => {
                       <Coins className="w-4 h-4 text-yellow-500" />
                       <span>Coins</span>
                     </div>
-                    <span className="font-medium">{tierInfo.requirements.coins}</span>
+                    <span className="font-medium">{selectedSeason.entry_fee.coins}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <Feather className="w-4 h-4 text-blue-500" />
                       <span>Shuttlecocks</span>
                     </div>
-                    <span className="font-medium">{tierInfo.requirements.shuttlecocks}</span>
+                    <span className="font-medium">{selectedSeason.entry_fee.shuttlecocks}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <UtensilsCrossed className="w-4 h-4 text-green-500" />
                       <span>Meals</span>
                     </div>
-                    <span className="font-medium">{tierInfo.requirements.meals}</span>
+                    <span className="font-medium">{selectedSeason.entry_fee.meals}</span>
                   </div>
                 </div>
               </div>
