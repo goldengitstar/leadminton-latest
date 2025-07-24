@@ -409,37 +409,7 @@ const AdminDashboard: React.FC = () => {
           </button>
         </div>
       </div>
-
-      {/* Recent Activity */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Admin Activity</h2>
-        {stats.recentActivities.length === 0 ? (
-          <p className="text-gray-500 text-center py-4">No recent activity</p>
-        ) : (
-          <div className="space-y-3">
-            {stats.recentActivities.slice(0, 5).map((activity, index) => (
-              <div key={index} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
-                <div className="flex items-center">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">
-                      {activity.action_type.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
-                    </p>
-                    {activity.target_type && (
-                      <p className="text-xs text-gray-500">
-                        Target: {activity.target_type}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <span className="text-xs text-gray-400">
-                  {new Date(activity.created_at).toLocaleDateString()}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      
       {showCreateTournamentForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
