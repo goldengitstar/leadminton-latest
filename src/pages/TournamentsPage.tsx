@@ -133,12 +133,13 @@ export default function TournamentsPage() {
   const [detailViewTournament, setDetailViewTournament] = useState<Tournament | null>(null);
 
   useEffect(() => {
+    setLoading(true)
     loadTournamentsData();
+    setLoading(false)
   }, [gameState.players]);
 
   const loadTournamentsData = useCallback(async () => {
     try {
-      setLoading(true);
       const loadedTournaments = await tournamentService.getTournaments();
       
 
@@ -164,9 +165,8 @@ export default function TournamentsPage() {
           const isIncluded = tournament.registered_players.some((player: any) => gameState.players.some((userPlayer: any) => userPlayer.id === player.player_id));
           return isIncluded;
         }).map((tournament: any) => tournament.id);
-      console.log('registeredTournamentIds', registeredTournamentIds);
-      setRegisteredTournaments(registeredTournamentIds);
 
+      setRegisteredTournaments(registeredTournamentIds);
       
       // Update detail view tournament if it exists
       if (detailViewTournament) {
@@ -177,25 +177,18 @@ export default function TournamentsPage() {
       }
     } catch (error) {
       console.error('Error loading tournaments:', error);
-    } finally {
-      setLoading(false);
-    }
+    } 
   }, [gameState.players, detailViewTournament]);
 
 
-  // Memoize expensive calculations
   const canRegisterForTournament = useCallback((tournament: Tournament): boolean => {
-    // Check if tournament has already started
     if (tournament.status !== 'upcoming') {
       return false;
     }
-
-    // Check if tournament start time has passed
     if (tournament.start_date <= Date.now()) {
       return false;
     }
 
-    // Check if tournament is full
     if (tournament.current_participants >= tournament.max_participants) {
       return false;
     }
@@ -369,6 +362,8 @@ export default function TournamentsPage() {
   const handleBackToList = useCallback(() => {
     setDetailViewTournament(null);
   }, []);
+
+  setInterval(loadTournamentsData, 20_000); //refresh tournaments here at intervals
 
   if (loading) {
     return (

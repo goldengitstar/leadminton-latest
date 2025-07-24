@@ -125,7 +125,9 @@ const InterclubPage: React.FC = () => {
 
   useEffect(() => {
     if (user?.id) {
+      setLoading(true)
       loadInterclubData();
+      setLoading(false)
     }
   }, [user?.id]);
 
@@ -143,7 +145,6 @@ const InterclubPage: React.FC = () => {
     if (!user?.id) return;
     
     try {
-      setLoading(true);
       
       // Load available seasons and user's unlocked tiers
       const { seasons, unlockedTiers: tiers } = await interclubService.getAvailableSeasons(user.id);
@@ -194,9 +195,7 @@ const InterclubPage: React.FC = () => {
       
     } catch (error) {
       console.error('Error loading interclub data:', error);
-    } finally {
-      setLoading(false);
-    }
+    } 
   };
 
   const handleSeasonRegistration = async () => {
@@ -348,6 +347,8 @@ const InterclubPage: React.FC = () => {
            lineup.womens_doubles[0] && lineup.womens_doubles[1] &&
            lineup.mixed_doubles[0] && lineup.mixed_doubles[1];
   };
+
+  setInterval(loadInterclubData, 20_000); //refresh interclub data here at intervals
 
   if (loading) {
     return (
