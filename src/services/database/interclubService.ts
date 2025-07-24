@@ -1018,22 +1018,8 @@ export class InterclubService {
 
       for (const reg of registrations) {
         // Try to get the club name from `club_managers` table
-        console.log("Getting club manager for", reg)
-        const { data: clubData, error } = await supabase
-          .from('club_managers')
-          .select('club_name')
-          .eq('user_id', reg.user_id)
-          .limit(1);
 
-        if (error) {
-          console.error("❌ Supabase error:", error.message);
-        } else if (clubData.length === 0) {
-          console.warn("⚠️ No club manager found for user_id:", reg.user_id);
-        } else {
-          console.log("✅ Club name:", clubData[0].club_name);
-        }
-
-        const clubName = error || !clubData ? 'DUMMY CLUB' : clubData?[0]?.club_name;
+        const clubName = "DUMMY"
 
         standings[reg.user_id] = {
           team_id: reg.user_id,
