@@ -198,7 +198,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
        console.log('[GameContext] Periodic refresh triggered');
        await loadEverything();
        await updatePlayerRank();
-    }, 60000);
+    }, 20000);
 
     // return () => clearInterval(timer);
   }, [isLogin, user?.id]);
