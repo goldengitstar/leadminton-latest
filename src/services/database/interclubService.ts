@@ -1000,6 +1000,8 @@ export class InterclubService {
         return [];
       }
 
+
+
       // Fetch registrations
       const { data: registrations, error: regError } = await this.supabase
         .from('interclub_registrations')
@@ -1021,6 +1023,8 @@ export class InterclubService {
           .select('club_name')
           .eq('user_id', reg.user_id)
           .single();
+
+        if(error) console.log("Error fetching club managers", error);
 
         const clubName = error || !clubData ? 'DUMMY CLUB' : clubData?[0]?.club_name;
         standings[reg.user_id] = {
