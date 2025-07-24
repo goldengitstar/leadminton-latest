@@ -1033,7 +1033,9 @@ export class InterclubService {
           console.log("✅ Club name:", clubData[0].club_name);
         }
 
-        const clubName = error || !clubData ? 'DUMMY CLUB' : clubData?[0]?.club_name;
+        const clubName = error || !clubData
+          ? 'DUMMY CLUB'
+          : (clubData?.[0]?.club_name ?? 'DUMMY CLUB');
 
         standings[reg.user_id] = {
           team_id: reg.user_id,
