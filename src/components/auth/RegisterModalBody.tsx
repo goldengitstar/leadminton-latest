@@ -117,7 +117,7 @@ function RegisterModalBody({ onClose }: { onClose: () => void }) {
       if (signInError) {
         console.warn('[handleRegister] Auto-login failed:', signInError.message);
         setErrorText(
-          'Registration successful, but auto‑login failed. Please log in manually.'
+          'Registration successful. Email verification link has been sent'
         );
         return;
       }
@@ -136,10 +136,14 @@ function RegisterModalBody({ onClose }: { onClose: () => void }) {
 
 
   const handleCode = async () => {
+    const redirectTo = process.env.VITE_LEADMINTON_HOME;
     const { data, error } = await supabase.auth.verifyOtp({
       email: email,
       token: code,
       type: "signup",
+      options: {
+        redirectTo: redirectTo,
+      }
     });
 
     console.log("[handleCode] data", data);
