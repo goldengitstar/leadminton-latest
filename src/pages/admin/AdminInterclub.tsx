@@ -95,6 +95,7 @@ const AdminInterclub: React.FC = () => {
   const [groups, setGroups] = useState<Group[]>([]);
   const [matches, setMatches] = useState<MatchData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [notification, setNotification] = useState<Notification | null>(null);
   const [activeTab, setActiveTab] = useState<'seasons' | 'registrations' | 'groups' | 'matches' | 'stats' | 'clubs'>('seasons');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -948,6 +949,23 @@ const handleCpuRegistrationSubmit = async () => {
 };
 
   async function generateInterclubSchedule(seasonId: string) {
+    //First check if match schedule has been generated  
+    const {data: matches, error: matchesError}= await supabase
+      .from('interclub_matches')
+      .select('id')
+      .eq('season_id', seasonId)
+      .limit(1);
+
+    if(matchesError) throw matchesError
+
+    if (matches && matches.length > 0) {
+      setNotification({
+        type: 'error',
+        message: `Matches for this season already exists. Check matches`
+      });
+      return;
+    }
+    
     // 1) Fetch season start date
     const { data: season, error: seasonErr } = await supabase
       .from('interclub_seasons')
@@ -991,6 +1009,11 @@ const handleCpuRegistrationSubmit = async () => {
       );
       if (!result.success) {
         throw new Error(result.error || 'Failed to persist match schedule');
+      }else {
+        setNotification({
+          type: 'success',
+          message: `Successfuly generated matches for the season`
+        });
       }
 
       // 4c) Accumulate into the season‐level weekSchedule
@@ -1167,13 +1190,30 @@ const handleCpuRegistrationSubmit = async () => {
     );
   }
 
+  interface Notification {
+    type: 'success' | 'error';
+    message: string;
+  }
+
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8">    
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center space-x-3">
           <Trophy className="w-8 h-8 text-blue-500" />
           <h1 className="text-2xl font-bold">Interclub Administration</h1>
         </div>
+        {notification && (
+          <div className={`p-4 rounded-lg flex items-center ${
+            notification.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+          }`}>
+            {notification.type === 'success' ? (
+              <CheckCircle className="w-5 h-5 mr-2" />
+            ) : (
+              <AlertCircle className="w-5 h-5 mr-2" />
+            )}
+            {notification.message}
+          </div>
+        )}
         {activeTab === 'clubs' ? (
           <button
             onClick={() => setShowCpuClubForm(true)}
