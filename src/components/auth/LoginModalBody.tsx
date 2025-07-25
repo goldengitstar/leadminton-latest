@@ -55,10 +55,14 @@ function LoginModalBody({onClose}: {
   };
 
   const handleConfirmCode = async () => {
+    const redirectTo = import.meta.env.VITE_LEADMINTON_HOME;
     const { data, error } = await supabase.auth.verifyOtp({
       email: email,
       token: code,
       type: "signup",
+      options: {
+        redirectTo: redirectTo
+      }
     });
 
     console.log("[handleConfirmCode] data", data);
