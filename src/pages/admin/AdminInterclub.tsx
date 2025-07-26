@@ -985,6 +985,10 @@ const handleCpuRegistrationSubmit = async () => {
       .eq('season_id', seasonId);
     if (grpErr) throw grpErr;
     if (!groups || groups.length === 0) {
+      setNotification({
+        type: 'error',
+        message: `No groups found for this season, go to groups tab and organize your teams into groups`
+      });
       throw new Error('No groups found—run createInterclubGroups first');
     }
 
@@ -1011,6 +1015,10 @@ const handleCpuRegistrationSubmit = async () => {
         seasonStart
       );
       if (!result.success) {
+        setNotification({
+          type: 'error',
+          message: `Matches not generated, error occured, try again`
+        });
         throw new Error(result.error || 'Failed to persist match schedule');
       }else {
         console.log("Successfuly generated matches for the season, showing notification")
