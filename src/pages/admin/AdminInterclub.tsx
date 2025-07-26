@@ -974,11 +974,11 @@ const handleCpuRegistrationSubmit = async () => {
       throw matchesError
     }
     if (matches && matches.length > 0) {
-      console.log("Matches for this season is already available, showing notification and returning")
       setNotification({
         type: 'error',
         message: `Matches for this season already exists. Check matches`
       });
+      setTimeout(() => setNotification(null), 3000);
       return;
     }
     
@@ -1002,6 +1002,7 @@ const handleCpuRegistrationSubmit = async () => {
         type: 'error',
         message: `No groups found for this season, go to groups tab and organize your teams into groups`
       });
+      setTimeout(() => setNotification(null), 3000);
       throw new Error('No groups found—run createInterclubGroups first');
     }
 
@@ -1032,6 +1033,7 @@ const handleCpuRegistrationSubmit = async () => {
           type: 'error',
           message: `Matches not generated, error occured, try again`
         });
+        setTimeout(() => setNotification(null), 3000);
         throw new Error(result.error || 'Failed to persist match schedule');
       }else {
         console.log("Successfuly generated matches for the season, showing notification")
@@ -1225,7 +1227,7 @@ const handleCpuRegistrationSubmit = async () => {
   return (
     <div className="container mx-auto px-4 py-8">  
       {notification && (
-        <div className={`p-4 rounded-lg flex items-center ${
+        <div className={`p-4 rounded-lg flex items-center mb-2 ${
           notification.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
         }`}>
           {notification.type === 'success' ? (
