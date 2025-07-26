@@ -976,7 +976,7 @@ const handleCpuRegistrationSubmit = async () => {
     if (matches && matches.length > 0) {
       setNotification({
         type: 'error',
-        message: `Matches for this season already exists. Check matches`
+        message: `Matches for this season already exists. Check matches tab, you will find matches for the season`
       });
       setTimeout(() => setNotification(null), 3000);
       return;
