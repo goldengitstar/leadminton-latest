@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAdmin } from '../../contexts/AdminContext';
-import { User, ChevronDown, ChevronUp} from 'lucide-react';
+import { User, ChevronDown, ChevronUp, AlertCircle} from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { InterclubService } from '../../services/database/interclubService';
 import { 
@@ -928,7 +928,20 @@ const handleCpuRegistrationSubmit = async () => {
       .from('interclub_registrations')
       .insert(registrationData);
     
-    if (error) throw error;
+    if (error){
+      setNotification({
+        type: 'error',
+        message: `Cpu team registrations failed, try again`
+      });
+      throw error;
+    }else {
+       setNotification({
+        type: 'success',
+        message: `Cpu team registrations succeeded`
+      });
+    }
+
+    setTimeout(() => setNotification(null), 3000);
 
     // Close popup and reset form
     setShowCpuRegistrationPopup(false);
@@ -1039,6 +1052,8 @@ const handleCpuRegistrationSubmit = async () => {
         }
       }
     }
+
+    setTimeout(() => setNotification(null), 3000);
 
     // 5) Persist the aggregated week_schedule JSON on the season record
     const { error: updErr } = await supabase
@@ -1208,24 +1223,24 @@ const handleCpuRegistrationSubmit = async () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">    
+    <div className="container mx-auto px-4 py-8">  
+      {notification && (
+        <div className={`p-4 rounded-lg flex items-center ${
+          notification.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+        }`}>
+          {notification.type === 'success' ? (
+            <CheckCircle className="w-5 h-5 mr-2" />
+          ) : (
+            <AlertCircle className="w-5 h-5 mr-2" />
+          )}
+          {notification.message}
+        </div>
+      )}  
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center space-x-3">
           <Trophy className="w-8 h-8 text-blue-500" />
           <h1 className="text-2xl font-bold">Interclub Administration</h1>
         </div>
-        {notification && (
-          <div className={`p-4 rounded-lg flex items-center ${
-            notification.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-          }`}>
-            {notification.type === 'success' ? (
-              <CheckCircle className="w-5 h-5 mr-2" />
-            ) : (
-              <AlertCircle className="w-5 h-5 mr-2" />
-            )}
-            {notification.message}
-          </div>
-        )}
         {activeTab === 'clubs' ? (
           <button
             onClick={() => setShowCpuClubForm(true)}
@@ -3116,12 +3131,19 @@ const handleCpuRegistrationSubmit = async () => {
                     if (iterror) throw iterror;
                   })
                 );
-                logActivity('interclub_group_created_with_teams', 'group', groupData.id);
+                setNotification({
+                  type: 'success',
+                  message: `Successfully created group for the season`
+                });
                 setShowGroupForm(false);
                 await loadGroups();
               } catch (error) {
-                console.error('Error creating group:', error);
+                setNotification({
+                  type: 'error',
+                  message: `Error creating group for the season `
+                });
               } finally {
+                setTimeout(() => setNotification(null), 3000);
                 setLoading(false);
               }
             }} className="space-y-4">
