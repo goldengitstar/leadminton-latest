@@ -956,9 +956,12 @@ const handleCpuRegistrationSubmit = async () => {
       .eq('season_id', seasonId)
       .limit(1);
 
-    if(matchesError) throw matchesError
-
+    if(matchesError){
+      console.log("Match error", matchesError)
+      throw matchesError
+    }
     if (matches && matches.length > 0) {
+      console.log("Matches for this season is already available, showing notification and returning")
       setNotification({
         type: 'error',
         message: `Matches for this season already exists. Check matches`
@@ -1010,6 +1013,7 @@ const handleCpuRegistrationSubmit = async () => {
       if (!result.success) {
         throw new Error(result.error || 'Failed to persist match schedule');
       }else {
+        console.log("Successfuly generated matches for the season, showing notification")
         setNotification({
           type: 'success',
           message: `Successfuly generated matches for the season`
