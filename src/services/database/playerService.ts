@@ -160,7 +160,10 @@ export class PlayerService {
   
   async updatePlayerRank(playerId: string): Promise<{ success: boolean; error?: string }> {
     try {
+      console.log("Updating player rank for:", playerId);
+
       const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+      console.log("Fetching matches since:", ninetyDaysAgo);
 
       const { data: matches, error: matchError } = await this.supabase
         .from('player_play_history')
@@ -173,6 +176,8 @@ export class PlayerService {
         console.error('Error fetching match history:', matchError);
         return { success: false, error: matchError.message };
       }
+
+      console.log("Fetched matches:", matches?.length || 0);
 
       const pointTable: Record<string, number> = {
         P12: 5,
@@ -190,6 +195,7 @@ export class PlayerService {
       };
 
       const rankFromPoints = (points: number): string => {
+        console.log("Calculating rank from points:", points);
         if (points >= 451) return 'N1';
         if (points >= 371) return 'N2';
         if (points >= 301) return 'N3';
@@ -207,24 +213,40 @@ export class PlayerService {
       const winPoints: number[] = [];
 
       for (const match of matches || []) {
+        console.log("Processing match:", match.id);
+
         const isPlayer1 = match.player1_id === playerId;
         const won = isPlayer1 ? match.result === true : match.result === false;
+
+        console.log(`Player ${playerId} isPlayer1:`, isPlayer1, "Won match:", won);
 
         if (!won) continue;
 
         const defeatedRankValue = isPlayer1 ? match.player2_rank : match.player1_rank;
+        console.log("Defeated player's rank value:", defeatedRankValue);
+
         if (typeof defeatedRankValue !== 'number') continue;
 
         const defeatedRankLabel = rankFromPoints(defeatedRankValue);
+        console.log("Defeated rank label:", defeatedRankLabel);
+
         const earnedPoints = pointTable[defeatedRankLabel] || 0;
+        console.log("Earned points from this match:", earnedPoints);
+
         winPoints.push(earnedPoints);
       }
 
-      // Take top 6 performances only
+      console.log("All win points:", winPoints);
+
       const top6Points = winPoints.sort((a, b) => b - a).slice(0, 6);
+      console.log("Top 6 point performances:", top6Points);
+
       const totalRankPoints = Number(top6Points.reduce((a, b) => a + b, 0).toFixed(2));
+      console.log("Total rank points:", totalRankPoints);
+
       const finalRank = rankFromPoints(totalRankPoints);
-      console.log(finalRank)
+      console.log("Final rank label:", finalRank);
+
       const { error: updateError } = await this.supabase
         .from('players')
         .update({
@@ -239,6 +261,7 @@ export class PlayerService {
         return { success: false, error: updateError.message };
       }
 
+      console.log("Successfully updated player rank.");
       return { success: true };
     } catch (error) {
       console.error('Error in updatePlayerRank:', error);
