@@ -67,7 +67,7 @@ const RankBar = ({
   // Calculate the next rank & position
   const nextRank = rankPoints.find((level) => rankLevels[level][0] > rank);
   const nextRankPosition = nextRank ? cumulativeWeights[nextRank] : 100;
-  
+
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (barRef.current) {
       const rect = barRef.current.getBoundingClientRect();
@@ -102,12 +102,12 @@ const RankBar = ({
     <div
       className="relative w-full bg-gray-300 rounded-md"
       style={{ height: "5px" }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
     >
       {/* ✅ Blue Progress Bar */}
       <div
         ref={barRef}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
         className="h-full bg-blue-500 transition-all duration-500 rounded-md"
         style={{ width: `${progressWidth > 100 ? 100 : progressWidth}%` }}
       />

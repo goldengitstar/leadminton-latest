@@ -38,7 +38,7 @@ export function generateInitialStatLevelsFromStats(stats: Record<string, number>
   const levels: Record<string, number> = {};
   for (const key in stats) {
     const stat = stats[key];
-    levels[key] = Math.floor(stat / 10);
+    levels[key] = Math.max(1, Math.ceil(stat / 10));
   }
   return levels;
 }
