@@ -553,7 +553,12 @@ export class InterclubService {
     submission: LineupSubmission
   ): Promise<{ valid: boolean; error?: string }> {
     try {
+      console.log("▶️ Starting validateLineupSubmission");
+      console.log("📨 User ID:", userId);
+      console.log("📨 Submission:", submission);
+
       // Get encounter details
+      console.log("🔍 Fetching encounter for ID:", submission.encounter_id);
       const { data: encounter, error } = await this.supabase
         .from('interclub_matches')
         .select('*')
@@ -561,11 +566,19 @@ export class InterclubService {
         .single();
 
       if (error || !encounter) {
+        console.log("❌ Encounter not found or fetch error:", error);
         return { valid: false, error: 'Encounter not found' };
       }
 
+      console.log("✅ Encounter fetched:", encounter);
+
       // Check if user is part of this encounter
-      if (encounter.home_team_id !== userId && encounter.away_team_id !== userId) {
+      const isHomeTeam = encounter.home_team_id === userId;
+      const isAwayTeam = encounter.away_team_id === userId;
+      console.log(`🏠 isHomeTeam: ${isHomeTeam}, 🛫 isAwayTeam: ${isAwayTeam}`);
+
+      if (!isHomeTeam && !isAwayTeam) {
+        console.log("❌ User is not authorized to submit lineup for this encounter");
         return { valid: false, error: 'Not authorized to submit lineup for this encounter' };
       }
 
@@ -573,19 +586,31 @@ export class InterclubService {
       const matchDate = new Date(encounter.match_date);
       const now = new Date();
       const deadlineHours = 2; // 2 hours before match
-      if (now > new Date(matchDate.getTime() - deadlineHours * 60 * 60 * 1000)) {
+      const deadlineTime = new Date(matchDate.getTime() - deadlineHours * 60 * 60 * 1000);
+
+      console.log("📅 Match date:", matchDate.toISOString());
+      console.log("⏰ Deadline time:", deadlineTime.toISOString());
+      console.log("🕓 Current time:", now.toISOString());
+
+      if (now > deadlineTime) {
+        console.log("❌ Lineup submission deadline has passed");
         return { valid: false, error: 'Lineup submission deadline has passed' };
       }
 
       // Validate lineup constraints
+      console.log("🔧 Validating lineup constraints...");
       const constraintValidation = await this.validateLineupConstraints(userId, submission.lineup);
+      console.log("✅ Constraint validation result:", constraintValidation);
+
       if (!constraintValidation.valid) {
+        console.log("❌ Constraint validation failed:", constraintValidation.error);
         return constraintValidation;
       }
 
+      console.log("✅ Lineup submission is valid");
       return { valid: true };
     } catch (error) {
-      console.error('Error validating lineup submission:', error);
+      console.error('🔥 Error validating lineup submission:', error);
       return { valid: false, error: 'Validation failed' };
     }
   }
