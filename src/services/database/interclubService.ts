@@ -362,19 +362,30 @@ export class InterclubService {
    */
   async submitLineup(userId: string, submission: LineupSubmission): Promise<{ success: boolean; error?: string }> {
     try {
-      console.log("Submit lineup")
+      console.log("▶️ Starting lineup submission");
+
       // Validate lineup submission
+      console.log("🔍 Validating lineup submission...");
       const validationResult = await this.validateLineupSubmission(userId, submission);
+      console.log("✅ Validation result:", validationResult);
+
       if (!validationResult.valid) {
+        console.log("❌ Lineup validation failed:", validationResult.error);
         return { success: false, error: validationResult.error };
       }
 
+      // Check player usage limits
+      console.log("🔍 Checking player usage limit...");
       const validation = this.validatePlayerUsageLimit(submission.lineup);
+      console.log("✅ Usage validation result:", validation);
+
       if (!validation.valid) {
+        console.log("❌ Player usage limit exceeded:", validation.error);
         return { success: false, error: validation.error };
       }
 
-      // Get encounter details
+      // Fetch encounter
+      console.log(`📦 Fetching encounter with ID: ${submission.encounter_id}`);
       const { data: encounter, error: encounterError } = await this.supabase
         .from('interclub_matches')
         .select('*')
@@ -382,38 +393,49 @@ export class InterclubService {
         .single();
 
       if (encounterError || !encounter) {
-        console.log("Encounter not found")
+        console.log("❌ Encounter fetch failed:", encounterError);
         return { success: false, error: 'Encounter not found' };
       }
 
-      // Determine if this is home or away lineup
+      console.log("✅ Encounter found:", encounter);
+
+      // Determine home or away
       const isHomeTeam = encounter.home_team_id === userId;
+      console.log(`🏠 Is home team: ${isHomeTeam}`);
       const lineupField = isHomeTeam ? 'home_lineup' : 'away_lineup';
 
-      // Get player details for lineup
+      // Build lineup with player details
+      console.log("🔧 Building lineup with player details...");
       const lineupWithDetails = await this.buildLineupWithPlayerDetails(submission.lineup);
+      console.log("✅ Lineup with details:", lineupWithDetails);
 
       const lineupData = {
         lineup: lineupWithDetails
-      }
+      };
 
-      // Update encounter with lineup
+      // Calculate updated encounter status
+      const updatedStatus = this.calculateEncounterStatus(encounter, lineupField);
+      console.log("📈 Calculated encounter status:", updatedStatus);
+
+      // Submit lineup to database
+      console.log(`💾 Updating encounter (${submission.encounter_id}) with lineup for field '${lineupField}'`);
       const { error: updateError } = await this.supabase
         .from('interclub_matches')
         .update({
           [lineupField]: JSON.stringify(lineupData),
-          status: this.calculateEncounterStatus(encounter, lineupField)
+          status: updatedStatus
         })
         .eq('id', submission.encounter_id);
 
       if (updateError) {
-        console.log('Error updating encounter with lineup:', updateError);
+        console.log('❌ Error updating encounter with lineup:', updateError);
         return { success: false, error: updateError.message };
       }
 
+      console.log("✅ Lineup submitted successfully.");
       return { success: true };
     } catch (error) {
-      console.log("Error submitting lineup ", error)
+      console.log("🔥 Unexpected error submitting lineup:", error);
       return { success: false, error: 'Failed to submit lineup' };
     }
   }
