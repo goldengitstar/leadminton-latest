@@ -549,7 +549,7 @@ export class InterclubService {
    * Validate lineup submission
    */
   private async validateLineupSubmission(
-    userId: string, 
+    userId: string,
     submission: LineupSubmission
   ): Promise<{ valid: boolean; error?: string }> {
     try {
@@ -557,47 +557,66 @@ export class InterclubService {
       console.log("📨 User ID:", userId);
       console.log("📨 Submission:", submission);
 
-      // Get encounter details
+      // 1. Fetch the encounter
       console.log("🔍 Fetching encounter for ID:", submission.encounter_id);
-      const { data: encounter, error } = await this.supabase
+      const { data: encounter, error: encounterError } = await this.supabase
         .from('interclub_matches')
         .select('*')
         .eq('id', submission.encounter_id)
         .single();
 
-      if (error || !encounter) {
-        console.log("❌ Encounter not found or fetch error:", error);
+      if (encounterError || !encounter) {
+        console.log("❌ Encounter not found or fetch error:", encounterError);
         return { valid: false, error: 'Encounter not found' };
       }
 
       console.log("✅ Encounter fetched:", encounter);
 
-      // Check if user is part of this encounter
-      const isHomeTeam = encounter.home_team_id === userId;
-      const isAwayTeam = encounter.away_team_id === userId;
-      console.log(`🏠 isHomeTeam: ${isHomeTeam}, 🛫 isAwayTeam: ${isAwayTeam}`);
+      // 2. Fetch home and away team data from interclub_teams
+      console.log("🔍 Fetching team data for ownership check...");
+
+      const [{ data: homeTeam, error: homeTeamError }, { data: awayTeam, error: awayTeamError }] = await Promise.all([
+        this.supabase
+          .from('interclub_teams')
+          .select('user_id')
+          .eq('id', encounter.home_team_id)
+          .single(),
+        this.supabase
+          .from('interclub_teams')
+          .select('user_id')
+          .eq('id', encounter.away_team_id)
+          .single(),
+      ]);
+
+      console.log("🏠 Home team:", homeTeam, "error:", homeTeamError);
+      console.log("🛫 Away team:", awayTeam, "error:", awayTeamError);
+
+      const isHomeTeam = homeTeam && homeTeam.user_id === userId;
+      const isAwayTeam = awayTeam && awayTeam.user_id === userId;
+
+      console.log(`✅ Team ownership check: isHomeTeam = ${isHomeTeam}, isAwayTeam = ${isAwayTeam}`);
 
       if (!isHomeTeam && !isAwayTeam) {
         console.log("❌ User is not authorized to submit lineup for this encounter");
         return { valid: false, error: 'Not authorized to submit lineup for this encounter' };
       }
 
-      // Check if lineup deadline has passed
+      // 3. Validate deadline
       const matchDate = new Date(encounter.match_date);
       const now = new Date();
       const deadlineHours = 2; // 2 hours before match
-      const deadlineTime = new Date(matchDate.getTime() - deadlineHours * 60 * 60 * 1000);
+      const deadline = new Date(matchDate.getTime() - deadlineHours * 60 * 60 * 1000);
 
       console.log("📅 Match date:", matchDate.toISOString());
-      console.log("⏰ Deadline time:", deadlineTime.toISOString());
+      console.log("⏰ Deadline time:", deadline.toISOString());
       console.log("🕓 Current time:", now.toISOString());
 
-      if (now > deadlineTime) {
+      if (now > deadline) {
         console.log("❌ Lineup submission deadline has passed");
         return { valid: false, error: 'Lineup submission deadline has passed' };
       }
 
-      // Validate lineup constraints
+      // 4. Validate lineup constraints
       console.log("🔧 Validating lineup constraints...");
       const constraintValidation = await this.validateLineupConstraints(userId, submission.lineup);
       console.log("✅ Constraint validation result:", constraintValidation);
@@ -609,9 +628,10 @@ export class InterclubService {
 
       console.log("✅ Lineup submission is valid");
       return { valid: true };
+
     } catch (error) {
-      console.error('🔥 Error validating lineup submission:', error);
-      return { valid: false, error: 'Validation failed' };
+      console.error('🔥 Error during lineup submission validation:', error);
+      return { valid: false, error: 'Validation failed due to unexpected error' };
     }
   }
 
