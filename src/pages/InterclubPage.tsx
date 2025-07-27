@@ -284,6 +284,7 @@ const InterclubPage: React.FC = () => {
   };
 
   const handleLineupSubmission = async () => {
+    console.log("Submitting lineup")
     if (!user?.id || !nextEncounter) return;
 
     const submission: LineupSubmission = {
@@ -299,6 +300,7 @@ const InterclubPage: React.FC = () => {
         await loadInterclubData();
         setShowLineupBuilder(false);
       }
+      console.log("Lineup submission successful")
     } catch (error) {
       console.log('Lineup submission error:', error);
     } finally {

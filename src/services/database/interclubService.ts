@@ -382,6 +382,7 @@ export class InterclubService {
         .single();
 
       if (encounterError || !encounter) {
+        console.log("Encounter not found")
         return { success: false, error: 'Encounter not found' };
       }
 
@@ -406,12 +407,13 @@ export class InterclubService {
         .eq('id', submission.encounter_id);
 
       if (updateError) {
-        console.error('Error updating encounter with lineup:', updateError);
+        console.log('Error updating encounter with lineup:', updateError);
         return { success: false, error: updateError.message };
       }
 
       return { success: true };
     } catch (error) {
+      console.log("Error submitting lineup ", error)
       return { success: false, error: 'Failed to submit lineup' };
     }
   }
