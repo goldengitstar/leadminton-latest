@@ -45,7 +45,6 @@ export class InterclubService {
     try {
       // Get user's unlocked tiers based on their past performance
       const unlockedTiers = await this.getUserUnlockedTiers(userId);
-      console.log("Unlocked tiers", unlockedTiers)
       // Get seasons for unlocked tiers
       const { data: seasons, error } = await this.supabase
         .from('interclub_seasons')
@@ -58,8 +57,6 @@ export class InterclubService {
         console.error('Error fetching available seasons:', error);
         throw error;
       }
-
-      console.log(seasons)
 
       const parsedSeasons = (seasons || []).map(season => ({
         ...season,
@@ -189,7 +186,6 @@ export class InterclubService {
    */
   async registerForSeason(userId: string, request: InterclubRegistrationRequest): Promise<{ success: boolean; error?: string }> {
     try {
-      console.log('[InterclubService] Registering for season:', request);
 
       // Validate registration eligibility
       const validationResult = await this.validateRegistrationEligibility(userId, request);
@@ -246,7 +242,6 @@ export class InterclubService {
         { resource_type: 'meals', amount: -resourceCost.meals, source: 'interclub_registration', source_id: registration.id }
       ]);
 
-      console.log('[InterclubService] Registration successful:', registration.id);
       return { success: true };
     } catch (error) {
       console.error('Error in registerForSeason:', error);
@@ -367,7 +362,6 @@ export class InterclubService {
    */
   async submitLineup(userId: string, submission: LineupSubmission): Promise<{ success: boolean; error?: string }> {
     try {
-      console.log('[InterclubService] Submitting lineup:', submission);
 
       // Validate lineup submission
       const validationResult = await this.validateLineupSubmission(userId, submission);
@@ -416,10 +410,8 @@ export class InterclubService {
         return { success: false, error: updateError.message };
       }
 
-      console.log('[InterclubService] Lineup submitted successfully');
       return { success: true };
     } catch (error) {
-      console.log('Error in submitLineup:', error);
       return { success: false, error: 'Failed to submit lineup' };
     }
   }
@@ -732,7 +724,6 @@ export class InterclubService {
    */
   async autoGenerateLineup(userId: string, encounterId: string): Promise<{ success: boolean; error?: string }> {
     try {
-      console.log('[InterclubService] Auto-generating lineup for encounter:', encounterId);
 
       // Get user's players
       const { data: players, error } = await this.supabase
@@ -789,7 +780,6 @@ export class InterclubService {
    */
   async executeEncounter(encounterId: string): Promise<{ success: boolean; error?: string; results?: any }> {
     try {
-      console.log('[InterclubService] Executing encounter:', encounterId);
 
       // Get encounter details
       const { data: encounter, error } = await this.supabase
@@ -853,11 +843,6 @@ export class InterclubService {
 
       // Update group standings
       await this.updateGroupStandings(encounter.season_id, encounter.group_number);
-
-      console.log('[InterclubService] Encounter executed successfully:', {
-        finalScore,
-        winner: encounterWinner
-      });
 
       return {
         success: true,
@@ -986,7 +971,6 @@ export class InterclubService {
   // ==========================================
   async getGroupStandings(seasonId: string, groupNumber: number): Promise<GroupStanding[]> {
     try {
-      console.log("🏁 Start getGroupStandings", { seasonId, groupNumber });
 
       // Fetch completed encounters
       const { data: encounters, error } = await this.supabase
@@ -1015,8 +999,6 @@ export class InterclubService {
       const standings: Record<string, GroupStanding> = {};
 
       for (const reg of registrations) {
-        // Try to get the club name from `club_managers` table
-        console.log("Getting club manager for", reg)
         const { data: clubData, error } = await supabase
           .from('club_managers')
           .select('club_name')
