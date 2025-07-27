@@ -153,7 +153,6 @@ const InterclubPage: React.FC = () => {
       
       // Check current season status
       const currentStatus = await interclubService.getUserCurrentSeasonStatus(user.id);
-      console.log("Current status", currentStatus, "user id", user.id)
       setCurrentSeasonStatus(currentStatus);
       
       // Get next encounter if in active season
@@ -161,7 +160,6 @@ const InterclubPage: React.FC = () => {
         
         const nextMatch = await interclubService.getUserNextEncounter(user.id, currentStatus.registration.season.id);
         setNextEncounter(nextMatch);
-        console.log("Next match", nextMatch)
         let rawLineup = null;
         if(nextMatch){
           if (nextMatch.home_team_id === user.id && nextMatch.home_lineup) {
@@ -220,8 +218,6 @@ const InterclubPage: React.FC = () => {
       .eq('user_id', user.id);
 
       if(clubError) return;
-
-      console.log("Season id ", selectedSeason.id)
       
       const teamData = {
         name: teamName,

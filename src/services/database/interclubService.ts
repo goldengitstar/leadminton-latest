@@ -1009,8 +1009,6 @@ export class InterclubService {
           console.error("❌ Supabase error:", error.message);
         } else if (clubData.length === 0) {
           console.warn("⚠️ No club manager found for user_id:", reg.user_id);
-        } else {
-          console.log("✅ Club name:", clubData[0].club_name);
         }
 
         const clubName = error || !clubData
