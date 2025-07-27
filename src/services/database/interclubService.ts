@@ -362,7 +362,7 @@ export class InterclubService {
    */
   async submitLineup(userId: string, submission: LineupSubmission): Promise<{ success: boolean; error?: string }> {
     try {
-
+      console.log("Submit lineup")
       // Validate lineup submission
       const validationResult = await this.validateLineupSubmission(userId, submission);
       if (!validationResult.valid) {
