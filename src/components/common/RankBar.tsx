@@ -67,9 +67,7 @@ const RankBar = ({
   // Calculate the next rank & position
   const nextRank = rankPoints.find((level) => rankLevels[level][0] > rank);
   const nextRankPosition = nextRank ? cumulativeWeights[nextRank] : 100;
-  // const nextRankName = nextRank || "N/A";
-
-  // ✅ Modified Tooltip Logic
+  
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (barRef.current) {
       const rect = barRef.current.getBoundingClientRect();

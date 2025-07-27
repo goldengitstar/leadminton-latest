@@ -96,59 +96,34 @@ function rand(min: number, max: number): number {
 
 type Rarity = 'common' | 'rare' | 'epic' | 'premium' | 'legendary';
 
-function chooseRarity(): { rarity: Rarity; totalStats: number; max_level: number } {
+function chooseRarity(): { rarity: Rarity; max_level: number } {
   const roll = Math.random() * 100;
   if (roll < 0.5) {
     return {
       rarity: 'legendary',
-      totalStats: rand(921, 999),
       max_level: rand(400, 500),
     };
   } else if (roll < 2.0) {
     return {
       rarity: 'premium',
-      totalStats: rand(801, 920),
       max_level: rand(300, 400),
     };
   } else if (roll < 7.0) {
     return {
       rarity: 'epic',
-      totalStats: rand(451, 800),
       max_level: rand(220, 300),
     };
   } else if (roll < 25.0) {
     return {
       rarity: 'rare',
-      totalStats: rand(201, 450),
       max_level: rand(180, 220),
     };
   } else {
     return {
       rarity: 'common',
-      totalStats: rand(151, 200),
       max_level: rand(150, 180),
     };
   }
-}
-
-function distributeStatPoints<T extends string>(
-  total: number,
-  keys: readonly T[]
-): Record<T, number> {
-  const weights = keys.map(() => Math.random());
-  const sumW = weights.reduce((a, b) => a + b, 0);
-
-  const stats = {} as Record<T, number>;
-
-  keys.forEach((k, i) => {
-    stats[k] = Math.round((weights[i] / sumW) * total);
-  });
-
-  const drift = total - (Object.values(stats) as number[]).reduce((a, b) => a + b, 0);
-  const randomKey = keys[Math.floor(Math.random() * keys.length)];
-  stats[randomKey] += drift;
-
-  return stats;
 }
 
 export class PlayerService {
@@ -352,14 +327,14 @@ export class PlayerService {
       try {
         const playerGender = gender ?? generateRandomGender();
          console.log("Creating real player. Gender ", playerGender)
-        const { rarity, totalStats, max_level } = chooseRarity();
+        const { rarity, max_level } = chooseRarity();
 
         const statKeys = [
           'endurance','strength','agility','speed','explosiveness',
           'injury_prevention','smash','defense','serve','stick','slice','drop'
         ] as const;
 
-        const initialStats = distributeStatPoints(totalStats, statKeys);
+        const initialStats = Object.fromEntries(statKeys.map((k) => [k, 0])) as Record<typeof statKeys[number], number>;
         const initialStrategy = generateInitialStrategy();
         const initialStatLevels = generateInitialStatLevelsFromStats(initialStats);
         const computedLevel = Object.values(initialStatLevels).reduce((sum, lvl) => sum + lvl, 0);
