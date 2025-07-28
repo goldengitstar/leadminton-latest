@@ -62,6 +62,60 @@ const InterclubPage: React.FC = () => {
   const [showSchedulePopup, setShowSchedulePopup] = useState(false);
   const [seasonMatches, setSeasonMatches] = useState<any[]>([]);
   const [scheduleLoading, setScheduleLoading] = useState(false);
+  const [hasSubmittedTeam, setHasSubmittedTeam] = useState(false);
+  const [isRemovingTeam, setIsRemovingTeam] = useState(false);
+
+  // Check if user has already submitted a team for this season
+  useEffect(() => {
+    const checkTeamSubmission = async () => {
+      if (!user?.id || !selectedSeason) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('interclub_teams')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('season_id', selectedSeason.id)
+          .single();
+
+        if (data && !error) {
+          setHasSubmittedTeam(true);
+          setTeamName(data.name);
+          // You might want to load the selected players here if needed
+        }
+      } catch (error) {
+        console.error('Error checking team submission:', error);
+      }
+    };
+
+    checkTeamSubmission();
+  }, [user?.id, selectedSeason]);
+
+  const handleRemoveTeam = async () => {
+    if (!user?.id || !selectedSeason) return;
+    
+    try {
+      setIsRemovingTeam(true);
+      // Delete the team entry
+      const { error } = await supabase
+        .from('interclub_teams')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('season_id', selectedSeason.id);
+
+      if (!error) {
+        // Also remove any registration requests
+        await interclubService.removeRegistration(user.id, selectedSeason.id);
+        setHasSubmittedTeam(false);
+        setTeamName('');
+        setSelectedPlayers([]);
+      }
+    } catch (error) {
+      console.error('Error removing team:', error);
+    } finally {
+      setIsRemovingTeam(false);
+    }
+  };
   
   // Lineup state
   const [lineup, setLineup] = useState({
@@ -502,61 +556,6 @@ const InterclubPage: React.FC = () => {
 // Registration View
 if (currentView === 'registration' && selectedSeason) {
   const tierInfo = getTierInfo(selectedSeason.tier);
-  const [hasSubmittedTeam, setHasSubmittedTeam] = useState(false);
-  const [isRemovingTeam, setIsRemovingTeam] = useState(false);
-
-  // Check if user has already submitted a team for this season
-  useEffect(() => {
-    const checkTeamSubmission = async () => {
-      if (!user?.id || !selectedSeason) return;
-      
-      try {
-        const { data, error } = await supabase
-          .from('interclub_teams')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('season_id', selectedSeason.id)
-          .single();
-
-        if (data && !error) {
-          setHasSubmittedTeam(true);
-          setTeamName(data.name);
-          // You might want to load the selected players here if needed
-        }
-      } catch (error) {
-        console.error('Error checking team submission:', error);
-      }
-    };
-
-    checkTeamSubmission();
-  }, [user?.id, selectedSeason]);
-
-  const handleRemoveTeam = async () => {
-    if (!user?.id || !selectedSeason) return;
-    
-    try {
-      setIsRemovingTeam(true);
-      // Delete the team entry
-      const { error } = await supabase
-        .from('interclub_teams')
-        .delete()
-        .eq('user_id', user.id)
-        .eq('season_id', selectedSeason.id);
-
-      if (!error) {
-        // Also remove any registration requests
-        await interclubService.removeRegistration(user.id, selectedSeason.id);
-        setHasSubmittedTeam(false);
-        setTeamName('');
-        setSelectedPlayers([]);
-      }
-    } catch (error) {
-      console.error('Error removing team:', error);
-    } finally {
-      setIsRemovingTeam(false);
-    }
-  };
-
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center space-x-3 mb-8">

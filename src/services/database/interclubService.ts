@@ -555,6 +555,18 @@ export class InterclubService {
     return { success: true, weekSchedule };
   }
 
+  async removeRegistration(userId: string, seasonId: string): Promise<void> {
+    const { error } = await supabase
+      .from('interclub_teams')
+      .delete()
+      .match({ user_id: userId, season_id: seasonId });
+
+    if (error) {
+      console.error('Error removing registration:', error);
+      throw new Error('Failed to remove registration');
+    }
+  }
+
   /**
    * Validate lineup submission
    */
