@@ -61,8 +61,6 @@ const AdminTournaments: React.FC<AdminTournamentsProps> = () => {
     }
 
     try {
-      setLoading(true);
-      
       // Get current registered CPU players for this tournament
       const tournament = tournamentList.find(t => t.id === selectedTournamentId);
       const currentCpuPlayers = tournament?.registered_players 
@@ -90,8 +88,6 @@ const AdminTournaments: React.FC<AdminTournamentsProps> = () => {
     } catch (error) {
       console.error('Error updating CPU players:', error);
       toast.error('Failed to update CPU players. Please try again.');
-    } finally {
-      setLoading(false);
     }
   };
 

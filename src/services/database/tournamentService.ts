@@ -542,6 +542,7 @@ export class TournamentService {
   }
 
   async addCpuPlayersToTournament(tournamentId: string, selectedCpuPlayers: string[]): Promise<void> {
+    console.log("Adding cpu players")
     const { data: tournament, error: fetchError } = await this.supabase
       .from('tournament_list')
       .select('registered_players')
@@ -602,6 +603,7 @@ export class TournamentService {
   }
   
   async removeCpuPlayersFromTournament(tournamentId: string, playerIds: string[]) {
+    console.log("Remove cpu players from tournament")
     const { data: tournament, error: fetchError } = await this.supabase
       .from('tournament_list')
       .select('registered_players')
