@@ -117,6 +117,10 @@ const AdminTournaments: React.FC<AdminTournamentsProps> = () => {
       setLoading(false);
     }
   };
+  
+  useEffect(() => {
+    loadCpuPlayers()
+  }, []);
 
   const handleAddCpuPlayers = async (tournamentId: string) => {
     if (selectedCpuPlayers.length === 0) {
