@@ -108,6 +108,8 @@ const InterclubPage: React.FC = () => {
         setHasSubmittedTeam(false);
         setTeamName('');
         setSelectedPlayers([]);
+      }else {
+        console.log(error)
       }
     } catch (error) {
       console.log('Error removing team:', error);
