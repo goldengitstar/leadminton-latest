@@ -411,16 +411,22 @@ const AdminTournaments: React.FC<AdminTournamentsProps> = () => {
               </button>
             </div>
             <div className="px-6 py-6">
-              <div className="mb-4">
-                <h3 className="text-lg font-medium mb-2">Select Tournament</h3>
-                <select className="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                  {tournamentList.filter(t => t.status === 'upcoming').map(tournament => (
-                    <option key={tournament.id} value={tournament.id}>
-                      {tournament.name} ({new Date(tournament.start_date).toLocaleDateString()})
-                    </option>
-                  ))}
-                </select>
-              </div>
+             <div className="mb-4">
+              <h3 className="text-lg font-medium mb-2">Select upcoming Tournament</h3>
+              <select className="w-full px-3 py-2 border border-gray-300 rounded-lg" disabled={tournamentList.filter(t => t.status === 'upcoming').length === 0}>
+                {tournamentList.filter(t => t.status === 'upcoming').length === 0 ? (
+                  <option>No upcoming tournaments</option>
+                ) : (
+                  tournamentList
+                    .filter(t => t.status === 'upcoming')
+                    .map(tournament => (
+                      <option key={tournament.id} value={tournament.id}>
+                        {tournament.name} ({new Date(tournament.start_date).toLocaleDateString()})
+                      </option>
+                    ))
+                )}
+              </select>
+            </div>
 
               <div className="mb-4">
                 <h3 className="text-lg font-medium mb-2">Available CPU Players</h3>
