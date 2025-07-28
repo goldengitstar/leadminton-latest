@@ -103,9 +103,18 @@ const AdminTournaments: React.FC<AdminTournamentsProps> = () => {
   const loadTournaments = async () => {
     try {
       setLoading(true);
+      
       const tournamentsData = await tournamentService.getTournaments();
       console.log('[AdminTournaments] Tournament list loaded successfully:', tournamentsData);
+      
       setTournamentsList(tournamentsData);
+
+      // ✅ Automatically select the first upcoming tournament
+      const firstUpcoming = tournamentsData.find(t => t.status === 'upcoming');
+      if (firstUpcoming) {
+        setSelectedTournamentId(firstUpcoming.id);
+      }
+
     } catch (error) {
       console.error('[AdminTournaments] Error loading tournaments:', error);
     } finally {
