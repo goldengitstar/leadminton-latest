@@ -633,8 +633,7 @@ if (currentView === 'registration' && selectedSeason) {
                 </div>
                 
                 <div className="border rounded-lg p-4">
-                  <h3 className="font-bold mb-2">Your Team</h3>
-                  <p className="mb-2"><span className="font-medium">Team Name:</span> {teamName}</p>
+                  <h3 className="mb-2"><span className="font-medium">Your team:</span> {teamName}</h3>
                   <p className="text-sm text-gray-600">You can remove your team to register a new one before the deadline.</p>
                 </div>
 
