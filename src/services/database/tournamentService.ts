@@ -627,6 +627,42 @@ export class TournamentService {
       status: 'completed',
     };
   }
+
+  async removeCpuPlayerFromTournament(tournamentId: string, playerId: string): Promise<void> {
+    console.log(`Removing CPU player ${playerId} from tournament ${tournamentId}`);
+
+    // Step 1: Fetch the current registered_players array
+    const { data: tournament, error: fetchError } = await this.supabase
+      .from('tournament_list')
+      .select('registered_players')
+      .eq('id', tournamentId)
+      .single();
+
+    if (fetchError || !tournament) {
+      console.error('Error fetching tournament data:', fetchError);
+      throw new Error('Failed to load tournament data.');
+    }
+
+    const existingPlayers: any[] = tournament.registered_players || [];
+
+    // Step 2: Remove the player with the matching player_id
+    const updatedPlayers = existingPlayers.filter(
+      (player) => player.player_id !== playerId
+    );
+
+    // Step 3: Update the tournament record
+    const { error: updateError } = await this.supabase
+      .from('tournament_list')
+      .update({ registered_players: updatedPlayers })
+      .eq('id', tournamentId);
+
+    if (updateError) {
+      console.error('Error updating registered players:', updateError);
+      throw new Error('Failed to remove player from tournament.');
+    }
+
+    console.log(`Player ${playerId} successfully removed from tournament.`);
+  }
   
   async removeCpuPlayersFromTournament(tournamentId: string, playerIds: string[]): Promise<void> {
     console.log("Removing CPU players from tournament...");
