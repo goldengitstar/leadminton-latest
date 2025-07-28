@@ -710,7 +710,7 @@ const RegistrationsView = ({ tournaments, onRemoveRegistration }: {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button
-                      onClick={() => onRemoveRegistration(tournament.id, player.player_id)}
+                      onClick={() => tournamentService.removeCpuPlayersFromTournament(tournament.id, player.player_id)}
                       className="text-red-600 hover:text-red-900 p-1"
                       title="Remove Registration"
                     >
