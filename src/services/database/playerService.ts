@@ -323,8 +323,7 @@ export class PlayerService {
         const initialStrategy = generateInitialStrategy();
         const initialStatLevels = generateInitialStatLevelsFromStats(initialStats);
         const total = Object.values(initialStatLevels).reduce((sum, lvl) => sum + lvl, 0);
-        const average = total / Object.values(initialStatLevels).length;
-        const computedLevel = Math.floor(average) + 1;
+        const computedLevel = total + 1;
 
         const { data: player, error: playerError } = await this.supabase
           .from('players')
