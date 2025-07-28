@@ -104,14 +104,12 @@ const InterclubPage: React.FC = () => {
         .eq('season_id', selectedSeason.id);
 
       if (!error) {
-        // Also remove any registration requests
-        await interclubService.removeRegistration(user.id, selectedSeason.id);
         setHasSubmittedTeam(false);
         setTeamName('');
         setSelectedPlayers([]);
       }
     } catch (error) {
-      console.error('Error removing team:', error);
+      console.log('Error removing team:', error);
     } finally {
       setIsRemovingTeam(false);
     }
