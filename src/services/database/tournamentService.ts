@@ -561,7 +561,7 @@ export class TournamentService {
     // Update the tournament record
     const { error: updateError } = await this.supabase
       .from('tournament_list')
-      .update({ players: updatedPlayers })
+      .update({ registered_players: updatedPlayers })
       .eq('id', tournamentId);
 
     if (updateError) {
