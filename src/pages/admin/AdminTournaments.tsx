@@ -103,7 +103,6 @@ const AdminTournaments: React.FC<AdminTournamentsProps> = () => {
 
   const loadCpuPlayers = async () => {
     try {
-      setLoading(true);
       const { data, error } = await supabase
         .from('players')
         .select('*')
@@ -113,12 +112,11 @@ const AdminTournaments: React.FC<AdminTournamentsProps> = () => {
       setCpuPlayers(data || []);
     } catch (error) {
       console.error('Error loading CPU players:', error);
-    } finally {
-      setLoading(false);
     }
   };
   
   useEffect(() => {
+    console.log("loading cpu players")
     loadCpuPlayers()
   }, []);
 
