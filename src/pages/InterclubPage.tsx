@@ -347,41 +347,7 @@ const InterclubPage: React.FC = () => {
            lineup.womens_doubles[0] && lineup.womens_doubles[1] &&
            lineup.mixed_doubles[0] && lineup.mixed_doubles[1];
   };
-
-  let refreshIntervalId = null;
-  const REFRESH_MS = 20_000;
-
-  function startRefresh() {
-    // don’t double‑start
-    if (refreshIntervalId !== null) return;
-    refreshIntervalId = setInterval(() => {
-      // only fire when the page is in the foreground
-      if (document.visibilityState === 'visible') {
-        loadInterclubData()
-      }
-    }, REFRESH_MS);
-  }
-
-  function stopRefresh() {
-    if (refreshIntervalId !== null) {
-      clearInterval(refreshIntervalId);
-      refreshIntervalId = null;
-    }
-  }
-
-  // kick it off when the script loads
-  startRefresh();
-
-  // pause/resume on tab visibility changes
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') {
-      startRefresh();
-    } else {
-      stopRefresh();
-    }
-  });
-
-
+  
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -533,77 +499,157 @@ const InterclubPage: React.FC = () => {
   }
 
   // Registration View
-  if (currentView === 'registration' && selectedSeason) {
-    const tierInfo = getTierInfo(selectedSeason.tier);
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center space-x-3 mb-8">
-          <button
-            onClick={() => setCurrentView('selection')}
-            className="p-2 hover:bg-gray-100 rounded-lg"
-          >
-            <ArrowLeft className="w-6 h-6" />
-          </button>
-          <Trophy className="w-8 h-8 text-blue-500" />
-          <h1 className="text-2xl font-bold">Registration - {selectedSeason.name}</h1>
-        </div>
+// Registration View
+if (currentView === 'registration' && selectedSeason) {
+  const tierInfo = getTierInfo(selectedSeason.tier);
+  const [hasSubmittedTeam, setHasSubmittedTeam] = useState(false);
+  const [isRemovingTeam, setIsRemovingTeam] = useState(false);
 
-        <div className="max-w-4xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Season Info */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h2 className="text-xl font-bold mb-4">Season Information</h2>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span>Tier:</span>
-                  <span className="font-medium">{tierInfo.name}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Start:</span>
-                  <span>{new Date(selectedSeason.start_date).toLocaleDateString()}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>End:</span>
-                  <span>{new Date(selectedSeason.end_date).toLocaleDateString()}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Registration deadline:</span>
-                  <span>{new Date(selectedSeason.registration_deadline).toLocaleDateString()}</span>
-                </div>
+  // Check if user has already submitted a team for this season
+  useEffect(() => {
+    const checkTeamSubmission = async () => {
+      if (!user?.id || !selectedSeason) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('interclub_teams')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('season_id', selectedSeason.id)
+          .single();
+
+        if (data && !error) {
+          setHasSubmittedTeam(true);
+          setTeamName(data.name);
+          // You might want to load the selected players here if needed
+        }
+      } catch (error) {
+        console.error('Error checking team submission:', error);
+      }
+    };
+
+    checkTeamSubmission();
+  }, [user?.id, selectedSeason]);
+
+  const handleRemoveTeam = async () => {
+    if (!user?.id || !selectedSeason) return;
+    
+    try {
+      setIsRemovingTeam(true);
+      // Delete the team entry
+      const { error } = await supabase
+        .from('interclub_teams')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('season_id', selectedSeason.id);
+
+      if (!error) {
+        // Also remove any registration requests
+        await interclubService.removeRegistration(user.id, selectedSeason.id);
+        setHasSubmittedTeam(false);
+        setTeamName('');
+        setSelectedPlayers([]);
+      }
+    } catch (error) {
+      console.error('Error removing team:', error);
+    } finally {
+      setIsRemovingTeam(false);
+    }
+  };
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex items-center space-x-3 mb-8">
+        <button
+          onClick={() => setCurrentView('selection')}
+          className="p-2 hover:bg-gray-100 rounded-lg"
+        >
+          <ArrowLeft className="w-6 h-6" />
+        </button>
+        <Trophy className="w-8 h-8 text-blue-500" />
+        <h1 className="text-2xl font-bold">Registration - {selectedSeason.name}</h1>
+      </div>
+
+      <div className="max-w-4xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-8">
+          {/* Season Info (same as before) */}
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <h2 className="text-xl font-bold mb-4">Season Information</h2>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span>Tier:</span>
+                <span className="font-medium">{tierInfo.name}</span>
               </div>
-
-              <div className="border-t pt-4 mt-4">
-                <h3 className="font-medium mb-3">Registration cost:</h3>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <Coins className="w-4 h-4 text-yellow-500" />
-                      <span>Coins</span>
-                    </div>
-                    <span className="font-medium">{selectedSeason.entry_fee.coins}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <Feather className="w-4 h-4 text-blue-500" />
-                      <span>Shuttlecocks</span>
-                    </div>
-                    <span className="font-medium">{selectedSeason.entry_fee.shuttlecocks}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <UtensilsCrossed className="w-4 h-4 text-green-500" />
-                      <span>Meals</span>
-                    </div>
-                    <span className="font-medium">{selectedSeason.entry_fee.meals}</span>
-                  </div>
-                </div>
+              <div className="flex items-center justify-between">
+                <span>Start:</span>
+                <span>{new Date(selectedSeason.start_date).toLocaleDateString()}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>End:</span>
+                <span>{new Date(selectedSeason.end_date).toLocaleDateString()}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Registration deadline:</span>
+                <span>{new Date(selectedSeason.registration_deadline).toLocaleDateString()}</span>
               </div>
             </div>
 
-            {/* Registration Form */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h2 className="text-xl font-bold mb-4">Registration</h2>
-              
+            <div className="border-t pt-4 mt-4">
+              <h3 className="font-medium mb-3">Registration cost:</h3>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Coins className="w-4 h-4 text-yellow-500" />
+                    <span>Coins</span>
+                  </div>
+                  <span className="font-medium">{selectedSeason.entry_fee.coins}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Feather className="w-4 h-4 text-blue-500" />
+                    <span>Shuttlecocks</span>
+                  </div>
+                  <span className="font-medium">{selectedSeason.entry_fee.shuttlecocks}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <UtensilsCrossed className="w-4 h-4 text-green-500" />
+                    <span>Meals</span>
+                  </div>
+                  <span className="font-medium">{selectedSeason.entry_fee.meals}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Registration Form */}
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <h2 className="text-xl font-bold mb-4">Registration</h2>
+            
+            {hasSubmittedTeam ? (
+              <div className="space-y-4">
+                <div className="bg-green-50 border border-green-200 text-green-700 p-4 rounded-lg">
+                  <div className="flex items-center">
+                    <CheckCircle className="w-5 h-5 mr-2" />
+                    <span>Team already submitted for this season</span>
+                  </div>
+                </div>
+                
+                <div className="border rounded-lg p-4">
+                  <h3 className="font-bold mb-2">Your Team</h3>
+                  <p className="mb-2"><span className="font-medium">Team Name:</span> {teamName}</p>
+                  <p className="text-sm text-gray-600">You can remove your team to register a new one before the deadline.</p>
+                </div>
+
+                <button
+                  onClick={handleRemoveTeam}
+                  disabled={isRemovingTeam}
+                  className="w-full bg-red-600 text-white py-3 px-4 rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isRemovingTeam ? 'Removing...' : 'Remove Team'}
+                </button>
+              </div>
+            ) : (
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Team Name</label>
@@ -662,13 +708,13 @@ const InterclubPage: React.FC = () => {
                   {loading ? 'Registering...' : 'Register for Season'}
                 </button>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
-    );
-  }
-
+    </div>
+  );
+}
   // Dashboard View (Active Season) - Combined view for all sections
   if (currentView === 'dashboard' && currentSeasonStatus) {
     const malePlayersAvailable = gameState.players.filter(p => p.gender === 'male');

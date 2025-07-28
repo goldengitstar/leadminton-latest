@@ -397,11 +397,21 @@ export class InterclubService {
         return { success: false, error: 'Encounter not found' };
       }
 
-      console.log("✅ Encounter found:", encounter);
+      // 2. Fetch home and away team data from interclub_teams
+      console.log("🔍 Fetching team data for ownership check...");
 
-      // Determine home or away
-      const isHomeTeam = encounter.home_team_id === userId;
-      console.log(`🏠 Is home team: ${isHomeTeam}`);
+      const { data: homeTeam, error: homeTeamError } = await
+        this.supabase
+          .from('interclub_teams')
+          .select('user_id')
+          .eq('id', encounter.home_team_id)
+          .single()
+
+      if(homeTeamError) {
+        console.log(homeTeamError)
+      }
+
+      const isHomeTeam = homeTeam && homeTeam.user_id === userId;
       const lineupField = isHomeTeam ? 'home_lineup' : 'away_lineup';
 
       // Build lineup with player details

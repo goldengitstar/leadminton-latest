@@ -45,18 +45,18 @@ export function generateInitialStatLevelsFromStats(stats: Record<string, number>
 
 function generateInitialStrategy(): any {
   return {
-    physicalCommitment: 5,
-    playStyle: 5,
-    movementSpeed: 5,
-    fatigueManagement: 5,
-    rallyConsistency: 5,
-    riskTaking: 5,
-    attack: 5,
-    softAttack: 5,
-    serving: 5,
-    courtDefense: 5,
-    mentalToughness: 5,
-    selfConfidence: 5,
+    physicalCommitment: 0,
+    playStyle: 0,
+    movementSpeed: 0,
+    fatigueManagement: 0,
+    rallyConsistency: 0,
+    riskTaking: 0,
+    attack: 0,
+    softAttack: 0,
+    serving: 0,
+    courtDefense: 0,
+    mentalToughness: 0,
+    selfConfidence: 0,
   };
 }
 
