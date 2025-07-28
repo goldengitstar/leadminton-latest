@@ -98,30 +98,31 @@ type Rarity = 'common' | 'rare' | 'epic' | 'premium' | 'legendary';
 
 function chooseRarity(): { rarity: Rarity; max_level: number } {
   const roll = Math.random() * 100;
+
   if (roll < 0.5) {
     return {
       rarity: 'legendary',
-      max_level: rand(400, 500),
+      max_level: rand(921, 999),
     };
   } else if (roll < 2.0) {
     return {
       rarity: 'premium',
-      max_level: rand(300, 400),
+      max_level: rand(801, 920),
     };
   } else if (roll < 7.0) {
     return {
       rarity: 'epic',
-      max_level: rand(220, 300),
+      max_level: rand(451, 800),
     };
   } else if (roll < 25.0) {
     return {
       rarity: 'rare',
-      max_level: rand(180, 220),
+      max_level: rand(201, 450),
     };
   } else {
     return {
       rarity: 'common',
-      max_level: rand(150, 180),
+      max_level: rand(151, 200),
     };
   }
 }
