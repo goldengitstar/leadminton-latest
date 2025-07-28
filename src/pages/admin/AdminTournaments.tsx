@@ -255,29 +255,29 @@ const AdminTournaments: React.FC<AdminTournamentsProps> = () => {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200 mb-6">
-        <nav className="-mb-px flex space-x-8">
-          <button
-            onClick={() => setActiveTab('tournaments')}
-            className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'tournaments'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            Tournaments
-          </button>
-          <button
-            onClick={() => setActiveTab('registrations')}
-            className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'registrations'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            Registrations
-          </button>
-        </nav>
+      {/* Enhanced Navigation Tabs */}
+      <div className="bg-white rounded-lg shadow-sm mb-6">
+        <div className="border-b border-gray-200">
+          <nav className="flex space-x-8 px-6">
+            {[
+              { id: 'tournaments', label: 'Tournaments', icon: Play },
+              { id: 'registrations', label: 'Registrations', icon: Users },
+            ].map(({ id, label, icon: Icon }) => (
+              <button
+                key={id}
+                onClick={() => setActiveTab(id)}
+                className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
+                  activeTab === id
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                <span>{label}</span>
+              </button>
+            ))}
+          </nav>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -488,7 +488,7 @@ const AdminTournaments: React.FC<AdminTournamentsProps> = () => {
               </div>
 
               <div className="mb-4">
-                <h3 className="text-lg font-medium mb-2">Available CPU Players</h3>
+                <h3 className="text-lg font-medium mb-2">Add CPU Players</h3>
                 <div className="max-h-64 overflow-y-auto border border-gray-200 rounded-lg">
                   {cpuPlayers.length === 0 ? (
                     <div className="p-4 text-center text-gray-500">No CPU players available</div>
