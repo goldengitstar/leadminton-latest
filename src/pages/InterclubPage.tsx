@@ -95,6 +95,7 @@ const InterclubPage: React.FC = () => {
     if (!user?.id || !selectedSeason) return;
     
     try {
+      console.log("Removing team")
       setIsRemovingTeam(true);
       // Delete the team entry
       const { error } = await supabase
