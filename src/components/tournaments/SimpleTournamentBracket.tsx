@@ -151,98 +151,75 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
         </div>
       )}
 
-      <div className="space-y-6">
-        {rounds.map((round, roundIndex) => {
-          console.log('Rendering round', roundIndex, round);
-          return (
-            <div key={roundIndex} className="border border-gray-200 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="font-medium text-gray-900">{round.name}</h4>
-                <span className="text-sm text-gray-600">
-                  {round.matches.filter((m) => m.completed).length}/{round.matches.length} matches
-                </span>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                {round.matches.map((match) => {
-                  const isPlayer1Winner = isPlayerWinner(match.players?.[0], match.winnerId, match.completed);
-                  const isPlayer2Winner = isPlayerWinner(match.players?.[1], match.winnerId, match.completed);
 
-                  return (
-                    <div
-                      key={match.id}
-                      className={`border rounded-lg p-4 ${
-                        match.completed ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
-                      }`}
-                    >
-                      {/* Match Header */}
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-sm font-medium text-gray-600">Match</span>
-                        {match.completed ? (
-                          <CheckCircle className="w-4 h-4 text-green-500" />
-                        ) : (
-                          <Clock className="w-4 h-4 text-yellow-500" />
-                        )}
-                      </div>
+      <div className="overflow-auto w-full">
+  <div className="flex items-start space-x-6 min-w-max">
+    {rounds
+      .sort((a, b) => a.level - b.level)
+      .map((round, roundIndex) => (
+        <div key={roundIndex} className="min-w-[220px]">
+          <h4 className="font-semibold text-center mb-4 text-gray-800">
+            {round.name}
+          </h4>
+          <div className="flex flex-col space-y-6">
+            {round.matches.map((match, matchIndex) => {
+              const isPlayer1Winner = isPlayerWinner(match.players?.[0], match.winnerId, match.completed);
+              const isPlayer2Winner = isPlayerWinner(match.players?.[1], match.winnerId, match.completed);
 
-                      {/* Players */}
-                      <div className="space-y-2 mb-4">
-                        {/* Player 1 */}
-                        <div
-                          className={`flex items-center justify-between p-2 rounded ${
-                            isPlayer1Winner ? 'bg-green-100 border border-green-300' : 'bg-white'
-                          }`}
-                        >
-                          <div className="flex items-center">
-                            <User className="w-4 h-4 mr-2 text-green-500" />
-                            <div>
-                              <span className="text-sm font-medium">
-                                {match.players?.[0]?.name || 'TBD'}
-                              </span>
-                              {match.players?.[0]?.id === currentPlayerId && (
-                                <span className="text-xs text-blue-600 font-medium ml-1">(You)</span>
-                              )}
-                            </div>
-                          </div>
-                          {isPlayer1Winner && <Trophy className="w-4 h-4 text-yellow-500" />}
-                        </div>
+              return (
+                <div
+                  key={match.id}
+                  className={`border rounded-lg p-3 text-center ${
+                    match.completed ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
+                  }`}
+                >
+                  <div className="text-xs text-gray-500 mb-1">
+                    {match.completed ? 'Completed' : 'Upcoming'}
+                  </div>
 
-                        <div className="text-center text-xs text-gray-500 py-1">vs</div>
+                  {/* Player 1 */}
+                  <div
+                    className={`flex justify-between items-center px-2 py-1 rounded ${
+                      isPlayer1Winner ? 'bg-green-100 border border-green-300' : ''
+                    }`}
+                  >
+                    <span className="text-sm text-gray-800">{getPlayerDisplay(match.players?.[0])}</span>
+                    {match.players?.[0]?.id === currentPlayerId && (
+                      <span className="text-xs text-blue-500 ml-1">(You)</span>
+                    )}
+                    {isPlayer1Winner && <Trophy className="w-4 h-4 text-yellow-500" />}
+                  </div>
 
-                        {/* Player 2 */}
-                        <div
-                          className={`flex items-center justify-between p-2 rounded ${
-                            isPlayer2Winner ? 'bg-green-100 border border-green-300' : 'bg-white'
-                          }`}
-                        >
-                          <div className="flex items-center">
-                            <User className="w-4 h-4 mr-2 text-green-500" />
-                            <div>
-                              <span className="text-sm font-medium">
-                                {match.players?.[1]?.name || 'TBD'}
-                              </span>
-                              {match.players?.[1]?.id === currentPlayerId && (
-                                <span className="text-xs text-blue-600 font-medium ml-1">(You)</span>
-                              )}
-                            </div>
-                          </div>
-                          {isPlayer2Winner && <Trophy className="w-4 h-4 text-yellow-500" />}
-                        </div>
-                      </div>
+                  <div className="text-xs my-1 text-gray-500">vs</div>
 
-                      {/* Score */}
-                      {match.score && (
-                        <div className="text-xs text-gray-600 mb-3 p-2 bg-gray-100 rounded text-center">
-                          <strong>Score:</strong> {match.score}
-                        </div>
-                      )}
+                  {/* Player 2 */}
+                  <div
+                    className={`flex justify-between items-center px-2 py-1 rounded ${
+                      isPlayer2Winner ? 'bg-green-100 border border-green-300' : ''
+                    }`}
+                  >
+                    <span className="text-sm text-gray-800">{getPlayerDisplay(match.players?.[1])}</span>
+                    {match.players?.[1]?.id === currentPlayerId && (
+                      <span className="text-xs text-blue-500 ml-1">(You)</span>
+                    )}
+                    {isPlayer2Winner && <Trophy className="w-4 h-4 text-yellow-500" />}
+                  </div>
+
+                  {/* Score */}
+                  {match.score && (
+                    <div className="text-xs text-gray-700 mt-2">
+                      <strong>Score:</strong> {match.score}
                     </div>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+  </div>
+</div>
+
 
       {!rounds?.length && (
         <div className="text-center py-12">
