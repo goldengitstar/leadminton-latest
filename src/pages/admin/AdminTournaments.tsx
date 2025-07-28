@@ -26,6 +26,74 @@ const AdminTournaments: React.FC<AdminTournamentsProps> = () => {
   const [showCpuManagement, setShowCpuManagement] = useState(false);
   const [cpuPlayers, setCpuPlayers] = useState<any[]>([]);
   const [selectedCpuPlayers, setSelectedCpuPlayers] = useState<string[]>([]);
+  const [selectedTournamentId, setSelectedTournamentId] = useState<string | null>(null);
+
+  // Update the CPU management modal to track selected tournament
+  const handleOpenCpuManagement = () => {
+    const upcomingTournaments = tournamentList.filter(t => t.status === 'upcoming');
+    if (upcomingTournaments.length > 0) {
+      setSelectedTournamentId(upcomingTournaments[0].id);
+    }
+    setShowCpuManagement(true);
+  };
+
+  // Update the tournament select handler
+  const handleTournamentSelect = (tournamentId: string) => {
+    setSelectedTournamentId(tournamentId);
+    
+    // Find the tournament and pre-select registered CPU players
+    const tournament = tournamentList.find(t => t.id === tournamentId);
+    if (tournament && tournament.registered_players) {
+      const cpuPlayerIds = tournament.registered_players
+        .filter((p: any) => cpuPlayers.some(cpu => cpu.id === p.player_id))
+        .map((p: any) => p.player_id);
+      setSelectedCpuPlayers(cpuPlayerIds);
+    } else {
+      setSelectedCpuPlayers([]);
+    }
+  };
+
+  // Update the handleAddCpuPlayers function to handle both additions and removals
+  const handleAddCpuPlayers = async () => {
+    if (!selectedTournamentId) {
+      toast.error('Please select a tournament');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      // Get current registered CPU players for this tournament
+      const tournament = tournamentList.find(t => t.id === selectedTournamentId);
+      const currentCpuPlayers = tournament?.registered_players 
+        ? tournament.registered_players
+            .filter((p: any) => cpuPlayers.some(cpu => cpu.id === p.player_id))
+            .map((p: any) => p.player_id)
+        : [];
+      
+      // Determine players to add and remove
+      const playersToAdd = selectedCpuPlayers.filter(id => !currentCpuPlayers.includes(id));
+      const playersToRemove = currentCpuPlayers.filter(id => !selectedCpuPlayers.includes(id));
+      
+      // Process updates
+      if (playersToAdd.length > 0) {
+        await tournamentService.addCpuPlayersToTournament(selectedTournamentId, playersToAdd);
+      }
+      if (playersToRemove.length > 0) {
+        await tournamentService.removeCpuPlayersFromTournament(selectedTournamentId, playersToRemove);
+      }
+      
+      toast.success('CPU players updated successfully');
+      setShowCpuManagement(false);
+      setSelectedCpuPlayers([]);
+      loadTournaments();
+    } catch (error) {
+      console.error('Error updating CPU players:', error);
+      toast.error('Failed to update CPU players. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     loadTournaments();
@@ -119,27 +187,6 @@ const AdminTournaments: React.FC<AdminTournamentsProps> = () => {
     console.log("loading cpu players")
     loadCpuPlayers()
   }, []);
-
-  const handleAddCpuPlayers = async (tournamentId: string) => {
-    if (selectedCpuPlayers.length === 0) {
-      toast.error('Please select at least one CPU player');
-      return;
-    }
-
-    try {
-      setLoading(true);
-      await tournamentService.addCpuPlayersToTournament(tournamentId, selectedCpuPlayers);
-      toast.success(`${selectedCpuPlayers.length} CPU players added to tournament`);
-      setShowCpuManagement(false);
-      setSelectedCpuPlayers([]);
-      loadTournaments();
-    } catch (error) {
-      console.error('Error adding CPU players:', error);
-      toast.error('Failed to add CPU players. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const filteredTournaments = tournamentList.filter(tournament => {
     const matchesSearch = tournament.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -413,46 +460,55 @@ const AdminTournaments: React.FC<AdminTournamentsProps> = () => {
               </button>
             </div>
             <div className="px-6 py-6">
-             <div className="mb-4">
-              <h3 className="text-lg font-medium mb-2">Select upcoming Tournament</h3>
-              <select className="w-full px-3 py-2 border border-gray-300 rounded-lg" disabled={tournamentList.filter(t => t.status === 'upcoming').length === 0}>
-                {tournamentList.filter(t => t.status === 'upcoming').length === 0 ? (
-                  <option>No upcoming tournaments</option>
-                ) : (
-                  tournamentList
-                    .filter(t => t.status === 'upcoming')
-                    .map(tournament => (
-                      <option key={tournament.id} value={tournament.id}>
-                        {tournament.name} ({new Date(tournament.start_date).toLocaleDateString()})
-                      </option>
-                    ))
-                )}
-              </select>
-            </div>
+              <div className="mb-4">
+                <h3 className="text-lg font-medium mb-2">Select upcoming Tournament</h3>
+                <select 
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg" 
+                  value={selectedTournamentId || ''}
+                  onChange={(e) => handleTournamentSelect(e.target.value)}
+                  disabled={tournamentList.filter(t => t.status === 'upcoming').length === 0}
+                >
+                  {tournamentList.filter(t => t.status === 'upcoming').length === 0 ? (
+                    <option value="">No upcoming tournaments</option>
+                  ) : (
+                    tournamentList
+                      .filter(t => t.status === 'upcoming')
+                      .map(tournament => (
+                        <option key={tournament.id} value={tournament.id}>
+                          {tournament.name} ({new Date(tournament.start_date).toLocaleDateString()})
+                        </option>
+                      ))
+                  )}
+                </select>
+              </div>
 
               <div className="mb-4">
                 <h3 className="text-lg font-medium mb-2">Available CPU Players</h3>
                 <div className="max-h-64 overflow-y-auto border border-gray-200 rounded-lg">
-                  {cpuPlayers.map(player => (
-                    <label key={player.id} className="flex items-center p-3 hover:bg-gray-50 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={selectedCpuPlayers.includes(player.id)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedCpuPlayers([...selectedCpuPlayers, player.id]);
-                          } else {
-                            setSelectedCpuPlayers(selectedCpuPlayers.filter(id => id !== player.id));
-                          }
-                        }}
-                        className="mr-3"
-                      />
-                      <div className="flex-1">
-                        <div className="font-medium">{player.name}</div>
-                        <div className="text-sm text-gray-600">Level {player.level}</div>
-                      </div>
-                    </label>
-                  ))}
+                  {cpuPlayers.length === 0 ? (
+                    <div className="p-4 text-center text-gray-500">No CPU players available</div>
+                  ) : (
+                    cpuPlayers.map(player => (
+                      <label key={player.id} className="flex items-center p-3 hover:bg-gray-50 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={selectedCpuPlayers.includes(player.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedCpuPlayers([...selectedCpuPlayers, player.id]);
+                            } else {
+                              setSelectedCpuPlayers(selectedCpuPlayers.filter(id => id !== player.id));
+                            }
+                          }}
+                          className="mr-3"
+                        />
+                        <div className="flex-1">
+                          <div className="font-medium">{player.name}</div>
+                          <div className="text-sm text-gray-600">Level {player.level}</div>
+                        </div>
+                      </label>
+                    ))
+                  )}
                 </div>
               </div>
 
@@ -464,10 +520,13 @@ const AdminTournaments: React.FC<AdminTournamentsProps> = () => {
                   Cancel
                 </button>
                 <button
-                  onClick={() => handleAddCpuPlayers(tournamentList[0]?.id)} // You'll need to get the selected tournament ID
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  onClick={handleAddCpuPlayers}
+                  disabled={!selectedTournamentId}
+                  className={`px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 ${
+                    !selectedTournamentId ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
                 >
-                  Add Selected Players
+                  Update Players
                 </button>
               </div>
             </div>

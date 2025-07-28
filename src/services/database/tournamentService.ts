@@ -542,10 +542,25 @@ export class TournamentService {
   }
 
   async addCpuPlayersToTournament(tournamentId: string, selectedCpuPlayers: string[]): Promise<void> {
+    const { data: tournament, error: fetchError } = await this.supabase
+      .from('tournament_list')
+      .select('registered_players')
+      .eq('id', tournamentId)
+      .single();
 
+    if (fetchError) {
+      console.error('Error fetching tournament:', fetchError);
+      throw new Error('Failed to fetch tournament data.');
+    }
+
+    // Combine existing and new CPU players
+    const existingPlayers: string[] = tournament.registered_players || [];
+    const updatedPlayers = Array.from(new Set([...existingPlayers, ...selectedCpuPlayers]));
+
+    // Update the tournament record
     const { error: updateError } = await this.supabase
       .from('tournament_list')
-      .update({ players: selectedCpuPlayers })
+      .update({ players: updatedPlayers })
       .eq('id', tournamentId);
 
     if (updateError) {
@@ -584,6 +599,27 @@ export class TournamentService {
       completed: true,
       status: 'completed',
     };
+  }
+  
+  async removeCpuPlayersFromTournament(tournamentId: string, playerIds: string[]) {
+    const { data: tournament, error: fetchError } = await this.supabase
+      .from('tournament_list')
+      .select('registered_players')
+      .eq('id', tournamentId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    const updatedPlayers = tournament.registered_players.filter(
+      (p: any) => !playerIds.includes(p.player_id)
+    );
+
+    const { error: updateError } = await this.supabase
+      .from('tournament_list')
+      .update({ registered_players: updatedPlayers })
+      .eq('id', tournamentId);
+
+    if (updateError) throw updateError;
   }
   
   async generateMatches(tournamentId: string, round_interval_minutes: number, round_level: number, players: any[]): Promise<{ success: boolean; matches?: any[]; error?: string;  }> {
