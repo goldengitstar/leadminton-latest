@@ -165,7 +165,7 @@ const AdminTournaments: React.FC<AdminTournamentsProps> = () => {
   const handleRemoveRegistration = async (tournamentId: string, playerId: string) => {
     if (!confirm('Are you sure you want to remove this registration?')) return;
     try {
-      await tournamentService.removePlayerRegistration(tournamentId, playerId);
+      await tournamentService.removePlayerFromTournament(tournamentId, playerId);
       toast.success('Registration removed successfully');
       loadTournaments();
     } catch (error) {
@@ -710,7 +710,7 @@ const RegistrationsView = ({ tournaments, onRemoveRegistration }: {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button
-                      onClick={() => tournamentService.removeCpuPlayerFromTournament(tournament.id, player.player_id)}
+                      onClick={() => onRemoveRegistration(tournament.id, player.player_id)}
                       className="text-red-600 hover:text-red-900 p-1"
                       title="Remove Registration"
                     >

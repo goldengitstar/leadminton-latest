@@ -628,8 +628,7 @@ export class TournamentService {
     };
   }
 
-  async removeCpuPlayerFromTournament(tournamentId: string, playerId: string): Promise<void> {
-    console.log(`Removing CPU player ${playerId} from tournament ${tournamentId}`);
+  async removePlayerFromTournament(tournamentId: string, playerId: string): Promise<void> {
 
     // Step 1: Fetch the current registered_players array
     const { data: tournament, error: fetchError } = await this.supabase
