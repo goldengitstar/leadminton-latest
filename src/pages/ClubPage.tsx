@@ -70,7 +70,8 @@ export default function ClubPage() {
     if (!player) return;
 
     if (player.strategy == strategy) return;
-
+    
+    console.log("Recording player change strategy ", strategy)
     await recordPlayerStrategyChange(playerId, strategy);
 
     dispatchGameState({

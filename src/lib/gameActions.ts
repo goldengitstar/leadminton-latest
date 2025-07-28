@@ -50,32 +50,57 @@ export async function recordTrainingStart(
     .eq('id', player.id);
 }
 
+function toSnakeCase(str: string): string {
+  return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+}
+
 export async function recordTrainingComplete(
   player: Player,
   stat: keyof Player['stats'],
   newValue: number
 ) {
   if (!player.id) return;
-  await supabase
+
+  const columnName = toSnakeCase(stat as string); // Convert camelCase → snake_case
+
+  // 1. Update training & level
+  const { error: playerUpdateError } = await supabase
     .from('players')
     .update({
       training: null,
       level: player.level + 1
     })
     .eq('id', player.id);
-  await supabase
+
+  if (playerUpdateError) {
+    console.error('Error updating players table:', playerUpdateError.message);
+  }
+
+  console.log('Recording training complete, stat:', stat);
+
+  // 2. Update stat
+  const { error: statUpdateError } = await supabase
     .from('player_stats')
     .update({
-      [stat]: newValue
+      [columnName]: newValue
     })
     .eq('player_id', player.id);
-  await supabase
+
+  if (statUpdateError) {
+    console.error('Error updating player_stats:', statUpdateError.message);
+  }
+
+  // 3. Update stat level
+  const { error: levelUpdateError } = await supabase
     .from('player_levels')
-    .update([{
-      [stat]: player.statLevels[stat] + 1
-    }])
+    .update({
+      [columnName]: player.statLevels[stat] + 1
+    })
     .eq('player_id', player.id);
-  // Local implementation - no database needed
+
+  if (levelUpdateError) {
+    console.error('Error updating player_levels:', levelUpdateError.message);
+  }
 }
 
 export async function recordPlayerStrategyChange(playerId: string, strategy: PlayerStrategy) {
