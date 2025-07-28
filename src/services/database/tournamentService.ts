@@ -541,6 +541,19 @@ export class TournamentService {
     return { p1, p2 };
   }
 
+  async addCpuPlayersToTournament(tournamentId: string, selectedCpuPlayers: string[]): Promise<void> {
+
+    const { error: updateError } = await this.supabase
+      .from('tournament_list')
+      .update({ players: selectedCpuPlayers })
+      .eq('id', tournamentId);
+
+    if (updateError) {
+      console.error('Error updating players:', updateError);
+      throw new Error('Failed to update players in tournament.');
+    }
+  }
+
   generateMatchResult(player1Id: string, player2Id: string | null) {
     // Handle bye (no opponent)
     if (!player2Id) {
