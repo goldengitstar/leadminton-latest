@@ -322,7 +322,9 @@ export class PlayerService {
         const initialStats = Object.fromEntries(statKeys.map((k) => [k, 0])) as Record<typeof statKeys[number], number>;
         const initialStrategy = generateInitialStrategy();
         const initialStatLevels = generateInitialStatLevelsFromStats(initialStats);
-        const computedLevel = Object.values(initialStatLevels).reduce((sum, lvl) => sum + lvl, 0);
+        const total = Object.values(initialStatLevels).reduce((sum, lvl) => sum + lvl, 0);
+        const average = total / Object.values(initialStatLevels).length;
+        const computedLevel = Math.floor(average) + 1;
 
         const { data: player, error: playerError } = await this.supabase
           .from('players')
