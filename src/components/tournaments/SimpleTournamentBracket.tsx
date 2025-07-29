@@ -2,6 +2,29 @@ import React from 'react';
 import { Bracket, RoundProps } from 'react-brackets';
 import { TournamentRound } from '../../types/tournament';
 import { Trophy, Crown, Star } from 'lucide-react';
+import type { Theme } from '@g-loot/react-tournament-brackets';
+
+const myTheme: Theme = {
+  textColor: {
+    main: '#FFFFFF',
+    highlighted: '#FF9800',
+    dark: '#222222',
+  },
+  matchBackground: {
+    won: '#4CAF50',
+    lost: '#F44336',
+    default: '#1E1E2F',
+  },
+  matchBorderColor: '#FF9800',
+  connectorColor: '#BDBDBD',
+  borderRadius: 10,
+  fonts: {
+    family: 'Roboto, sans-serif',
+    size: 12,
+    weight: 500,
+  },
+};
+
 
 interface SimpleTournamentBracketProps {
   registeredPlayers: any[];
