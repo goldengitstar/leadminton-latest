@@ -1,7 +1,7 @@
 import React from 'react';
 import { Bracket, RoundProps } from 'react-brackets';
 import { TournamentRound } from '../../types/tournament';
-import { Trophy, Crown, CheckCircle, User, Star} from 'lucide-react';
+import { Trophy, Crown, Star } from 'lucide-react';
 
 interface SimpleTournamentBracketProps {
   registeredPlayers: any[];
@@ -12,6 +12,19 @@ interface SimpleTournamentBracketProps {
   onBack: () => void;
 }
 
+function getReadableRoundTitle(indexFromEnd: number): string {
+  switch (indexFromEnd) {
+    case 0:
+      return 'Final';
+    case 1:
+      return 'Semi-Final';
+    case 2:
+      return 'Quarter-Final';
+    default:
+      return `Round ${indexFromEnd + 1}`;
+  }
+}
+
 const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
   registeredPlayers,
   tournamentName,
@@ -20,28 +33,23 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
   status,
   onBack,
 }) => {
-  // Map players by ID for quick lookup
-  const playerMap = Object.fromEntries(
-    registeredPlayers.map((p) => [p.id, p])
-  );
+  const playerMap = Object.fromEntries(registeredPlayers.map((p) => [p.id, p]));
 
-  // Prepare formatted rounds for React Brackets
-  const formattedRounds: RoundProps[] = rounds
-    .sort((a, b) => a.level - b.level)
-    .map((round) => ({
-      title: round.name,
-      seeds: round.matches.map((match) => ({
-        id: parseInt(match.id.slice(0, 8), 16),
-        date: match.actualStart,
-        // Determine winnerName from match.players array
-        winnerId: match.winnerId,
-        winnerName: match.players?.find((p) => p.id === match.winnerId)?.name || 'Unknown',
-        teams: [
-          { name: match.players?.[0]?.name || 'CPU' },
-          { name: match.players?.[1]?.name || 'CPU' },
-        ],
-      })),
-    }));
+  const sortedRounds = [...rounds].sort((a, b) => a.level - b.level);
+
+  const formattedRounds: RoundProps[] = sortedRounds.map((round, index, arr) => ({
+    title: getReadableRoundTitle(arr.length - index - 1),
+    seeds: round.matches.map((match) => ({
+      id: parseInt(match.id.slice(0, 8), 16),
+      date: match.actualStart,
+      winnerId: match.winnerId,
+      winnerName: match.players?.find((p) => p.id === match.winnerId)?.name || 'Unknown',
+      teams: [
+        { name: match.players?.[0]?.name || 'CPU' },
+        { name: match.players?.[1]?.name || 'CPU' },
+      ],
+    })),
+  }));
 
   if (!formattedRounds.length) {
     return (
@@ -53,25 +61,22 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
     );
   }
 
-  // Determine final match winner
-  const sortedRounds = [...rounds].sort((a, b) => a.level - b.level);
   const finalRoundOriginal = sortedRounds[sortedRounds.length - 1];
   const finalMatch = finalRoundOriginal.matches.find((m) => m.winnerId);
   const winnerName = finalMatch
     ? finalMatch.players?.find((p) => p.id === finalMatch.winnerId)?.name || 'Unknown'
     : null;
 
-  const tournamentCompleted = status === "completed";
+  const tournamentCompleted = status === 'completed';
 
-  // Split rounds: early vs final
   const finalRound = formattedRounds[formattedRounds.length - 1];
   const earlyRounds = formattedRounds.slice(0, -1);
 
-  // Split each early round seeds into two halves
   const leftRounds: RoundProps[] = earlyRounds.map((round) => {
     const split = Math.ceil(round.seeds.length / 2);
     return { title: round.title, seeds: round.seeds.slice(split) };
   });
+
   const rightRounds: RoundProps[] = earlyRounds.map((round) => {
     const split = Math.ceil(round.seeds.length / 2);
     return { title: round.title, seeds: round.seeds.slice(0, split) };
@@ -90,8 +95,8 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
             </div>
           )}
         </div>
-        <button 
-          onClick={onBack} 
+        <button
+          onClick={onBack}
           className="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition-colors"
         >
           Back
@@ -116,7 +121,9 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
                 <Star className="w-6 h-6 text-yellow-500" />
               </div>
               {winnerName === playerMap[currentPlayerId]?.name && (
-                <div className="mt-2 text-green-700 font-semibold">Congratulations! You won the tournament! 🏆</div>
+                <div className="mt-2 text-green-700 font-semibold">
+                  Congratulations! You won the tournament! 🏆
+                </div>
               )}
             </div>
           </div>
@@ -125,17 +132,12 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
 
       <div className="overflow-auto">
         <div className="flex justify-center items-start gap-2">
-          {/* Left side: first half of early rounds */}
           <div>
             <Bracket rounds={rightRounds} rtl={false} />
           </div>
-
-          {/* Center: final round */}
           <div>
             <Bracket rounds={[finalRound]} rtl={false} />
           </div>
-
-          {/* Right side: second half of early rounds */}
           <div>
             <Bracket
               rounds={leftRounds.map((r) => ({
