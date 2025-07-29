@@ -1,30 +1,7 @@
 import React from 'react';
-import { Bracket, RoundProps } from 'react-brackets';
+import { Bracket, RoundProps, CustomTheme } from 'react-brackets';
 import { TournamentRound } from '../../types/tournament';
 import { Trophy, Crown, Star } from 'lucide-react';
-import type { Theme } from '@g-loot/react-tournament-brackets';
-
-const myTheme: Theme = {
-  textColor: {
-    main: '#FFFFFF',
-    highlighted: '#FF9800',
-    dark: '#222222',
-  },
-  matchBackground: {
-    won: '#4CAF50',
-    lost: '#F44336',
-    default: '#1E1E2F',
-  },
-  matchBorderColor: '#FF9800',
-  connectorColor: '#BDBDBD',
-  borderRadius: 10,
-  fonts: {
-    family: 'Roboto, sans-serif',
-    size: 12,
-    weight: 500,
-  },
-};
-
 
 interface SimpleTournamentBracketProps {
   registeredPlayers: any[];
@@ -47,6 +24,27 @@ function getReadableRoundTitle(indexFromEnd: number): string {
       return `Round ${indexFromEnd + 1}`;
   }
 }
+
+const customTheme: CustomTheme = {
+  textColor: {
+    main: '#111827',
+    highlighted: '#f59e0b',
+    dark: '#4b5563',
+  },
+  matchBackground: {
+    default: '#f9fafb',
+    won: '#d1fae5',
+    lost: '#fee2e2',
+  },
+  matchBorderColor: '#e5e7eb',
+  connectorColor: '#9ca3af',
+  borderRadius: 12,
+  fonts: {
+    family: 'Inter, sans-serif',
+    size: 14,
+    weight: 500,
+  },
+};
 
 const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
   registeredPlayers,
@@ -156,10 +154,10 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
       <div className="overflow-auto">
         <div className="flex justify-center items-start gap-2">
           <div>
-            <Bracket rounds={rightRounds} rtl={false} />
+            <Bracket rounds={rightRounds} rtl={false} theme={customTheme} />
           </div>
           <div>
-            <Bracket rounds={[finalRound]} rtl={false} />
+            <Bracket rounds={[finalRound]} rtl={false} theme={customTheme} />
           </div>
           <div>
             <Bracket
@@ -168,6 +166,7 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
                 seeds: [...r.seeds].reverse(),
               }))}
               rtl={true}
+              theme={customTheme}
             />
           </div>
         </div>
