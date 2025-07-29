@@ -79,6 +79,7 @@ const RankBar = ({
         console.log("[handleMouseMove] level, range =>", level, range);
         if (rank >= range[0] && rank <= range[1]) {
           nextLevelPoints = range[1];
+          console.log("Next level points found ", nextLevelPoints)
           break;
         }
       }
