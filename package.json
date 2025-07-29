@@ -8,6 +8,7 @@
     "dev:monitor": "node scripts/monitor.js",
     "start:api": "cross-env NODE_ENV=development node ./api/server.js",
     "dev:full": "concurrently \"npm run dev\" \"npm run dev:monitor\" \"npm run start:api\"",
+    "preinstall": "npm install --legacy-peer-deps",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
