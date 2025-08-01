@@ -203,7 +203,7 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
       )}
 
       <div className="w-full">
-        <div className="flex justify-center items-start p-[10px] flex-wrap">
+        <div className="flex justify-center items-start">
           <div>
             <Bracket
               rounds={rightRounds}
