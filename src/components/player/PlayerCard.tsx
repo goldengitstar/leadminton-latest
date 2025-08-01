@@ -187,9 +187,6 @@ export default function PlayerCard({
         return "bg-gray-50 text-gray-700";
     }
   };
-
-  console.log('player =>', player);
-
   
   useEffect(() => {
     playerService.updatePlayerRank(player.id)

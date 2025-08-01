@@ -1046,7 +1046,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
                         {player.level}/{player.maxLevel}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {player.rank}
+                        {player.rank_label}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         <div className="flex items-center">
