@@ -66,7 +66,6 @@ const ThemedSeed = ({ seed, breakpoint }: any) => {
       <SeedItem
         style={{
           backgroundColor: customTheme.matchBackground.default,
-          width: 150,
           border: `1px solid ${customTheme.matchBorderColor}`,
           fontFamily: customTheme.fonts.family,
           fontSize: customTheme.fonts.size,
@@ -203,7 +202,7 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
       )}
 
       <div className="w-full">
-        <div className="flex justify-center items-start">
+        <div className="flex justify-center items-start p-[10px]">
           <div>
             <Bracket
               rounds={rightRounds}
