@@ -12,6 +12,8 @@ interface SimpleTournamentBracketProps {
   onBack: () => void;
 }
 
+
+
 function getReadableRoundTitle(indexFromEnd: number): string {
   switch (indexFromEnd) {
     case 0: return 'Final';
@@ -59,8 +61,13 @@ const ThemedRoundTitle = (title: string, roundIndex: number) => (
 );
 
 // Custom seed rendering
-const ThemedSeed = ({ seed, breakpoint }: any) => {
+// Modify to accept scaleFactor
+const ThemedSeed = ({ seed, breakpoint, scaleFactor }: any) => {
   const winnerId = seed.winnerId;
+
+  const fontSize = customTheme.fonts.size * scaleFactor;
+  const padding = `${4 * scaleFactor}px ${6 * scaleFactor}px`;
+
   return (
     <Seed mobileBreakpoint={breakpoint}>
       <SeedItem
@@ -68,7 +75,7 @@ const ThemedSeed = ({ seed, breakpoint }: any) => {
           backgroundColor: customTheme.matchBackground.default,
           border: `1px solid ${customTheme.matchBorderColor}`,
           fontFamily: customTheme.fonts.family,
-          fontSize: customTheme.fonts.size,
+          fontSize,
           fontWeight: customTheme.fonts.weight,
           color: customTheme.textColor.main,
         }}
@@ -84,7 +91,7 @@ const ThemedSeed = ({ seed, breakpoint }: any) => {
                   : winnerId
                   ? customTheme.matchBackground.lost
                   : customTheme.matchBackground.default,
-                padding: '4px 6px',
+                padding,
               }}
             >
               {team.name}
@@ -95,6 +102,7 @@ const ThemedSeed = ({ seed, breakpoint }: any) => {
     </Seed>
   );
 };
+
 
 const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
   registeredPlayers,
@@ -121,6 +129,15 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
       ],
     })),
   }));
+
+
+  // 👇 Add this line inside the component, near the top of SimpleTournamentBracket
+  const scaleFactor =
+    formattedRounds.length >= 7 ? 0.6 :
+    formattedRounds.length >= 6 ? 0.75 :
+    formattedRounds.length >= 5 ? 0.9 :
+    1.0;
+
 
   if (!formattedRounds.length) {
     return (
@@ -207,7 +224,7 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
             <Bracket
               rounds={rightRounds}
               rtl={false}
-              renderSeedComponent={ThemedSeed}
+              renderSeedComponent={(props) => <ThemedSeed {...props} scaleFactor={scaleFactor} />}
               roundTitleComponent={ThemedRoundTitle}
             />
           </div>
@@ -215,7 +232,7 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
             <Bracket
               rounds={[finalRound]}
               rtl={false}
-              renderSeedComponent={ThemedSeed}
+              renderSeedComponent={(props) => <ThemedSeed {...props} scaleFactor={scaleFactor} />}
               roundTitleComponent={ThemedRoundTitle}
             />
           </div>
@@ -226,7 +243,7 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
                 seeds: [...r.seeds].reverse(),
               }))}
               rtl={true}
-              renderSeedComponent={ThemedSeed}
+              renderSeedComponent={(props) => <ThemedSeed {...props} scaleFactor={scaleFactor} />}
               roundTitleComponent={ThemedRoundTitle}
             />
           </div>
