@@ -66,6 +66,7 @@ const ThemedSeed = ({ seed, breakpoint }: any) => {
       <SeedItem
         style={{
           backgroundColor: customTheme.matchBackground.default,
+          width: 150,
           border: `1px solid ${customTheme.matchBorderColor}`,
           borderRadius: customTheme.borderRadius,
           fontFamily: customTheme.fonts.family,
