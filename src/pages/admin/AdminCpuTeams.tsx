@@ -1366,31 +1366,6 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
                   </div>
                 </div>
 
-                <div className="mb-6 border-t border-gray-200 pt-4">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Resources</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {(['diamonds', 'shuttlecocks', 'coins', 'meals'] as const).map((resource) => (
-                      <div key={resource}>
-                        <label className="block text-sm font-medium text-gray-700 mb-2 capitalize">
-                          {resource}
-                        </label>
-                        <input
-                          type="number"
-                          value={(playerFormData as any)[resource] || 0}
-                          onChange={(e) =>
-                            setPlayerFormData((prev) => ({
-                              ...prev,
-                              [resource]: parseInt(e.target.value),
-                            }))
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          min="0"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
                 <div className="pt-4 border-t border-gray-200">
                   <h3 className="text-lg font-semibold text-gray-800 mb-4">Stats</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
