@@ -7,6 +7,7 @@ interface SimpleTournamentBracketProps {
   registeredPlayers: any[];
   tournamentName: string;
   rounds: TournamentRound[];
+  max_participants: number;
   currentPlayerId: string;
   status: any;
   onBack: () => void;
@@ -108,6 +109,7 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
   registeredPlayers,
   tournamentName,
   rounds,
+  max_participants,
   currentPlayerId,
   status,
   onBack,
@@ -116,9 +118,13 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
 
   const sortedRounds = [...rounds].sort((a, b) => a.level - b.level);
   console.log("Current rounds ", sortedRounds)
-  const formattedRounds: RoundProps[] = sortedRounds.map((round, index, arr) => ({
-    title: getReadableRoundTitle(arr.length - index - 1),
-    seeds: round.matches.map((match) => ({
+  const totalRounds = Math.ceil(Math.log2(max_participants));
+
+  const formattedRounds: RoundProps[] = Array.from({ length: totalRounds }, (_, i) => {
+    const round = sortedRounds.find((r) => r.level === i + 1);
+    const expectedSeedCount = Math.ceil(max_participants / Math.pow(2, i + 1));
+
+    const seeds = round?.matches.map((match) => ({
       id: parseInt(match.id.slice(0, 8), 16),
       date: match.actualStart,
       winnerId: match.winnerId,
@@ -127,8 +133,27 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
         { name: match.players?.[0]?.name || 'CPU' },
         { name: match.players?.[1]?.name || 'CPU' },
       ],
-    })),
-  }));
+    })) || [];
+
+    // Add blank seeds to fill layout
+    while (seeds.length < expectedSeedCount) {
+      seeds.push({
+        id: Math.floor(Math.random() * 1e8),
+        date: null,
+        winnerId: null,
+        winnerName: '',
+        teams: [
+          { name: '' },
+          { name: '' }
+        ]
+      });
+    }
+
+    return {
+      title: getReadableRoundTitle(totalRounds - i - 1),
+      seeds
+    };
+  });
 
 
   // 👇 Add this line inside the component, near the top of SimpleTournamentBracket

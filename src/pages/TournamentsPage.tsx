@@ -505,6 +505,7 @@ export default function TournamentsPage() {
             registeredPlayers={gameState.players}
             tournamentName={detailViewTournament.name}
             rounds={detailViewTournament.rounds}
+            max_participants={detailViewTournament.max_participants}
             currentPlayerId={gameState.players[0]?.id || ''}
             status={detailViewTournament.status}
             onBack={handleBackToList}
