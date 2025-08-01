@@ -115,7 +115,7 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
   const playerMap = Object.fromEntries(registeredPlayers.map((p) => [p.id, p]));
 
   const sortedRounds = [...rounds].sort((a, b) => a.level - b.level);
-
+  console.log("Current rounds ", sortedRounds)
   const formattedRounds: RoundProps[] = sortedRounds.map((round, index, arr) => ({
     title: getReadableRoundTitle(arr.length - index - 1),
     seeds: round.matches.map((match) => ({
