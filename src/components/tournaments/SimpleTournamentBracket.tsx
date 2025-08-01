@@ -14,12 +14,12 @@ interface SimpleTournamentBracketProps {
 
 
 
-function getReadableRoundTitle(indexFromEnd: number): string {
-  switch (indexFromEnd) {
+function getReadableRoundTitle(index: number): string {
+  switch (index) {
     case 0: return 'Final';
     case 1: return 'Semi-Final';
     case 2: return 'Quarter-Final';
-    default: return `Round ${indexFromEnd + 1}`;
+    default: return `Round ${index + 1}`;
   }
 }
 
@@ -117,7 +117,7 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
   const sortedRounds = [...rounds].sort((a, b) => a.level - b.level);
 
   const formattedRounds: RoundProps[] = sortedRounds.map((round, index, arr) => ({
-    title: getReadableRoundTitle(arr.length - index - 1),
+    title: getReadableRoundTitle(index),
     seeds: round.matches.map((match) => ({
       id: parseInt(match.id.slice(0, 8), 16),
       date: match.actualStart,
