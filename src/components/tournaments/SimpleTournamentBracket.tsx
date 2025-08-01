@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bracket, RoundProps, CustomTheme } from 'react-brackets';
+import { Bracket, Seed, SeedItem, SeedTeam, RoundProps } from 'react-brackets';
 import { TournamentRound } from '../../types/tournament';
 import { Trophy, Crown, Star } from 'lucide-react';
 
@@ -14,18 +14,14 @@ interface SimpleTournamentBracketProps {
 
 function getReadableRoundTitle(indexFromEnd: number): string {
   switch (indexFromEnd) {
-    case 0:
-      return 'Final';
-    case 1:
-      return 'Semi-Final';
-    case 2:
-      return 'Quarter-Final';
-    default:
-      return `Round ${indexFromEnd + 1}`;
+    case 0: return 'Final';
+    case 1: return 'Semi-Final';
+    case 2: return 'Quarter-Final';
+    default: return `Round ${indexFromEnd + 1}`;
   }
 }
 
-const customTheme: CustomTheme = {
+const customTheme = {
   textColor: {
     main: '#111827',
     highlighted: '#f59e0b',
@@ -44,6 +40,62 @@ const customTheme: CustomTheme = {
     size: 14,
     weight: 500,
   },
+};
+
+// Custom round title
+const ThemedRoundTitle = (title: string, roundIndex: number) => (
+  <div
+    style={{
+      fontFamily: customTheme.fonts.family,
+      fontSize: customTheme.fonts.size + 2,
+      fontWeight: customTheme.fonts.weight,
+      color: customTheme.textColor.highlighted,
+      textAlign: 'center',
+      marginBottom: 8,
+    }}
+  >
+    {title}
+  </div>
+);
+
+// Custom seed rendering
+const ThemedSeed = ({ seed, breakpoint }: any) => {
+  const winnerId = seed.winnerId;
+  return (
+    <Seed mobileBreakpoint={breakpoint}>
+      <SeedItem
+        style={{
+          backgroundColor: customTheme.matchBackground.default,
+          border: `1px solid ${customTheme.matchBorderColor}`,
+          borderRadius: customTheme.borderRadius,
+          fontFamily: customTheme.fonts.family,
+          fontSize: customTheme.fonts.size,
+          fontWeight: customTheme.fonts.weight,
+          color: customTheme.textColor.main,
+        }}
+      >
+        {seed.teams?.map((team: any, i: number) => {
+          const isWinner = team.name === seed.winnerName;
+          return (
+            <SeedTeam
+              key={i}
+              style={{
+                backgroundColor: isWinner
+                  ? customTheme.matchBackground.won
+                  : winnerId
+                  ? customTheme.matchBackground.lost
+                  : customTheme.matchBackground.default,
+                padding: '4px 6px',
+                borderRadius: customTheme.borderRadius,
+              }}
+            >
+              {team.name}
+            </SeedTeam>
+          );
+        })}
+      </SeedItem>
+    </Seed>
+  );
 };
 
 const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
@@ -150,13 +202,24 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
           </div>
         </div>
       )}
+
       <div className="w-full">
         <div className="flex justify-center items-start gap-1 p-[10px] flex-wrap">
           <div>
-            <Bracket rounds={rightRounds} rtl={false} theme={customTheme} />
+            <Bracket
+              rounds={rightRounds}
+              rtl={false}
+              renderSeedComponent={ThemedSeed}
+              roundTitleComponent={ThemedRoundTitle}
+            />
           </div>
           <div>
-            <Bracket rounds={[finalRound]} rtl={false} theme={customTheme} />
+            <Bracket
+              rounds={[finalRound]}
+              rtl={false}
+              renderSeedComponent={ThemedSeed}
+              roundTitleComponent={ThemedRoundTitle}
+            />
           </div>
           <div>
             <Bracket
@@ -165,12 +228,12 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
                 seeds: [...r.seeds].reverse(),
               }))}
               rtl={true}
-              theme={customTheme}
+              renderSeedComponent={ThemedSeed}
+              roundTitleComponent={ThemedRoundTitle}
             />
           </div>
         </div>
       </div>
-
     </div>
   );
 };
