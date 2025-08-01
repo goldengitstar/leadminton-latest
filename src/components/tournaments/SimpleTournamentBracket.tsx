@@ -150,9 +150,8 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
           </div>
         </div>
       )}
-
-      <div className="overflow-auto">
-        <div className="flex justify-center items-start gap-1 p-[10px]">
+      <div className="w-full">
+        <div className="flex justify-center items-start gap-1 p-[10px] flex-wrap">
           <div>
             <Bracket rounds={rightRounds} rtl={false} theme={customTheme} />
           </div>
@@ -171,6 +170,7 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
           </div>
         </div>
       </div>
+
     </div>
   );
 };
