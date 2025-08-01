@@ -39,7 +39,7 @@ const customTheme = {
   borderRadius: 12,
   fonts: {
     family: 'Inter, sans-serif',
-    size: 10,
+    size: 12,
     weight: 500,
   },
 };
