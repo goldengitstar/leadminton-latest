@@ -218,7 +218,7 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
         </div>
       )}
 
-      <div className="w-full">
+      <div className="w-full overflow-y-[auto]">
         <div className="flex justify-center items-start p-[10px]">
           <div>
             <Bracket
