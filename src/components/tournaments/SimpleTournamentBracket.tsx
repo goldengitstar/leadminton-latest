@@ -218,8 +218,8 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
         </div>
       )}
 
-      <div className="w-full overflow-y-auto">
-        <div className="flex justify-center items-start px-[10px]">
+      <div className="w-full overflow-x-auto overflow-y-auto">
+        <div className="flex min-w-fit justify-center items-start px-[10px]">
           <div>
             <Bracket
               rounds={rightRounds}
