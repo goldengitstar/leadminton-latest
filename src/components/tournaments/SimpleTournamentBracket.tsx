@@ -66,7 +66,7 @@ const ThemedRoundTitle = (title: string, roundIndex: number) => (
 const ThemedSeed = ({ seed, breakpoint, scaleFactor }: any) => {
   const winnerId = seed.winnerId;
 
-  const fontSize = customTheme.fonts.size * scaleFactor;
+  const fontSize = customTheme.fonts.size;
   const padding = `${4 * scaleFactor}px ${6 * scaleFactor}px`;
 
   return (
