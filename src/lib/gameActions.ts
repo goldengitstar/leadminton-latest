@@ -219,16 +219,19 @@ export async function recordEquipmentChange(
     return;
   }
 
-  // 3. Compute new stats by adding equipment stats
-  const updatedStats = { ...currentLevels }; // clone current levels
+  // 3. Compute new stats and total stat sum
+  const updatedStats = { ...currentLevels };
+  let totalStatIncrease = 0;
 
   for (const key in equipment.stats) {
     if (key in updatedStats && typeof equipment.stats[key] === 'number') {
-      updatedStats[key] += equipment.stats[key];
+      const statIncrease = equipment.stats[key];
+      updatedStats[key] += statIncrease;
+      totalStatIncrease += statIncrease;
     }
   }
 
-  // 4. Update player_levels with new stats
+  // 4. Update player_levels
   const { error: updateError } = await supabase
     .from('player_levels')
     .update(updatedStats)
@@ -236,6 +239,31 @@ export async function recordEquipmentChange(
 
   if (updateError) {
     console.error('Error updating player_levels:', updateError);
+  }
+
+  // 5. Update players.levels by incrementing with the stat sum
+  const { error: updatePlayerError } = await supabase
+    .from('players')
+    .update({ level: player.level + totalStatIncrease })
+    .eq('id', player.id);
+
+  if (updatePlayerError) {
+    console.error('Error incrementing players.levels:', updatePlayerError);
+  }
+
+  // 5. Compute total stat sum for new player level
+  const totalStats = Object.values(updatedStats)
+    .filter((v) => typeof v === 'number')
+    .reduce((sum, value) => sum + (value as number), 0);
+
+  // 6. Update player level in players table
+  const { error: updateError2 } = await supabase
+    .from('players')
+    .update({ level: totalStats })
+    .eq('id', player.id);
+
+  if (updateError2) {
+    console.error('Error updating players level:', updateError2);
   }
 }
 
