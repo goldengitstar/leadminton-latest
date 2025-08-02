@@ -113,16 +113,23 @@ export default function CustomizationModal({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredEquipment.map((equipment) => (
-            <EquipmentCard
-              key={equipment.id}
-              equipment={equipment}
-              isEquipped={playerEquipment[equipment.type]?.id === equipment.id}
-              onEquip={onEquip}
-              canAfford={canAfford(equipment)}
-            />
-          ))}
+          {filteredEquipment.length === 0 ? (
+            <div className="border border-dashed rounded-lg p-6 text-center text-gray-400 col-span-full">
+              No equipment available.
+            </div>
+          ) : (
+            filteredEquipment.map((equipment) => (
+              <EquipmentCard
+                key={equipment.id}
+                equipment={equipment}
+                isEquipped={playerEquipment[equipment.type]?.id === equipment.id}
+                onEquip={onEquip}
+                canAfford={canAfford(equipment)}
+              />
+            ))
+          )}
         </div>
+
       </div>
     </div>
   );

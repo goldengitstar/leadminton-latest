@@ -31,7 +31,7 @@ export default function EquipmentCard({ equipment, isEquipped, onEquip, canAffor
         {Object.entries(equipment.stats)
           .filter(([, bonus]) => bonus && bonus > 0)
           .map(([stat, bonus]) => (
-            <div key={stat} className="text-gray-600">
+            <div key={stat} className="text-blue-500">
               +{bonus} {stat}
             </div>
           ))}
