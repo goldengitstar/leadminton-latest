@@ -34,6 +34,7 @@ export default function CustomizationModal({
       const { data, error } = await supabase
         .from('equipment')
         .select('*')
+        .eq('type', selectedType)
         .eq('is_active', true);
 
       console.log("Fetching equipment type ", selectedType)
@@ -69,7 +70,7 @@ export default function CustomizationModal({
     };
 
     fetchEquipment();
-  }, []);
+  }, [selectedType]);
 
   const canAfford = (equipment: Equipment): boolean => {
     return (
