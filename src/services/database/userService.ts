@@ -680,7 +680,7 @@ export class UserService {
           rank: player_db.rank,
           best: getBestMatches(player_db.id),
           training: player_db.training,
-          equipment: equipment,
+          equipment: player_db.equipment,
           injuries: (player_db.injuries || []),
           strategy: generateInitialStrategy()
         };
