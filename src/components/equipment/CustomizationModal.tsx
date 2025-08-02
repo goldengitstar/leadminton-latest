@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect} from 'react';
 import { X, ShoppingBag } from 'lucide-react';
 import { Equipment, EquipmentType, PlayerEquipment } from '../../types/equipment';
-import { EQUIPMENT_DATA } from '../../data/equipment';
 import { Resources } from '../../types/game';
 import EquipmentCard from './EquipmentCard';
+import { supabase } from '../../lib/supabase';
 
 interface CustomizationModalProps {
   onClose: () => void;
@@ -27,10 +27,28 @@ export default function CustomizationModal({
   resources,
 }: CustomizationModalProps) {
   const [selectedType, setSelectedType] = useState<EquipmentType>('shoes');
+  const [filteredEquipment, setFilteredEquipment] = useState<Equipment[]>([]);
 
-  const filteredEquipment = EQUIPMENT_DATA.filter(
-    (equipment) => equipment.type === selectedType
-  );
+  useEffect(() => {
+    const fetchEquipment = async () => {
+      const { data, error } = await supabase
+        .from('equipment')
+        .select('*')
+        .eq('type', selectedType)
+        .eq('is_active', true);
+
+      if (error) {
+        console.error('Error fetching equipment:', error);
+        return;
+      }
+
+      if (data) {
+        setFilteredEquipment(data as Equipment[]);
+      }
+    };
+
+    fetchEquipment();
+  }, []);
 
   const canAfford = (equipment: Equipment): boolean => {
     return (

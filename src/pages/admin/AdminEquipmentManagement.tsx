@@ -6,7 +6,6 @@ import { toast } from 'sonner';
 import { FaShoePrints } from 'react-icons/fa';
 import { GiShorts, GiTennisRacket } from 'react-icons/gi';
 
-
 interface Equipment {
   id: string;
   name: string;
