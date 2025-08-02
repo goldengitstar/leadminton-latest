@@ -8,6 +8,7 @@ export interface AdminUser {
     interclub: boolean;
     users: boolean;
     cpu_teams: boolean;
+    equipments_management:boolean;
   };
   created_at: string;
   updated_at: string;

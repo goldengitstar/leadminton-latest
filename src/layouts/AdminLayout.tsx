@@ -10,6 +10,7 @@ import AdminInterclub from '../pages/admin/AdminInterclub';
 import AdminCpuTeams from '../pages/admin/AdminCpuTeams';
 import AdminUsers from '../pages/admin/AdminUsers';
 import AdminLogs from '../pages/admin/AdminLogs';
+import AdminEquipmentManagement from '@/pages/admin/AdminEquipmentManagement';
 
 const AdminLayout: React.FC = () => {
   const { adminUser, hasPermission, isAdmin, loading } = useAdmin();
@@ -60,7 +61,7 @@ const AdminLayout: React.FC = () => {
       path: '/admin/equipments-management', 
       name: 'Equipments', 
       icon: '🏋️', 
-      permission: 'equipments' as const 
+      permission: 'equipments_management' as const 
     },
     { 
       path: '/admin/users', 
@@ -187,8 +188,11 @@ const AdminLayout: React.FC = () => {
             <Route path="/interclub" element={
               hasPermission('interclub') ? <AdminInterclub /> : <Navigate to="/admin" replace />
             } />
-            <Route path="/cpu-teams" element={
+            <Route path="/cpuTeams" element={
               hasPermission('cpu_teams') ? <AdminCpuTeams /> : <Navigate to="/admin" replace />
+            } />
+            <Route path="/equipmentsManagement" element={
+              hasPermission('equipments_management') ? <AdminEquipmentManagement /> : <Navigate to="/admin" replace />
             } />
             <Route path="/users" element={
               hasPermission('users') ? <AdminUsers /> : <Navigate to="/admin" replace />
