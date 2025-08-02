@@ -28,11 +28,13 @@ export default function EquipmentCard({ equipment, isEquipped, onEquip, canAffor
         {equipment.name}
       </h3>
       <div className="mt-2 space-y-1 text-sm">
-        {Object.entries(equipment.stats).map(([stat, bonus]) => (
-          <div key={stat} className="text-gray-600">
-            +{bonus} {stat}
-          </div>
-        ))}
+        {Object.entries(equipment.stats)
+          .filter(([, bonus]) => bonus && bonus > 0)
+          .map(([stat, bonus]) => (
+            <div key={stat} className="text-gray-600">
+              +{bonus} {stat}
+            </div>
+          ))}
       </div>
       <div className="mt-3 flex justify-between items-center">
         <div className="text-sm">
