@@ -49,7 +49,7 @@ export interface Player {
   maxLevel: number;
   rank: number;
   best: MatchHistory[];
-  equipment: PlayerEquipment;
+  equipment: string[];
   training?: {
     stat: keyof PlayerStats;
     startTime: number;
