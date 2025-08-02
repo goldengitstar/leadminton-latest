@@ -206,28 +206,49 @@ export async function recordEquipmentChange(
     return;
   }
 
-  // 2. Fetch current player stats
-  const { data: currentStats, error: fetchError } = await supabase
+  // 2. Fetch current player stats and levels
+  const { data: currentStats, error: fetchStatsError } = await supabase
     .from('player_stats')
     .select('*')
     .eq('player_id', player.id)
     .single();
 
-  if (fetchError || !currentStats) {
-    console.error('Error fetching player_stats:', fetchError);
+  const { data: currentLevels, error: fetchLevelsError } = await supabase
+    .from('player_levels')
+    .select('*')
+    .eq('player_id', player.id)
+    .single();
+
+  const { data: currentPlayerRow, error: fetchPlayerError } = await supabase
+    .from('players')
+    .select('level')
+    .eq('id', player.id)
+    .single();
+
+  if (fetchStatsError || fetchLevelsError || fetchPlayerError || !currentStats || !currentLevels || !currentPlayerRow) {
+    console.error('Error fetching current data:', fetchStatsError || fetchLevelsError || fetchPlayerError);
     return;
   }
 
-  // 3. Compute new stats
+  // 3. Compute new stats and levels
   const updatedStats = { ...currentStats };
   const updatedLevels: Record<string, number> = {};
+  let levelIncrement = 0;
 
   for (const key in equipment.stats) {
-    if (key in updatedStats && typeof equipment.stats[key] === 'number') {
-      const statIncrease = equipment.stats[key];
+    const statIncrease = equipment.stats[key];
+
+    if (typeof statIncrease === 'number' && typeof updatedStats[key] === 'number') {
       updatedStats[key] += statIncrease;
 
-      updatedLevels[key] = Math.floor(updatedStats[key] / 5);
+      const newLevel = Math.floor(updatedStats[key] / 5);
+      const oldLevel = currentLevels[key] ?? 0;
+
+      if (newLevel > oldLevel) {
+        levelIncrement += newLevel - oldLevel;
+      }
+
+      updatedLevels[key] = newLevel;
     }
   }
 
@@ -248,13 +269,27 @@ export async function recordEquipmentChange(
     .update(updatedLevels)
     .eq('player_id', player.id);
 
-  console.log("Updated levels ", updatedLevels)
-
   if (updateLevelsError) {
     console.error('Error updating player_levels:', updateLevelsError);
+    return;
   }
-}
 
+  // 6. Increment player.level by total increase in level
+  if (levelIncrement > 0) {
+    const newPlayerLevel = currentPlayerRow.level + levelIncrement;
+
+    const { error: updatePlayerError } = await supabase
+      .from('players')
+      .update({ level: newPlayerLevel })
+      .eq('id', player.id);
+
+    if (updatePlayerError) {
+      console.error('Error updating players.level:', updatePlayerError);
+    }
+  }
+
+  console.log('Successfully updated stats and levels.');
+}
 
 export async function recordInjuriesChange(
   player: Player,
