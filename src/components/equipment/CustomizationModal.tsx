@@ -7,7 +7,7 @@ import { supabase } from '../../lib/supabase';
 
 interface CustomizationModalProps {
   onClose: () => void;
-  playerEquipment: PlayerEquipment;
+  playerEquipment: String[];
   onEquip: (equipment: Equipment) => void;
   resources: Resources;
 }
