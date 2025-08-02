@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabase';
 import { Plus, Search, Filter, Edit, Trash2, Zap, Shield, Shirt, ChevronsUp, X, Image as ImageIcon, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { FaShoePrints } from 'react-icons/fa';
-import { GiTennisRacket } from 'react-icons/gi';
+import { GiShorts, GiTennisRacket } from 'react-icons/gi';
 
 
 interface Equipment {
@@ -344,16 +344,18 @@ const AdminEquipmentManagement: React.FC<AdminEquipmentManagementProps> = () => 
         </button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+      {/* Updated Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
             <div className="p-2 bg-blue-100 rounded-lg">
               <GiTennisRacket className="w-6 h-6 text-blue-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Racket</p>
-              <p className="text-2xl font-bold text-gray-900">{equipments.length}</p>
+              <p className="text-sm font-medium text-gray-600">Rackets</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {equipments.filter(e => e.type === 'racket').length}
+              </p>
             </div>
           </div>
         </div>
@@ -366,7 +368,7 @@ const AdminEquipmentManagement: React.FC<AdminEquipmentManagementProps> = () => 
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Shoes</p>
               <p className="text-2xl font-bold text-gray-900">
-                {equipments.filter(e => e.is_active).length}
+                {equipments.filter(e => e.type === 'shoes').length}
               </p>
             </div>
           </div>
@@ -380,7 +382,7 @@ const AdminEquipmentManagement: React.FC<AdminEquipmentManagementProps> = () => 
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Shirts</p>
               <p className="text-2xl font-bold text-gray-900">
-                {equipments.filter(e => e.type === 'shoes').length}
+                {equipments.filter(e => e.type === 'shirt').length}
               </p>
             </div>
           </div>
@@ -389,12 +391,26 @@ const AdminEquipmentManagement: React.FC<AdminEquipmentManagementProps> = () => 
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
             <div className="p-2 bg-yellow-100 rounded-lg">
-              <Zap className="w-6 h-6 text-yellow-600" />
+              <GiShorts className="w-6 h-6 text-yellow-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Shorts</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {equipments.filter(e => e.type === 'shorts').length}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="flex items-center">
+            <div className="p-2 bg-red-100 rounded-lg">
+              <Zap className="w-6 h-6 text-red-600" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Strings</p>
               <p className="text-2xl font-bold text-gray-900">
-                {equipments.filter(e => e.image_url).length}
+                {equipments.filter(e => e.type === 'strings').length}
               </p>
             </div>
           </div>
@@ -692,7 +708,7 @@ const AdminEquipmentManagement: React.FC<AdminEquipmentManagementProps> = () => 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Price (Coins)
+                        Coins
                       </label>
                       <input
                         type="number"
@@ -704,7 +720,7 @@ const AdminEquipmentManagement: React.FC<AdminEquipmentManagementProps> = () => 
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Price (Diamonds)
+                        Diamonds
                       </label>
                       <input
                         type="number"
@@ -716,7 +732,7 @@ const AdminEquipmentManagement: React.FC<AdminEquipmentManagementProps> = () => 
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Price (Shuttlecocks)
+                        Shuttlecocks
                       </label>
                       <input
                         type="number"
