@@ -21,11 +21,9 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const checkAdminStatus = useCallback(async () => {
     if (!user?.id) {
       setAdminUser(null);
-      // Don't set loading to false here - keep loading until we have a user
       return;
     }
 
-    // Set loading to true when we start checking with a real user ID
     setLoading(true);
 
     try {

@@ -352,7 +352,7 @@ const AdminEquipmentManagement: React.FC<AdminEquipmentManagementProps> = () => 
               <GiTennisRacket className="w-6 h-6 text-blue-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Equipment</p>
+              <p className="text-sm font-medium text-gray-600">Racket</p>
               <p className="text-2xl font-bold text-gray-900">{equipments.length}</p>
             </div>
           </div>
@@ -361,10 +361,10 @@ const AdminEquipmentManagement: React.FC<AdminEquipmentManagementProps> = () => 
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
             <div className="p-2 bg-green-100 rounded-lg">
-              <Shield className="w-6 h-6 text-green-600" />
+              <FaShoePrints className="w-6 h-6 text-green-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Active Equipment</p>
+              <p className="text-sm font-medium text-gray-600">Shoes</p>
               <p className="text-2xl font-bold text-gray-900">
                 {equipments.filter(e => e.is_active).length}
               </p>
@@ -375,10 +375,10 @@ const AdminEquipmentManagement: React.FC<AdminEquipmentManagementProps> = () => 
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
             <div className="p-2 bg-purple-100 rounded-lg">
-              <FaShoePrints className="w-6 h-6 text-purple-600" />
+              <Shirt className="w-6 h-6 text-purple-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Shoes</p>
+              <p className="text-sm font-medium text-gray-600">Shirts</p>
               <p className="text-2xl font-bold text-gray-900">
                 {equipments.filter(e => e.type === 'shoes').length}
               </p>
@@ -392,7 +392,7 @@ const AdminEquipmentManagement: React.FC<AdminEquipmentManagementProps> = () => 
               <Zap className="w-6 h-6 text-yellow-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">With Images</p>
+              <p className="text-sm font-medium text-gray-600">Strings</p>
               <p className="text-2xl font-bold text-gray-900">
                 {equipments.filter(e => e.image_url).length}
               </p>
