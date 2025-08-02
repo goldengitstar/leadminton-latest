@@ -52,7 +52,7 @@ const AdminLayout: React.FC = () => {
       permission: 'interclub' as const 
     },
     { 
-      path: '/admin/cpu-teams', 
+      path: '/admin/cpuTeams', 
       name: 'CPU Teams & Players', 
       icon: '🤖', 
       permission: 'cpu_teams' as const 
