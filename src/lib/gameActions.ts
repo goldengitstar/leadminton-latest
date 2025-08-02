@@ -177,7 +177,6 @@ export async function recordFacilityUpgradeComplete(facility: Facility, upgraded
       upgrading: upgradedFacility.upgrading || null,
     }])
     .eq('id', facility.id);
-  // Local implementation - no database needed
 }
 
 export async function recordEquipmentChange(
@@ -208,19 +207,19 @@ export async function recordEquipmentChange(
   }
 
   // 2. Fetch current player levels
-  const { data: currentLevels, error: fetchError } = await supabase
-    .from('player_levels')
+  const { data: currentStats, error: fetchError } = await supabase
+    .from('player_stats')
     .select('*')
     .eq('player_id', player.id)
     .single();
 
-  if (fetchError || !currentLevels) {
+  if (fetchError || !currentStats) {
     console.error('Error fetching player_levels:', fetchError);
     return;
   }
 
   // 3. Compute new stats and total stat sum
-  const updatedStats = { ...currentLevels };
+  const updatedStats = { ...currentStats };
   let totalStatIncrease = 0;
 
   for (const key in equipment.stats) {
@@ -233,37 +232,12 @@ export async function recordEquipmentChange(
 
   // 4. Update player_levels
   const { error: updateError } = await supabase
-    .from('player_levels')
+    .from('player_stats')
     .update(updatedStats)
     .eq('player_id', player.id);
 
   if (updateError) {
     console.error('Error updating player_levels:', updateError);
-  }
-
-  // 5. Update players.levels by incrementing with the stat sum
-  const { error: updatePlayerError } = await supabase
-    .from('players')
-    .update({ level: player.level + totalStatIncrease })
-    .eq('id', player.id);
-
-  if (updatePlayerError) {
-    console.error('Error incrementing players.levels:', updatePlayerError);
-  }
-
-  // 5. Compute total stat sum for new player level
-  const totalStats = Object.values(updatedStats)
-    .filter((v) => typeof v === 'number')
-    .reduce((sum, value) => sum + (value as number), 0);
-
-  // 6. Update player level in players table
-  const { error: updateError2 } = await supabase
-    .from('players')
-    .update({ level: totalStats })
-    .eq('id', player.id);
-
-  if (updateError2) {
-    console.error('Error updating players level:', updateError2);
   }
 }
 
