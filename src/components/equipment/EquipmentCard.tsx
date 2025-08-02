@@ -36,8 +36,9 @@ export default function EquipmentCard({ equipment, isEquipped, onEquip, canAffor
       </div>
       <div className="mt-3 flex justify-between items-center">
         <div className="text-sm">
-          <div className="text-yellow-500">{equipment.price.coins} coins</div>
-          <div className="text-purple-500">{equipment.price.diamonds} diamonds</div>
+          <div className="text-yellow-500">{equipment.price_coins} coins</div>
+          <div className="text-purple-500">{equipment.price_diamonds} diamonds</div>
+          <div className="text-purple-500">{equipment.price_shuttlecocks} shuttlecocks</div>
         </div>
         <button
           onClick={() => onEquip(equipment)}
