@@ -186,10 +186,10 @@ export async function recordEquipmentChange(
   action: 'purchase' | 'equip' | 'unequip',
   costs?: { coins: number; diamonds: number }
 ) {
-  if (!player) return;
-  console.log(player.equipment)
-  console.log(equipment)
-  const { error } = await supabase
+  if (!player || !equipment || !equipment.stats) return;
+
+  // 1. Insert equipment record
+  const { error: insertError } = await supabase
     .from('player_equipment')
     .insert([
       {
@@ -202,11 +202,43 @@ export async function recordEquipmentChange(
       }
     ]);
 
-  if (error) {
-    console.error('Error inserting player_equipment:', error);
+  if (insertError) {
+    console.error('Error inserting player_equipment:', insertError);
+    return;
   }
 
+  // 2. Fetch current player levels
+  const { data: currentLevels, error: fetchError } = await supabase
+    .from('player_levels')
+    .select('*')
+    .eq('player_id', player.id)
+    .single();
+
+  if (fetchError || !currentLevels) {
+    console.error('Error fetching player_levels:', fetchError);
+    return;
+  }
+
+  // 3. Compute new stats by adding equipment stats
+  const updatedStats = { ...currentLevels }; // clone current levels
+
+  for (const key in equipment.stats) {
+    if (key in updatedStats && typeof equipment.stats[key] === 'number') {
+      updatedStats[key] += equipment.stats[key];
+    }
+  }
+
+  // 4. Update player_levels with new stats
+  const { error: updateError } = await supabase
+    .from('player_levels')
+    .update(updatedStats)
+    .eq('player_id', player.id);
+
+  if (updateError) {
+    console.error('Error updating player_levels:', updateError);
+  }
 }
+
 
 export async function recordInjuriesChange(
   player: Player,
