@@ -1,13 +1,13 @@
-import { useState, useEffect} from 'react';
+import { useState, useEffect } from 'react';
 import { X, ShoppingBag } from 'lucide-react';
-import { Equipment, EquipmentType, PlayerEquipment } from '../../types/equipment';
+import { Equipment, EquipmentType } from '../../types/equipment';
 import { Resources } from '../../types/game';
 import EquipmentCard from './EquipmentCard';
 import { supabase } from '../../lib/supabase';
 
 interface CustomizationModalProps {
   onClose: () => void;
-  playerEquipment: String[];
+  playerEquipment: string[];
   onEquip: (equipment: Equipment) => void;
   resources: Resources;
 }
@@ -28,9 +28,11 @@ export default function CustomizationModal({
 }: CustomizationModalProps) {
   const [selectedType, setSelectedType] = useState<EquipmentType>('shoes');
   const [filteredEquipment, setFilteredEquipment] = useState<Equipment[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchEquipment = async () => {
+      setLoading(true); // start loading
       const { data, error } = await supabase
         .from('equipment')
         .select('*')
@@ -39,36 +41,32 @@ export default function CustomizationModal({
 
       if (error) {
         console.error('Error fetching equipment:', error);
+        setLoading(false);
         return;
       }
 
-      if (data) {
-        const transformed = data.map((item) => ({
-          id: item.id,
-          name: item.name,
-          type: item.type as EquipmentType,
-          price_coins: item.price_coins,
-          price_diamonds: item.price_diamonds,
-          price_shuttlecocks: item.price_shuttlecocks,
-          imageUrl: item.image_url ?? '',
-          stats: {
-            endurance: item.endurance_boost,
-            strength: item.strength_boost,
-            agility: item.agility_boost,
-            speed: item.speed_boost,
-            explosiveness: item.explosiveness_boost,
-            smash: item.smash_boost,
-            defense: item.defense_boost,
-            serve: item.serve_boost,
-          }
-        }));
+      const transformed = data.map((item) => ({
+        id: item.id,
+        name: item.name,
+        type: item.type as EquipmentType,
+        price_coins: item.price_coins,
+        price_diamonds: item.price_diamonds,
+        price_shuttlecocks: item.price_shuttlecocks,
+        imageUrl: item.image_url ?? '',
+        stats: {
+          endurance: item.endurance_boost,
+          strength: item.strength_boost,
+          agility: item.agility_boost,
+          speed: item.speed_boost,
+          explosiveness: item.explosiveness_boost,
+          smash: item.smash_boost,
+          defense: item.defense_boost,
+          serve: item.serve_boost,
+        },
+      }));
 
-        setFilteredEquipment(transformed);
-
-        console.log("Player equipment ", playerEquipment)
-        console.log("Filtered equipment ", filteredEquipment)
-
-      }
+      setFilteredEquipment(transformed);
+      setLoading(false); // done loading
     };
 
     fetchEquipment();
@@ -115,7 +113,12 @@ export default function CustomizationModal({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredEquipment.length === 0 ? (
+          {loading ? (
+            <div className="col-span-full text-center py-10">
+              <div className="w-10 h-10 border-4 border-blue-300 border-t-transparent rounded-full animate-spin mx-auto"></div>
+              <p className="mt-4 text-gray-500">Loading equipment...</p>
+            </div>
+          ) : filteredEquipment.length === 0 ? (
             <div className="border border-dashed rounded-lg p-6 text-center text-gray-400 col-span-full">
               No equipment available.
             </div>
@@ -131,7 +134,6 @@ export default function CustomizationModal({
             ))
           )}
         </div>
-
       </div>
     </div>
   );
