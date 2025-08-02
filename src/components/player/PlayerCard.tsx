@@ -355,13 +355,13 @@ export default function PlayerCard({
                       Equipment Bonuses
                     </h4>
                     <div className="grid grid-cols-2 gap-2 text-sm">
-                      {Object.entries(playerScore.details.equipmentBonuses).map(
-                        ([stat, bonus]) => (
+                      {Object.entries(playerScore.details.equipmentBonuses)
+                        .filter(([, bonus]) => bonus > 0)
+                        .map(([stat, bonus]) => (
                           <p key={stat} className="text-green-600">
                             +{bonus} {stat}
                           </p>
-                        )
-                      )}
+                        ))}
                     </div>
                   </div>
                 )}
