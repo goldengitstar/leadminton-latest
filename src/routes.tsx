@@ -11,7 +11,7 @@ import AdminCpuTeams from "./pages/admin/AdminCpuTeams";
 import AdminInterclub from "./pages/admin/AdminInterclub";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminLogs from "./pages/admin/AdminLogs";
-import EquipmentManagement from "./pages/admin/EquipmentManagement";
+import AdminEquipmentManagement from "./pages/admin/AdminEquipmentManagement";
 
 const routes = [
     {
@@ -96,7 +96,7 @@ const routes = [
         key: "equipment_management",
         layout: "",
         path: "admin/equipments-management",
-        component: <EquipmentManagement/>
+        component: <AdminEquipmentManagement/>
     },
 ];
 
