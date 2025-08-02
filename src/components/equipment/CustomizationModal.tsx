@@ -37,8 +37,6 @@ export default function CustomizationModal({
         .eq('type', selectedType)
         .eq('is_active', true);
 
-      console.log("Fetching equipment type ", selectedType)
-
       if (error) {
         console.error('Error fetching equipment:', error);
         return;
@@ -66,6 +64,10 @@ export default function CustomizationModal({
         }));
 
         setFilteredEquipment(transformed);
+
+        console.log("Player equipment ", playerEquipment)
+        console.log("Filtered equipment ", filteredEquipment)
+
       }
     };
 
