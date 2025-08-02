@@ -227,7 +227,7 @@ export async function recordEquipmentChange(
       const statIncrease = equipment.stats[key];
       updatedStats[key] += statIncrease;
 
-      updatedLevels[key + '_level'] = Math.floor(updatedStats[key] / 5);
+      updatedLevels[key] = Math.floor(updatedStats[key] / 5);
     }
   }
 
