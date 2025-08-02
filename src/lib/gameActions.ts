@@ -206,7 +206,7 @@ export async function recordEquipmentChange(
     return;
   }
 
-  // 2. Fetch current player levels
+  // 2. Fetch current player stats
   const { data: currentStats, error: fetchError } = await supabase
     .from('player_stats')
     .select('*')
@@ -214,30 +214,42 @@ export async function recordEquipmentChange(
     .single();
 
   if (fetchError || !currentStats) {
-    console.error('Error fetching player_levels:', fetchError);
+    console.error('Error fetching player_stats:', fetchError);
     return;
   }
 
-  // 3. Compute new stats and total stat sum
+  // 3. Compute new stats
   const updatedStats = { ...currentStats };
-  let totalStatIncrease = 0;
+  const updatedLevels: Record<string, number> = {};
 
   for (const key in equipment.stats) {
     if (key in updatedStats && typeof equipment.stats[key] === 'number') {
       const statIncrease = equipment.stats[key];
       updatedStats[key] += statIncrease;
-      totalStatIncrease += statIncrease;
+
+      updatedLevels[key + '_level'] = Math.floor(updatedStats[key] / 5);
     }
   }
 
-  // 4. Update player_levels
-  const { error: updateError } = await supabase
+  // 4. Update player_stats
+  const { error: updateStatsError } = await supabase
     .from('player_stats')
     .update(updatedStats)
     .eq('player_id', player.id);
 
-  if (updateError) {
-    console.error('Error updating player_levels:', updateError);
+  if (updateStatsError) {
+    console.error('Error updating player_stats:', updateStatsError);
+    return;
+  }
+
+  // 5. Update player_levels
+  const { error: updateLevelsError } = await supabase
+    .from('player_levels')
+    .update(updatedLevels)
+    .eq('player_id', player.id);
+
+  if (updateLevelsError) {
+    console.error('Error updating player_levels:', updateLevelsError);
   }
 }
 
