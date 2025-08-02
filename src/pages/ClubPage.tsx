@@ -104,7 +104,11 @@ export default function ClubPage() {
     const player = gameState.players.find((p) => p.id === playerId);
     if (!player) return;
 
-    updateResources("equipment_purchase", equipment.price, false);
+    updateResources("equipment_purchase", {
+      coins: -equipment.price_coins,
+      diamonds: -equipment.price_diamonds,
+      shuttlecocks: -equipment.price_shuttlecocks}
+    );
 
     await recordEquipmentChange(player, equipment, "equip");
 

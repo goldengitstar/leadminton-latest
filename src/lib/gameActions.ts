@@ -187,20 +187,24 @@ export async function recordEquipmentChange(
   costs?: { coins: number; diamonds: number }
 ) {
   if (!player) return;
-  console.log(player.equipment)
+  console.log(player)
   console.log(equipment)
-  await supabase
-    .from('players')
-    .update([{
-      equipment: {
-        ...Object.fromEntries(
-          Object.entries((player.equipment || {})).map(([type, details]) => [type, details.id])
-        ),
-        [equipment.type]: equipment.id
-      },
-    }])
-    .eq('id', player.id);
-  // Local implementation - no database needed
+  const { error } = await supabase
+    .from('player_equipment')
+    .insert([
+      {
+        player_id: player.id,
+        equipment_id: equipment.id,
+        equipment_type: equipment.type,
+        created_at: new Date().toISOString(),
+        equiped_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }
+    ]);
+
+  if (error) {
+    console.error('Error inserting player_equipment:', error);
+  }
 
 }
 
