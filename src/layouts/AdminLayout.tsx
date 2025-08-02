@@ -61,7 +61,7 @@ const AdminLayout: React.FC = () => {
       path: '/admin/equipmentsManagement', 
       name: 'Equipments', 
       icon: '🏋️', 
-      permission: 'cpu_teams' as const 
+      permission: 'equipments' as const 
     },
     { 
       path: '/admin/users', 
@@ -192,7 +192,7 @@ const AdminLayout: React.FC = () => {
               hasPermission('cpu_teams') ? <AdminCpuTeams /> : <Navigate to="/admin" replace />
             } />
             <Route path="/equipmentsManagement" element={
-              hasPermission('equipments_management') ? <AdminEquipmentManagement /> : <Navigate to="/admin" replace />
+              hasPermission('equipments') ? <AdminEquipmentManagement /> : <Navigate to="/admin" replace />
             } />
             <Route path="/users" element={
               hasPermission('users') ? <AdminUsers /> : <Navigate to="/admin" replace />
