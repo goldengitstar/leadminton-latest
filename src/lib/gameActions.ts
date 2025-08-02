@@ -187,7 +187,7 @@ export async function recordEquipmentChange(
   costs?: { coins: number; diamonds: number }
 ) {
   if (!player) return;
-  console.log(player)
+  console.log(player.equipment)
   console.log(equipment)
   const { error } = await supabase
     .from('player_equipment')

@@ -523,8 +523,29 @@ export class UserService {
     }
 
     try {
-      const { data: players_db } = await this.supabase.from("players").select("*").eq('user_id', userId).eq('is_cpu', false).order('created_at', { ascending: true });
+      const { data: players_db, error: playersError } = await this.supabase.from("players").select("*").eq('user_id', userId).eq('is_cpu', false).order('created_at', { ascending: true });
       
+      if (playersError || !players_db) {
+        console.error("Failed to fetch players:", playersError);
+        return;
+      }
+
+      for (const player of players_db) {
+        const { data: equipmentData, error: equipmentError } = await this.supabase
+          .from("player_equipment")
+          .select("equipment_id")
+          .eq("player_id", player.id);
+
+        if (equipmentError) {
+          console.error(`Failed to fetch equipment for player ${player.id}:`, equipmentError);
+          continue;
+        }
+
+        // Extract equipment_ids into an array
+        const equipmentIds = equipmentData?.map((e) => e.equipment_id) || [];
+        player.equipment = equipmentIds;
+      }
+            
       // Get all player IDs for this user
       const playerIds = players_db?.map(p => p.id) || [];
       
