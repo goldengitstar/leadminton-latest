@@ -543,7 +543,6 @@ export class UserService {
 
         // Extract equipment_ids into an array
         const equipmentIds = equipmentData?.map((e) => e.equipment_id) || [];
-        console.log("Equipment ids fetched ", equipmentIds)
         player.equipment = equipmentIds;
       }
             
