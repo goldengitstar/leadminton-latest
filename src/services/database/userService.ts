@@ -624,18 +624,6 @@ export class UserService {
 
       const players: any[] = [];
       (players_db || []).map((player_db: any) => {
-        // Import equipment data
-        const EQUIPMENT_DATA: any[] = []; // You might need to import this
-        
-        const equipment_id_map: {
-          [key: string]: string
-        } = player_db.equipment;
-        const equipment: {
-          [key: string]: any
-        } = {};
-        equipment_id_map && Object.entries(equipment_id_map).map(([type, id]) => {
-          equipment[type] = EQUIPMENT_DATA.find((equipment) => equipment.id == id) as any;
-        });
 
         // Generate initial stats/levels/strategy from utilities
         const generateInitialStats = () => ({
