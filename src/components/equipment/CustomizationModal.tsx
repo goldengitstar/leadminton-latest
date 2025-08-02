@@ -36,6 +36,8 @@ export default function CustomizationModal({
         .select('*')
         .eq('is_active', true);
 
+      console.log("Fetching equipment type ", selectedType)
+
       if (error) {
         console.error('Error fetching equipment:', error);
         return;
