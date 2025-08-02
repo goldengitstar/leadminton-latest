@@ -53,8 +53,9 @@ export default function CustomizationModal({
 
   const canAfford = (equipment: Equipment): boolean => {
     return (
-      resources.coins >= equipment.price.coins &&
-      resources.diamonds >= equipment.price.diamonds
+      resources.coins >= equipment.price_coins &&
+      resources.diamonds >= equipment.price_diamonds &&
+      resources.shuttlecocks >= equipment.price_shuttlecocks
     );
   };
 

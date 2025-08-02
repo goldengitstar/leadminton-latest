@@ -4,10 +4,9 @@ export interface Equipment {
   type: EquipmentType;
   rarity: EquipmentRarity;
   stats: Partial<Record<StatBonus, number>>;
-  price: {
-    coins: number;
-    diamonds: number;
-  };
+  price_coins:number;
+  price_diamonds:number;
+  price_shuttlecocks:number;
   imageUrl: string;
 }
 
