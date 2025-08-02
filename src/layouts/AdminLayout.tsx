@@ -10,7 +10,7 @@ import AdminInterclub from '../pages/admin/AdminInterclub';
 import AdminCpuTeams from '../pages/admin/AdminCpuTeams';
 import AdminUsers from '../pages/admin/AdminUsers';
 import AdminLogs from '../pages/admin/AdminLogs';
-import AdminEquipmentManagement from '@/pages/admin/AdminEquipmentManagement';
+import AdminEquipmentManagement from '../pages/admin/AdminEquipmentManagement';
 
 const AdminLayout: React.FC = () => {
   const { adminUser, hasPermission, isAdmin, loading } = useAdmin();
