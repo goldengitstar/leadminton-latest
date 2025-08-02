@@ -197,7 +197,7 @@ export async function recordEquipmentChange(
         equipment_id: equipment.id,
         equipment_type: equipment.type,
         created_at: new Date().toISOString(),
-        equiped_at: new Date().toISOString(),
+        equipped_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }
     ]);
