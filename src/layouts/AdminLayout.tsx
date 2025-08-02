@@ -58,7 +58,7 @@ const AdminLayout: React.FC = () => {
       permission: 'cpu_teams' as const 
     },
     { 
-      path: '/admin/equipments-management', 
+      path: '/admin/equipmentsManagement', 
       name: 'Equipments', 
       icon: '🏋️', 
       permission: 'equipments_management' as const 

@@ -93,7 +93,7 @@ const routes = [
         component: <AdminLogs/>
     },
     {
-        key: "equipment_management",
+        key: "equipments_management",
         layout: "",
         path: "admin/equipmentsManagement",
         component: <AdminEquipmentManagement/>
