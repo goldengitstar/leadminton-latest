@@ -99,8 +99,6 @@ export default function PlayerCard({
     "N1",
   ];
 
-  console.log("In players card ", player.equipment)
-
   const getRank = (rankPoint: number) => {
     if (rankPoint <= 20) return 12;
     else if (rankPoint <= 40) return 11;
