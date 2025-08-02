@@ -127,7 +127,7 @@ export default function CustomizationModal({
               <EquipmentCard
                 key={equipment.id}
                 equipment={equipment}
-                isEquipped={playerEquipment?.includes?.(equipment.id)}
+                isEquipped={Array.isArray(playerEquipment) && playerEquipment.includes(equipment.id)}
                 onEquip={onEquip}
                 canAfford={canAfford(equipment)}
               />
