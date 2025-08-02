@@ -2,7 +2,6 @@ export interface Equipment {
   id: string;
   name: string;
   type: EquipmentType;
-  rarity: EquipmentRarity;
   stats: Partial<Record<StatBonus, number>>;
   price_coins:number;
   price_diamonds:number;

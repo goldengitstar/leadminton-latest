@@ -24,7 +24,7 @@ export default function EquipmentCard({ equipment, isEquipped, onEquip, canAffor
           className="w-full h-48 object-cover rounded-lg"
         />
       </div>
-      <h3 className={`font-bold ${RARITY_COLORS[equipment.rarity]}`}>
+      <h3>
         {equipment.name}
       </h3>
       <div className="mt-2 space-y-1 text-sm">
