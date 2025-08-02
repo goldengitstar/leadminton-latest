@@ -248,6 +248,8 @@ export async function recordEquipmentChange(
     .update(updatedLevels)
     .eq('player_id', player.id);
 
+  console.log("Updated levels ", updatedLevels)
+
   if (updateLevelsError) {
     console.error('Error updating player_levels:', updateLevelsError);
   }
