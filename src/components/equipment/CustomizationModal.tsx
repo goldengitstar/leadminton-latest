@@ -34,7 +34,6 @@ export default function CustomizationModal({
       const { data, error } = await supabase
         .from('equipment')
         .select('*')
-        .eq('type', selectedType)
         .eq('is_active', true);
 
       console.log("Equipment fetched ", data)
