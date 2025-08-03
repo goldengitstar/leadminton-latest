@@ -809,8 +809,8 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
 
       console.log(`[AdminCpuTeams] Successfully generated ${result.players?.length} CPU players`);
       await logActivity('cpu_players_generated', 'cpu_team', generateData.teamId, { playerCount: generateData.playerCount });
-      loadCpuTeams();
-      loadCpuPlayers();
+      await loadCpuTeams();
+      await loadCpuPlayers();
       setShowGenerateConfirm(false);
       setGenerateData(null);
       toast.success(`Successfully generated ${result.players?.length} CPU players!`);
