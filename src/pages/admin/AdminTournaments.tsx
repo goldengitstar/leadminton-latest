@@ -34,15 +34,6 @@ const AdminTournaments: React.FC<AdminTournamentsProps> = () => {
   const [currentRegistrationsPage, setCurrentRegistrationsPage] = useState(1);
   const [itemsPerPage] = useState(10);
 
-  // Update the CPU management modal to track selected tournament
-  const handleOpenCpuManagement = () => {
-    const upcomingTournaments = tournamentList.filter(t => t.status === 'upcoming');
-    if (upcomingTournaments.length > 0) {
-      setSelectedTournamentId(upcomingTournaments[0].id);
-    }
-    setShowCpuManagement(true);
-  };
-
   // Update the tournament select handler
   const handleTournamentSelect = (tournamentId: string) => {
     setSelectedTournamentId(tournamentId);
@@ -77,16 +68,12 @@ const AdminTournaments: React.FC<AdminTournamentsProps> = () => {
       
       // Determine players to add and remove
       const playersToAdd = selectedCpuPlayers.filter(id => !currentCpuPlayers.includes(id));
-      const playersToRemove = currentCpuPlayers.filter(id => !selectedCpuPlayers.includes(id));
       
       // Process updates
       if (playersToAdd.length > 0) {
         await tournamentService.addCpuPlayersToTournament(selectedTournamentId, playersToAdd);
       }
-      if (playersToRemove.length > 0) {
-        await tournamentService.removeCpuPlayersFromTournament(selectedTournamentId, playersToRemove);
-      }
-      
+
       toast.success('CPU players updated successfully');
       setShowCpuManagement(false);
       setSelectedCpuPlayers([]);
