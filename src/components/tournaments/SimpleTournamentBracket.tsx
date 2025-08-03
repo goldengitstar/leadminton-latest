@@ -13,8 +13,6 @@ interface SimpleTournamentBracketProps {
   onBack: () => void;
 }
 
-
-
 function getReadableRoundTitle(indexFromEnd: number): string {
   switch (indexFromEnd) {
     case 0: return 'Final';
@@ -63,7 +61,6 @@ const ThemedRoundTitle = (title: string, roundIndex: number) => (
 
 const ThemedSeed = ({ seed, breakpoint, scaleFactor }: any) => {
   const winnerId = seed.winnerId;
-
   const fontSize = customTheme.fonts.size;
   const padding = `${4 * scaleFactor}px ${6 * scaleFactor}px`;
 
@@ -102,7 +99,6 @@ const ThemedSeed = ({ seed, breakpoint, scaleFactor }: any) => {
   );
 };
 
-
 const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
   registeredPlayers,
   tournamentName,
@@ -115,9 +111,9 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
   const playerMap = Object.fromEntries(registeredPlayers.map((p) => [p.id, p]));
 
   const sortedRounds = [...rounds].sort((a, b) => a.level - b.level);
-  console.log("Current rounds ", sortedRounds)
   const totalRounds = Math.ceil(Math.log2(max_participants));
 
+  // Build and format each round
   const formattedRounds: RoundProps[] = Array.from({ length: totalRounds }, (_, i) => {
     const round = sortedRounds.find((r) => r.level === i + 1);
     const expectedSeedCount = Math.ceil(max_participants / Math.pow(2, i + 1));
@@ -133,36 +129,60 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
       ],
     })) || [];
 
-    // Add blank seeds to fill layout
+    // Fill blanks
     while (seeds.length < expectedSeedCount) {
       seeds.push({
         id: Math.floor(Math.random() * 1e8),
         date: null,
         winnerId: null,
         winnerName: '',
-        teams: [
-          { name: '' },
-          { name: '' }
-        ]
+        teams: [{ name: '' }, { name: '' }],
       });
     }
 
     return {
       title: getReadableRoundTitle(totalRounds - i - 1),
-      seeds
+      seeds,
     };
   });
 
-  console.log("Formatted rounds ", formattedRounds)
+  // --- Mirror-order each round based on its next-round winnerIds ---
+  for (let r = formattedRounds.length - 2; r >= 0; r--) {
+    const thisRound = formattedRounds[r];
+    const nextRound = formattedRounds[r + 1];
 
+    // 1) in-order list of winner IDs from next round
+    const winnerIds = nextRound.seeds
+      .filter((s) => s.winnerId != null)
+      .map((s) => s.winnerId!);
 
-  // 👇 Add this line inside the component, near the top of SimpleTournamentBracket
+    const reordered: typeof thisRound.seeds = [];
+    const used = new Set<number>();
+
+    // 2) for each winnerId, find its match and push that and its paired match
+    for (const id of winnerIds) {
+      const idx = thisRound.seeds.findIndex((seed, i) => !used.has(i) && seed.winnerId === id);
+      if (idx === -1) continue;
+      const base = idx % 2 === 0 ? idx : idx - 1;
+      reordered.push(thisRound.seeds[base], thisRound.seeds[base + 1]);
+      used.add(base).add(base + 1);
+    }
+
+    // 3) append any leftover slots
+    thisRound.seeds.forEach((seed, i) => {
+      if (!used.has(i)) reordered.push(seed);
+    });
+
+    // 4) overwrite
+    thisRound.seeds = reordered;
+  }
+
+  // Determine scale factor for layout
   const scaleFactor =
     formattedRounds.length >= 7 ? 0.6 :
     formattedRounds.length >= 6 ? 0.75 :
     formattedRounds.length >= 5 ? 0.9 :
     1.0;
-
 
   if (!formattedRounds.length) {
     return (
@@ -181,17 +201,14 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
     : null;
 
   const tournamentCompleted = status === 'completed';
-
   const finalRound = formattedRounds[formattedRounds.length - 1];
   const earlyRounds = formattedRounds.slice(0, -1);
-  console.log("Final round ", finalRound)
-  console.log("Early round ", earlyRounds)
 
+  // Split early rounds into left/right brackets
   const leftRounds: RoundProps[] = earlyRounds.map((round) => {
     const split = Math.ceil(round.seeds.length / 2);
     return { title: round.title, seeds: round.seeds.slice(split) };
   });
-
   const rightRounds: RoundProps[] = earlyRounds.map((round) => {
     const split = Math.ceil(round.seeds.length / 2);
     return { title: round.title, seeds: round.seeds.slice(0, split) };
