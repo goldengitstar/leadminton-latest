@@ -675,7 +675,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
         } else {
           console.log("strategy updated successfully")
         }
-
+        await loadCpuPlayers();
         await logActivity('cpu_player_updated', 'player', editingPlayer.id);
         toast.success('CPU player updated successfully');
       } else {
