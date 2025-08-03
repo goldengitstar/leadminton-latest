@@ -3,7 +3,7 @@ import { useGame } from '../contexts/GameContext';
 import { supabase } from '../lib/supabase';
 import { Tournament } from '../types/tournament';
 import { Player } from '../types/game';
-import { Trophy, Users, Clock, Coins, CheckCircle, AlertCircle, Calendar, ArrowLeft, Timer, Coffee, Box, Gift, Diamond} from 'lucide-react';
+import { Trophy, Users, Clock, Coins, CheckCircle, AlertCircle, Calendar, ArrowLeft, Timer, Coffee, Box, Gift, Diamond, UtensilsCrossed, Feather} from 'lucide-react';
 import { TournamentService } from '../services/database/tournamentService';
 import PlayerSelectionModal from '../components/tournaments/PlayerSelectionModal';
 import TournamentResults from '../components/tournaments/TournamentResults';
@@ -445,15 +445,15 @@ export default function TournamentsPage() {
                   <span>{detailViewTournament.entry_fee.coins} coins</span>
                 </div>
                 <div className="flex items-center">
-                  <Coffee className="w-4 h-4 text-red-500 mr-2" />
+                  <UtensilsCrossed className="w-4 h-4 text-red-500 mr-2" />
                   <span>{detailViewTournament.entry_fee.meals} meals</span>
                 </div>
                 <div className="flex items-center">
-                  <Box className="w-4 h-4 text-green-500 mr-2" />
+                  <Feather className="w-4 h-4 text-green-500 mr-2" />
                   <span>{detailViewTournament.entry_fee.shuttlecocks} shuttlecocks</span>
                 </div>
                 <div className="flex items-center">
-                  <Gift className="w-4 h-4 text-blue-500 mr-2" />
+                  <Diamond className="w-4 h-4 text-blue-500 mr-2" />
                   <span>{detailViewTournament.entry_fee.diamonds} diamonds</span>
                 </div>
               </div>
@@ -477,15 +477,15 @@ export default function TournamentsPage() {
                         <span>{detailViewTournament.prize_pool.first.coins} coins</span>
                       </div>
                       <div className="flex items-center">
-                        <Coffee className="w-4 h-4 text-red-500 mr-2" />
+                        <UtensilsCrossed className="w-4 h-4 text-red-500 mr-2" />
                         <span>{detailViewTournament.prize_pool.first.meals} meals</span>
                       </div>
                       <div className="flex items-center">
-                        <Box className="w-4 h-4 text-green-500 mr-2" />
+                        <Feather className="w-4 h-4 text-green-500 mr-2" />
                         <span>{detailViewTournament.prize_pool.first.shuttlecocks} shuttlecocks</span>
                       </div>
                       <div className="flex items-center">
-                        <Gift className="w-4 h-4 text-blue-500 mr-2" />
+                        <Diamond className="w-4 h-4 text-blue-500 mr-2" />
                         <span>{detailViewTournament.prize_pool.first.diamonds} diamonds</span>
                       </div>
                     </div>
