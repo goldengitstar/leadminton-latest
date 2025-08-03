@@ -416,9 +416,27 @@ export class PlayerService {
   /**
    * Create CPU player with specified skill level
    */
+
+  getMaxLevelForRarity(rarity: Rarity): number {
+    switch (rarity) {
+      case 'legendary':
+        return rand(921, 999);
+      case 'premium':
+        return rand(801, 920);
+      case 'epic':
+        return rand(451, 800);
+      case 'rare':
+        return rand(201, 450);
+      case 'common':
+        return rand(151, 200);
+      default:
+        throw new Error(`Unknown rarity: ${rarity}`);
+    }
+  }
+
   async createCpuPlayer(
     cpuUserId: string,
-    skillLevel: 'beginner' | 'intermediate' | 'advanced' | 'expert' | 'master' = 'beginner',
+    playerRarity: 'common' | 'rare' | 'epic' | 'premium' | 'legendary',
     teamName?: string,
     playerNumber?: number,
     gender?: 'male' | 'female'
@@ -430,39 +448,7 @@ export class PlayerService {
         ? `${teamName} Player ${playerNumber}`
         : generateRandomName(playerGender);
 
-      // Generate stats based on skill level
-      const getStatValue = (skillLevel: string) => {
-        switch (skillLevel) {
-          case 'beginner': return Math.floor(Math.random() * 20) + 30; // 30-50
-          case 'intermediate': return Math.floor(Math.random() * 20) + 50; // 50-70
-          case 'advanced': return Math.floor(Math.random() * 20) + 70; // 70-90
-          case 'expert': return Math.floor(Math.random() * 15) + 85; // 85-100
-          case 'master': return Math.floor(Math.random() * 10) + 90; // 90-100
-          default: return Math.floor(Math.random() * 20) + 40;
-        }
-      };
-
-      const getLevel = (skillLevel: string) => {
-        switch (skillLevel) {
-          case 'beginner': return Math.floor(Math.random() * 3); // 0-2
-          case 'intermediate': return Math.floor(Math.random() * 3) + 2; // 2-4
-          case 'advanced': return Math.floor(Math.random() * 3) + 4; // 4-6
-          case 'expert': return Math.floor(Math.random() * 3) + 6; // 6-8
-          case 'master': return Math.floor(Math.random() * 3) + 8; // 8-10
-          default: return Math.floor(Math.random() * 3);
-        }
-      };
-
-      const getRank = (skillLevel: string) => {
-        switch (skillLevel) {
-          case 'beginner': return Math.floor(Math.random() * 50); // 0-50
-          case 'intermediate': return Math.floor(Math.random() * 100) + 50; // 50-150
-          case 'advanced': return Math.floor(Math.random() * 100) + 150; // 150-250
-          case 'expert': return Math.floor(Math.random() * 150) + 250; // 250-400
-          case 'master': return Math.floor(Math.random() * 150) + 400; // 400-550
-          default: return 0;
-        }
-      };
+      const maxLevel = this.getMaxLevelForRarity(playerRarity)
 
       // Create CPU player
       const { data: player, error: playerError } = await this.supabase
@@ -470,9 +456,9 @@ export class PlayerService {
         .insert({
           user_id: cpuUserId,
           name: playerName,
-          level: Math.floor(Math.random() * 20) + 1,
-          max_level: Math.floor(Math.random() * 50) + 150,
-          rank: getRank(skillLevel),
+          level: 1,
+          max_level: maxLevel,
+          rank: 0,
           gender: playerGender,
           is_cpu: true,
           created_at: new Date().toISOString(),
@@ -491,18 +477,18 @@ export class PlayerService {
         .from('player_stats')
         .insert({
           player_id: player.id,
-          endurance: getStatValue(skillLevel),
-          strength: getStatValue(skillLevel),
-          agility: getStatValue(skillLevel),
-          speed: getStatValue(skillLevel),
-          explosiveness: getStatValue(skillLevel),
-          injury_prevention: getStatValue(skillLevel),
-          smash: getStatValue(skillLevel),
-          defense: getStatValue(skillLevel),
-          serve: getStatValue(skillLevel),
-          stick: getStatValue(skillLevel),
-          slice: getStatValue(skillLevel),
-          drop: getStatValue(skillLevel),
+          endurance: 0,
+          strength: 0,
+          agility: 0,
+          speed: 0,
+          explosiveness: 0,
+          injury_prevention: 0,
+          smash: 0,
+          defense: 0,
+          serve: 0,
+          stick: 0,
+          slice: 0,
+          drop: 0,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         });
@@ -517,18 +503,18 @@ export class PlayerService {
         .from('player_levels')
         .insert({
           player_id: player.id,
-          endurance: getLevel(skillLevel),
-          strength: getLevel(skillLevel),
-          agility: getLevel(skillLevel),
-          speed: getLevel(skillLevel),
-          explosiveness: getLevel(skillLevel),
-          injury_prevention: getLevel(skillLevel),
-          smash: getLevel(skillLevel),
-          defense: getLevel(skillLevel),
-          serve: getLevel(skillLevel),
-          stick: getLevel(skillLevel),
-          slice: getLevel(skillLevel),
-          drop: getLevel(skillLevel),
+          endurance: 0,
+          strength: 0,
+          agility: 0,
+          speed: 0,
+          explosiveness: 0,
+          injury_prevention: 0,
+          smash: 0,
+          defense: 0,
+          serve: 0,
+          stick: 0,
+          slice: 0,
+          drop: 0,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         });
@@ -538,34 +524,22 @@ export class PlayerService {
         return { success: false, error: levelsError.message };
       }
 
-      // Create strategy based on skill level
-      const getStrategyValue = (skillLevel: string) => {
-        switch (skillLevel) {
-          case 'beginner': return Math.floor(Math.random() * 3) + 3; // 3-5
-          case 'intermediate': return Math.floor(Math.random() * 3) + 4; // 4-6
-          case 'advanced': return Math.floor(Math.random() * 3) + 5; // 5-7
-          case 'expert': return Math.floor(Math.random() * 3) + 6; // 6-8
-          case 'master': return Math.floor(Math.random() * 3) + 7; // 7-9
-          default: return Math.floor(Math.random() * 3) + 4;
-        }
-      };
-
       const { error: strategyError } = await this.supabase
         .from('player_strategy')
         .insert({
           player_id: player.id,
-          physical_commitment: getStrategyValue(skillLevel),
-          play_style: getStrategyValue(skillLevel),
-          movement_speed: getStrategyValue(skillLevel),
-          fatigue_management: getStrategyValue(skillLevel),
-          rally_consistency: getStrategyValue(skillLevel),
-          risk_taking: getStrategyValue(skillLevel),
-          attack: getStrategyValue(skillLevel),
-          soft_attack: getStrategyValue(skillLevel),
-          serving: getStrategyValue(skillLevel),
-          court_defense: getStrategyValue(skillLevel),
-          mental_toughness: getStrategyValue(skillLevel),
-          self_confidence: getStrategyValue(skillLevel),
+          physical_commitment: 0,
+          play_style: 0,
+          movement_speed: 0,
+          fatigue_management: 0,
+          rally_consistency: 0,
+          risk_taking: 0,
+          attack: 0,
+          soft_attack: 0,
+          serving: 0,
+          court_defense: 0,
+          mental_toughness: 0,
+          self_confidence: 0,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         });
@@ -589,7 +563,7 @@ export class PlayerService {
     cpuUserId: string,
     teamId: string,
     teamName: string,
-    skillLevel: 'beginner' | 'intermediate' | 'advanced' | 'expert' | 'master',
+    playerRarity: 'common' | 'epic' | 'rare' | 'premium' | 'legendary',
     playerCount: number,
     genderBalance: 'mixed' | 'male' | 'female' = 'mixed'
   ) {
@@ -607,7 +581,7 @@ export class PlayerService {
 
         const result = await this.createCpuPlayer(
           cpuUserId,
-          skillLevel,
+          playerRarity,
           teamName,
           i,
           gender

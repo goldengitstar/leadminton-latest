@@ -40,7 +40,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
   const [generateData, setGenerateData] = useState<{
     teamId: string;
     teamName: string;
-    skillLevel: string;
+    playerRarity: string;
     playerCount: number;
     genderBalance: string;
   } | null>(null);
@@ -50,7 +50,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    skillLevel: 'intermediate' as CpuTeam['skillLevel'],
+    playerRarity:'',
     playerCount: 6,
     genderBalance: 'mixed' as CpuTeam['genderBalance'],
     isActive: true
@@ -456,7 +456,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
           .update({
             name: formData.name,
             description: formData.description,
-            skill_level: formData.skillLevel,
+            players_rarity: formData.playerRarity,
             player_count: formData.playerCount,
             gender_balance: formData.genderBalance,
             is_active: formData.isActive,
@@ -477,7 +477,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
           .insert({
             name: formData.name,
             description: formData.description,
-            skill_level: formData.skillLevel,
+            players_rarity: formData.playerRarity,
             player_count: formData.playerCount,
             gender_balance: formData.genderBalance,
             is_active: formData.isActive
@@ -642,8 +642,8 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
     }
   };
 
-  const handleGenerateClick = (teamId: string, teamName: string, skillLevel: string, playerCount: number, genderBalance: string) => {
-    setGenerateData({ teamId, teamName, skillLevel, playerCount, genderBalance });
+  const handleGenerateClick = (teamId: string, teamName: string, playerRarity: string, playerCount: number, genderBalance: string) => {
+    setGenerateData({ teamId, teamName, playerRarity, playerCount, genderBalance });
     setShowGenerateConfirm(true);
   };
 
@@ -666,7 +666,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
         cpuUserId,
         generateData.teamId,
         generateData.teamName,
-        generateData.skillLevel as 'beginner' | 'intermediate' | 'advanced' | 'expert' | 'master',
+        generateData.playerRarity as 'common' | 'rare' | 'epic' | 'premium' | 'legendary',
         generateData.playerCount,
         generateData.genderBalance as 'mixed' | 'male' | 'female'
       );
@@ -920,7 +920,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
                           {team.players.length}/{team.playerCount}
                           {(team.players.length < team.playerCount) && (
                             <button
-                              onClick={() => handleGenerateClick(team.id, team.name, team.skillLevel, team.playerCount - team.players.length, team.genderBalance)}
+                              onClick={() => handleGenerateClick(team.id, team.name, team.players_rarity, team.playerCount - team.players.length, team.genderBalance)}
                               className="ml-2 text-xs text-blue-600 hover:text-blue-800"
                             >
                               Generate
@@ -1196,18 +1196,18 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Skill Level
+                      Players rarity
                     </label>
                     <select
-                      value={formData.skillLevel}
+                      value={formData.playerRarity}
                       onChange={(e) => setFormData(prev => ({ ...prev, skillLevel: e.target.value as CpuTeam['skillLevel'] }))}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
-                      <option value="beginner">Beginner</option>
-                      <option value="intermediate">Intermediate</option>
-                      <option value="advanced">Advanced</option>
-                      <option value="expert">Expert</option>
-                      <option value="master">Master</option>
+                      <option value="common">Common</option>
+                      <option value="rare">Rare</option>
+                      <option value="epic">Epic</option>
+                      <option value="premium">Premium</option>
+                      <option value="legendary">Lgendary</option>
                     </select>
                   </div>
 
