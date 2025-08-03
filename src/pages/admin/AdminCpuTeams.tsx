@@ -112,20 +112,27 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
     loadCpuPlayers();
     logActivity('cpu_teams_viewed');
   }, []);
+  
+  const validatePlayerStats = (
+    stats: PlayerStats,
+    level: number,
+    maxLevel: number
+  ): { isValid: boolean; total: number } => {
+    console.log("Validating player stats");
 
-  const validatePlayerStats = (stats: PlayerStats, level: number, maxLevel: number): { isValid: boolean; total: number } => {
-    console.log("Validating player stats")
-    const statValues = Object.values(stats);
-    const totalStats = statValues.reduce((sum, value) => sum + value, 0);
+    const statValues = Object.values(stats).map((val) => Number(val));
+    const numericStatValues = statValues.filter((val) => !isNaN(val));
+
+    const totalStats = numericStatValues.reduce((sum, value) => sum + value, 0);
     const calculatedLevel = Math.floor(totalStats / 5) + 1;
 
-    console.log("Stat values ", statValues)
-    console.log("Total stats ", totalStats)
-    console.log("Calculated level", calculatedLevel)
-    
+    console.log("Stat values", numericStatValues);
+    console.log("Total stats", totalStats);
+    console.log("Calculated level", calculatedLevel);
+
     return {
       isValid: calculatedLevel <= maxLevel,
-      total: totalStats
+      total: totalStats,
     };
   };
 
