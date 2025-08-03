@@ -112,12 +112,11 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
     loadCpuPlayers();
     logActivity('cpu_teams_viewed');
   }, []);
-  
+
   const validatePlayerStats = (
     stats: PlayerStats,
-    level: number,
     maxLevel: number
-  ): { isValid: boolean; total: number } => {
+  ): { isValid: boolean; total: number; calculatedLevel: number } => {
     console.log("Validating player stats");
 
     const statValues = Object.values(stats).map((val) => Number(val));
@@ -133,6 +132,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
     return {
       isValid: calculatedLevel <= maxLevel,
       total: totalStats,
+      calculatedLevel: calculatedLevel
     };
   };
 
@@ -1395,8 +1395,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
                   <div className="mb-4">
                     {(() => {
                       const validation = validatePlayerStats(
-                        playerFormData.stats, 
-                        playerFormData.level || 1, 
+                        playerFormData.stats,
                         playerFormData.maxLevel || 156
                       );
                       return (
@@ -1436,8 +1435,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
                       'drop',
                     ] as (keyof PlayerStats)[]).map((stat) => {
                       const validation = validatePlayerStats(
-                        playerFormData.stats, 
-                        playerFormData.level || 1, 
+                        playerFormData.stats,
                         playerFormData.maxLevel || 156
                       );
                       return (
@@ -1453,9 +1451,13 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
                                 ...playerFormData.stats,
                                 [stat]: parseInt(e.target.value) || 0
                               };
+                              
+                              const validation = validatePlayerStats(newStats, playerFormData.maxLevel || 156);
+                              
                               setPlayerFormData(prev => ({
                                 ...prev,
-                                stats: newStats
+                                stats: newStats,
+                                level: validation.calculatedLevel
                               }));
                             }}
                             className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
@@ -1486,15 +1488,13 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
                   className={`px-6 py-2 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed ${
                     validatePlayerStats(
                       playerFormData.stats, 
-                      playerFormData.level || 1, 
                       playerFormData.maxLevel || 156
                     ).isValid 
                       ? 'bg-blue-600 hover:bg-blue-700' 
                       : 'bg-red-600 hover:bg-red-700'
                   }`}
                   disabled={loading || !validatePlayerStats(
-                    playerFormData.stats, 
-                    playerFormData.level || 1, 
+                    playerFormData.stats,
                     playerFormData.maxLevel || 156
                   ).isValid}
                 >
