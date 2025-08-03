@@ -479,32 +479,24 @@ export default function TournamentsPage() {
                     <span className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
                     <span className="font-medium">1st:</span>
                   </div>
-                  <div className="ml-4 space-y-1">
-                    {detailViewTournament.prize_pool?.first?.coins > 0 && (
+                    <div className="ml-4 space-y-1">
                       <div className="flex items-center">
                         <Coins className="w-4 h-4 text-yellow-500 mr-2" />
                         <span>{detailViewTournament.prize_pool.first.coins} coins</span>
                       </div>
-                    )}
-                    {detailViewTournament.prize_pool?.first?.meals > 0 && (
                       <div className="flex items-center">
                         <Coffee className="w-4 h-4 text-red-500 mr-2" />
                         <span>{detailViewTournament.prize_pool.first.meals} meals</span>
                       </div>
-                    )}
-                    {detailViewTournament.prize_pool?.first?.shuttlecocks > 0 && (
                       <div className="flex items-center">
                         <Box className="w-4 h-4 text-green-500 mr-2" />
                         <span>{detailViewTournament.prize_pool.first.shuttlecocks} shuttlecocks</span>
                       </div>
-                    )}
-                    {detailViewTournament.prize_pool?.first?.diamonds > 0 && (
                       <div className="flex items-center">
                         <Gift className="w-4 h-4 text-blue-500 mr-2" />
                         <span>{detailViewTournament.prize_pool.first.diamonds} diamonds</span>
                       </div>
-                    )}
-                  </div>
+                    </div>
                 </div>
 
                 {/* 2nd Place */}
@@ -514,30 +506,22 @@ export default function TournamentsPage() {
                     <span className="font-medium">2nd:</span>
                   </div>
                   <div className="ml-4 space-y-1">
-                    {detailViewTournament.prize_pool?.second?.coins > 0 && (
-                      <div className="flex items-center">
-                        <Coins className="w-4 h-4 text-yellow-500 mr-2" />
-                        <span>{detailViewTournament.prize_pool.second.coins} coins</span>
-                      </div>
-                    )}
-                    {detailViewTournament.prize_pool?.second?.meals > 0 && (
-                      <div className="flex items-center">
-                        <Coffee className="w-4 h-4 text-red-500 mr-2" />
-                        <span>{detailViewTournament.prize_pool.second.meals} meals</span>
-                      </div>
-                    )}
-                    {detailViewTournament.prize_pool?.second?.shuttlecocks > 0 && (
-                      <div className="flex items-center">
-                        <Box className="w-4 h-4 text-green-500 mr-2" />
-                        <span>{detailViewTournament.prize_pool.second.shuttlecocks} shuttlecocks</span>
-                      </div>
-                    )}
-                    {detailViewTournament.prize_pool?.second?.diamonds > 0 && (
-                      <div className="flex items-center">
-                        <Gift className="w-4 h-4 text-blue-500 mr-2" />
-                        <span>{detailViewTournament.prize_pool.second.diamonds} diamonds</span>
-                      </div>
-                    )}
+                    <div className="flex items-center">
+                      <Coins className="w-4 h-4 text-yellow-500 mr-2" />
+                      <span>{detailViewTournament.prize_pool.second.coins} coins</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Coffee className="w-4 h-4 text-red-500 mr-2" />
+                      <span>{detailViewTournament.prize_pool.second.meals} meals</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Box className="w-4 h-4 text-green-500 mr-2" />
+                      <span>{detailViewTournament.prize_pool.second.shuttlecocks} shuttlecocks</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Gift className="w-4 h-4 text-blue-500 mr-2" />
+                      <span>{detailViewTournament.prize_pool.second.diamonds} diamonds</span>
+                    </div>
                   </div>
                 </div>
 
@@ -548,30 +532,22 @@ export default function TournamentsPage() {
                     <span className="font-medium">3rd:</span>
                   </div>
                   <div className="ml-4 space-y-1">
-                    {detailViewTournament.prize_pool?.third?.coins > 0 && (
-                      <div className="flex items-center">
-                        <Coins className="w-4 h-4 text-yellow-500 mr-2" />
-                        <span>{detailViewTournament.prize_pool.third.coins} coins</span>
-                      </div>
-                    )}
-                    {detailViewTournament.prize_pool?.third?.meals > 0 && (
-                      <div className="flex items-center">
-                        <Coffee className="w-4 h-4 text-red-500 mr-2" />
-                        <span>{detailViewTournament.prize_pool.third.meals} meals</span>
-                      </div>
-                    )}
-                    {detailViewTournament.prize_pool?.third?.shuttlecocks > 0 && (
-                      <div className="flex items-center">
-                        <Box className="w-4 h-4 text-green-500 mr-2" />
-                        <span>{detailViewTournament.prize_pool.third.shuttlecocks} shuttlecocks</span>
-                      </div>
-                    )}
-                    {detailViewTournament.prize_pool?.third?.diamonds > 0 && (
-                      <div className="flex items-center">
-                        <Gift className="w-4 h-4 text-blue-500 mr-2" />
-                        <span>{detailViewTournament.prize_pool.third.diamonds} diamonds</span>
-                      </div>
-                    )}
+                    <div className="flex items-center">
+                      <Coins className="w-4 h-4 text-yellow-500 mr-2" />
+                      <span>{detailViewTournament.prize_pool.third.coins} coins</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Coffee className="w-4 h-4 text-red-500 mr-2" />
+                      <span>{detailViewTournament.prize_pool.third.meals} meals</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Box className="w-4 h-4 text-green-500 mr-2" />
+                      <span>{detailViewTournament.prize_pool.third.shuttlecocks} shuttlecocks</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Gift className="w-4 h-4 text-blue-500 mr-2" />
+                      <span>{detailViewTournament.prize_pool.third.diamonds} diamonds</span>
+                    </div>
                   </div>
                 </div>
 
@@ -744,10 +720,28 @@ export default function TournamentsPage() {
                 <div className="mb-4">
                   <p className="text-sm font-medium text-gray-700 mb-1">Entry Fee</p>
                   <div className="flex items-center space-x-3 text-sm">
-                    {tournament.entry_fee.coins && (
+                    {tournament.entry_fee.coins > 0 && (
                       <div className="flex items-center">
                         <Coins className="w-4 h-4 text-yellow-500 mr-1" />
-                        <span>{tournament.entry_fee.coins}</span>
+                        <span>{tournament.entry_fee.coins} coins</span>
+                      </div>
+                    )}
+                    {tournament.entry_fee.meals > 0 && (
+                      <div className="flex items-center">
+                        <Coffee className="w-4 h-4 text-red-500 mr-1" />
+                        <span>{tournament.entry_fee.meals} meals</span>
+                      </div>
+                    )}
+                    {tournament.entry_fee.shuttlecocks > 0 && (
+                      <div className="flex items-center">
+                        <Box className="w-4 h-4 text-green-500 mr-1" />
+                        <span>{tournament.entry_fee.shuttlecocks} shuttlecocks</span>
+                      </div>
+                    )}
+                    {tournament.entry_fee.diamonds > 0 && (
+                      <div className="flex items-center">
+                        <Gift className="w-4 h-4 text-blue-500 mr-1" />
+                        <span>{tournament.entry_fee.diamonds} diamonds</span>
                       </div>
                     )}
                   </div>
