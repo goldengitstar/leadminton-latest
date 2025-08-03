@@ -471,7 +471,7 @@ export default function TournamentsPage() {
                     <span className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
                     <span className="font-medium">1st:</span>
                   </div>
-                    <div className="ml-4 space-y-1 flex">
+                    <div className="ml-4 space-y-1 flex gap-1">
                       <div className="flex items-center">
                         <Coins className="w-4 h-4 text-yellow-500 mr-2" />
                         <span>{detailViewTournament.prize_pool.first.coins} coins</span>
@@ -497,7 +497,7 @@ export default function TournamentsPage() {
                     <span className="w-2 h-2 bg-gray-400 rounded-full mr-2"></span>
                     <span className="font-medium">2nd:</span>
                   </div>
-                  <div className="ml-4 space-y-1 flex">
+                  <div className="ml-4 space-y-1 flex gap-1">
                     <div className="flex items-center">
                       <Coins className="w-4 h-4 text-yellow-500 mr-2" />
                       <span>{detailViewTournament.prize_pool.second.coins} coins</span>
@@ -523,7 +523,7 @@ export default function TournamentsPage() {
                     <span className="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
                     <span className="font-medium">3rd:</span>
                   </div>
-                  <div className="ml-4 space-y-1 flex">
+                  <div className="ml-4 space-y-1 flex gap-1">
                     <div className="flex items-center">
                       <Coins className="w-4 h-4 text-yellow-500 mr-2" />
                       <span>{detailViewTournament.prize_pool.third.coins} coins</span>
