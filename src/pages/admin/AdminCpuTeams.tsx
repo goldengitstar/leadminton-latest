@@ -1540,7 +1540,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
                       { key: 'movement_speed', label: 'Movement Speed' },
                       { key: 'fatigue_management', label: 'Fatigue Management' },
                       { key: 'rally_consistency', label: 'Rally Consistency' },
-                      { key: 'riskTaking', label: 'Risk Taking' },
+                      { key: 'risk_taking', label: 'Risk Taking' },
                       { key: 'attack', label: 'Attack' },
                       { key: 'soft_attack', label: 'Soft Attack' },
                       { key: 'serving', label: 'Serving' },
@@ -1573,7 +1573,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
                           <span>10</span>
                         </div>
                         <div className="text-center text-sm mt-1">
-                          Current: {playerFormData.strategy?.[key] ?? 50}
+                          Current: {playerFormData.strategy?.[key] ?? 0}
                         </div>
                       </div>
                     ))}
