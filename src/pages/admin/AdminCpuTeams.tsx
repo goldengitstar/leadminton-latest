@@ -1207,7 +1207,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
                       <option value="rare">Rare</option>
                       <option value="epic">Epic</option>
                       <option value="premium">Premium</option>
-                      <option value="legendary">Lgendary</option>
+                      <option value="legendary">Legendary</option>
                     </select>
                   </div>
 
