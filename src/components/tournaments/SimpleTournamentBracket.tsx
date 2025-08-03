@@ -209,6 +209,7 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
 
   const finalRound = formattedRounds[formattedRounds.length - 1];
   const earlyRounds = formattedRounds.slice(0, -1);
+  console.log(earlyRounds)
 
   const leftRounds = earlyRounds.map(r => ({
     title: r.title,
