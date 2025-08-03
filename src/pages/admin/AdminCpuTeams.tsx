@@ -12,7 +12,7 @@ interface CpuTeam {
   id: string;
   name: string;
   description: string;
-  skillLevel: 'beginner' | 'intermediate' | 'advanced' | 'expert' | 'master';
+  players_rarity: 'common' | 'rare' | 'epic' | 'premium' | 'legendary';
   playerCount: number;
   genderBalance: 'mixed' | 'male' | 'female';
   players: Player[];
@@ -159,7 +159,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
         id: team.id,
         name: team.name,
         description: team.description,
-        skillLevel: team.skill_level,
+        players_rarity: team.players_rarity,
         playerCount: team.player_count,
         genderBalance: team.gender_balance,
         players: playersByTeam[team.id] || [],
@@ -265,7 +265,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
     setFormData({
       name: '',
       description: '',
-      skillLevel: 'intermediate',
+      playerRarity: 'common',
       playerCount: 6,
       genderBalance: 'mixed',
       isActive: true
@@ -327,7 +327,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
     setFormData({
       name: team.name,
       description: team.description,
-      skillLevel: team.skillLevel,
+      playerRarity: team.players_rarity,
       playerCount: team.playerCount,
       genderBalance: team.genderBalance,
       isActive: team.isActive
@@ -697,7 +697,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
 
   const filteredTeams = cpuTeams.filter(team => {
     const matchesSearch = team.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesSkillLevel = filterSkillLevel === 'all' || team.skillLevel === filterSkillLevel;
+    const matchesSkillLevel = filterSkillLevel === 'all' || team.players_rarity === filterSkillLevel;
     return matchesSearch && matchesSkillLevel;
   });
 
@@ -707,11 +707,11 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
 
   const getSkillLevelColor = (level: string) => {
     switch (level) {
-      case 'beginner': return 'bg-gray-100 text-gray-800';
-      case 'intermediate': return 'bg-blue-100 text-blue-800';
-      case 'advanced': return 'bg-green-100 text-green-800';
-      case 'expert': return 'bg-yellow-100 text-yellow-800';
-      case 'master': return 'bg-purple-100 text-purple-800';
+      case 'common': return 'bg-gray-100 text-gray-800';
+      case 'epic': return 'bg-blue-100 text-blue-800';
+      case 'rare': return 'bg-green-100 text-green-800';
+      case 'premium': return 'bg-yellow-100 text-yellow-800';
+      case 'legendary': return 'bg-purple-100 text-purple-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -849,11 +849,11 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All Skill Levels</option>
-                <option value="beginner">Beginner</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="advanced">Advanced</option>
-                <option value="expert">Expert</option>
-                <option value="master">Master</option>
+                <option value="common">Common</option>
+                <option value="epic">Epic</option>
+                <option value="rare">Rare</option>
+                <option value="premium">Premium</option>
+                <option value="legendary">Legendary</option>
               </select>
             </div>
           )}
@@ -871,7 +871,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
                     Team
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Skill Level
+                    Rarity
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Players
@@ -911,7 +911,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getSkillLevelColor(team.skillLevel)}`}>
-                          {team.skillLevel.charAt(0).toUpperCase() + team.skillLevel.slice(1)}
+                          {team.players_rarity.charAt(0).toUpperCase() + team.players_rarity.slice(1)}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -1200,7 +1200,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
                     </label>
                     <select
                       value={formData.playerRarity}
-                      onChange={(e) => setFormData(prev => ({ ...prev, skillLevel: e.target.value as CpuTeam['skillLevel'] }))}
+                      onChange={(e) => setFormData(prev => ({ ...prev, skillLevel: e.target.value as CpuTeam['players_rarity'] }))}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="common">Common</option>
@@ -1451,8 +1451,8 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
                     <span className="font-medium text-gray-900">{generateData.teamName}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Skill Level:</span>
-                    <span className="font-medium text-gray-900 capitalize">{generateData.skillLevel}</span>
+                    <span className="text-gray-600">Players Rarity:</span>
+                    <span className="font-medium text-gray-900 capitalize">{generateData.playerRarity}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Players to Generate:</span>
