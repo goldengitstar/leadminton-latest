@@ -438,16 +438,34 @@ export default function TournamentsPage() {
             {/* Entry Fee */}
             {detailViewTournament.entry_fee && (
               <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Entry Fee</h3>
-                <div className="space-y-1">
-                  {detailViewTournament.entry_fee.coins && (
-                    <div className="flex items-center">
-                      <Coins className="w-4 h-4 text-yellow-500 mr-2" />
-                      <span>{detailViewTournament.entry_fee.coins} coins</span>
-                    </div>
-                  )}
-                </div>
+              <h3 className="font-semibold text-gray-900 mb-2">Entry Fee</h3>
+              <div className="space-y-1">
+                {detailViewTournament.entry_fee.coins > 0 && (
+                  <div className="flex items-center">
+                    <Coins className="w-4 h-4 text-yellow-500 mr-2" />
+                    <span>{detailViewTournament.entry_fee.coins} coins</span>
+                  </div>
+                )}
+                {detailViewTournament.entry_fee.meals > 0 && (
+                  <div className="flex items-center">
+                    <Coffee className="w-4 h-4 text-red-500 mr-2" />
+                    <span>{detailViewTournament.entry_fee.meals} meals</span>
+                  </div>
+                )}
+                {detailViewTournament.entry_fee.shuttlecocks > 0 && (
+                  <div className="flex items-center">
+                    <Box className="w-4 h-4 text-green-500 mr-2" />
+                    <span>{detailViewTournament.entry_fee.shuttlecocks} shuttlecocks</span>
+                  </div>
+                )}
+                {detailViewTournament.entry_fee.diamonds > 0 && (
+                  <div className="flex items-center">
+                    <Gift className="w-4 h-4 text-blue-500 mr-2" />
+                    <span>{detailViewTournament.entry_fee.diamonds} diamonds</span>
+                  </div>
+                )}
               </div>
+            </div>
             )}
 
             {/* Prize Pool */}
