@@ -59,20 +59,6 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
   type PlayerForm = Omit<Partial<Player>, 'stats'> & {
     is_cpu: boolean;
     stats: PlayerStats;
-    strategy: {
-      physicalCommitment: number;
-      playStyle: number;
-      movementSpeed: number;
-      fatigueManagement: number;
-      rallyConsistency: number;
-      riskTaking: number;
-      attack: number;
-      softAttack: number;
-      serving: number;
-      courtDefense: number;
-      mentalToughness: number;
-      selfConfidence: number;
-    };
   };
 
   const [playerFormData, setPlayerFormData] = useState<PlayerForm>({
@@ -212,24 +198,31 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
     }
   };
 
+  const BATCH_SIZE = 10;
+  const [batchIndex, setBatchIndex] = useState(0); // Add this in your component state
+
   const loadCpuPlayers = async () => {
     try {
       setLoading(true);
 
-      // Step 1: Load CPU players
+      const start = batchIndex * BATCH_SIZE;
+      const end = start + BATCH_SIZE - 1;
+
+      // Step 1: Load a batch of CPU players
       const { data: playersData, error: playersError } = await supabase
         .from('players')
         .select('*')
         .eq('is_cpu', true)
-        .order('name');
+        .order('name')
+        .range(start, end); // Fetch only a batch of 10
 
       if (playersError) {
         console.error('Error loading CPU players:', playersError);
         return;
       }
 
-      if (!playersData) {
-        setCpuPlayers([]);
+      if (!playersData || playersData.length === 0) {
+        console.log("No more players to load");
         return;
       }
 
@@ -244,7 +237,6 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
           meals: 0
         };
 
-        // Load resource data
         const { data: resourceData } = await supabase
           .from('resource_transactions')
           .select('amount, resource_type')
@@ -254,32 +246,19 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
         if (resourceData) {
           for (const { amount, resource_type } of resourceData) {
             switch (resource_type) {
-              case 'diamond':
-                resourceTotals.diamonds += amount;
-                break;
-              case 'coins':
-                resourceTotals.coins += amount;
-                break;
-              case 'shuttlecocks':
-                resourceTotals.shuttlecocks += amount;
-                break;
-              case 'meals':
-                resourceTotals.meals += amount;
-                break;
+              case 'diamond': resourceTotals.diamonds += amount; break;
+              case 'coins': resourceTotals.coins += amount; break;
+              case 'shuttlecocks': resourceTotals.shuttlecocks += amount; break;
+              case 'meals': resourceTotals.meals += amount; break;
             }
           }
         }
 
-        // Load player stats from player_levels table
-        const { data: levelStats, error: levelError } = await supabase
+        const { data: levelStats } = await supabase
           .from('player_levels')
           .select('*')
           .eq('player_id', player.id)
           .single();
-
-        if (levelError) {
-          console.warn(`No level data for player ${player.id}:`, levelError.message);
-        }
 
         return {
           ...player,
@@ -289,7 +268,10 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
         };
       }));
 
-      setCpuPlayers(playersWithResources);
+      // You can choose to append or replace
+      setCpuPlayers((prev) => [...prev, ...playersWithResources]);
+      setBatchIndex((prev) => prev + 1); // Move to next batch
+
     } catch (error) {
       console.error('Error loading CPU players:', error);
     } finally {
@@ -557,8 +539,6 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
       const { stats, strategy, ...playerData } = playerFormData;
 
       if (editingPlayer) {
-        console.log("player data ", playerData, stats, strategy)
-        console.log("Editing player true")
         const { error: playerError } = await supabase
           .from('players')
           .update({
@@ -577,7 +557,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
         if (playerError) throw playerError;
 
         // Update stats
-        const { error: statsError } = await supabase
+        await supabase
           .from('player_stats')
           .update({
             endurance: stats.endurance,
@@ -595,60 +575,46 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
           })
           .eq('player_id', editingPlayer.id);
 
-        if(statsError){
-          console.log(statsError)
-        }
-
-        // Update corresponding player_levels
-        const { error: levelsError } =  await supabase
-          .from('player_levels')
-          .update({
-            endurance: Math.floor(stats.endurance / 5),
-            strength: Math.floor(stats.strength / 5),
-            agility: Math.floor(stats.agility / 5),
-            speed: Math.floor(stats.speed / 5),
-            explosiveness: Math.floor(stats.explosiveness / 5),
-            injury_prevention: Math.floor(stats.injuryPrevention / 5),
-            smash: Math.floor(stats.smash / 5),
-            defense: Math.floor(stats.defense / 5),
-            serve: Math.floor(stats.serve / 5),
-            stick: Math.floor(stats.stick / 5),
-            slice: Math.floor(stats.slice / 5),
-            drop: Math.floor(stats.drop / 5)
+          // Update corresponding player_levels
+          await supabase
+            .from('player_levels')
+            .update({
+              endurance: Math.floor(stats.endurance / 5),
+              strength: Math.floor(stats.strength / 5),
+              agility: Math.floor(stats.agility / 5),
+              speed: Math.floor(stats.speed / 5),
+              explosiveness: Math.floor(stats.explosiveness / 5),
+              injury_prevention: Math.floor(stats.injuryPrevention / 5),
+              smash: Math.floor(stats.smash / 5),
+              defense: Math.floor(stats.defense / 5),
+              serve: Math.floor(stats.serve / 5),
+              stick: Math.floor(stats.stick / 5),
+              slice: Math.floor(stats.slice / 5),
+              drop: Math.floor(stats.drop / 5)
             })
             .eq('player_id', editingPlayer.id);
 
-        if(levelsError){
-          console.log(levelsError)
-        }
-
-        const { error: stratError } = await supabase
-          .from('player_strategy')
-          .update({
-            physical_commitment: strategy?.physicalCommitment,
-            play_style: strategy?.playStyle,
-            movement_speed: strategy?.movementSpeed,
-            fatigue_management: strategy?.fatigueManagement,
-            rally_consistency: strategy?.rallyConsistency,
-            risk_taking: strategy?.riskTaking,
-            attack: strategy?.attack,
-            soft_attack: strategy?.softAttack,
-            serving: strategy?.serving,
-            court_defense: strategy?.courtDefense,
-            mental_toughness: strategy?.mentalToughness,
-            self_confidence: strategy?.selfConfidence
-          })
-          .eq('player_id', editingPlayer.id);
-        
-        if(stratError){
-          console.log(stratError)
-        }
+          await supabase
+            .from('player_strategy')
+            .update({
+              physical_commitment: strategy?.physicalCommitment,
+              play_style: strategy?.playStyle,
+              movement_speed: strategy?.movementSpeed,
+              fatigue_management: strategy?.fatigueManagement,
+              rally_consistency: strategy?.rallyConsistency,
+              risk_taking: strategy?.riskTaking,
+              attack: strategy?.attack,
+              soft_attack: strategy?.softAttack,
+              serving: strategy?.serving,
+              court_defense: strategy?.courtDefense,
+              mental_toughness: strategy?.mentalToughness,
+              self_confidence: strategy?.selfConfidence
+            })
+            .eq('player_id', editingPlayer.id);
 
         await logActivity('cpu_player_updated', 'player', editingPlayer.id);
         toast.success('CPU player updated successfully');
       } else {
-        console.log("Editing player false")
-         console.log("player form data ", playerFormData)
         // Get current user
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('No authenticated user');
@@ -1456,7 +1422,6 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
                   </div>
                 </div>
 
-                {/* Stats Section */}
                 <div className="pt-4 border-t border-gray-200">
                   <h3 className="text-lg font-semibold text-gray-800 mb-4">Stats</h3>
                   <div className="mb-4">
@@ -1537,57 +1502,6 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
                         </div>
                       );
                     })}
-                  </div>
-                </div>
-
-                {/* Strategy Section */}
-                <div className="pt-4 border-t border-gray-200">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Strategy</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {([
-                      { key: 'physicalCommitment', label: 'Physical Commitment' },
-                      { key: 'playStyle', label: 'Play Style' },
-                      { key: 'movementSpeed', label: 'Movement Speed' },
-                      { key: 'fatigueManagement', label: 'Fatigue Management' },
-                      { key: 'rallyConsistency', label: 'Rally Consistency' },
-                      { key: 'riskTaking', label: 'Risk Taking' },
-                      { key: 'attack', label: 'Attack' },
-                      { key: 'softAttack', label: 'Soft Attack' },
-                      { key: 'serving', label: 'Serving' },
-                      { key: 'courtDefense', label: 'Court Defense' },
-                      { key: 'mentalToughness', label: 'Mental Toughness' },
-                      { key: 'selfConfidence', label: 'Self Confidence' },
-                    ] as const).map(({ key, label }) => (
-                      <div key={key}>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          {label}
-                        </label>
-                        <input
-                          type="range"
-                          min="0"
-                          max="10"
-                          value={playerFormData.strategy?.[key] ?? 0}
-                          onChange={(e) => {
-                            setPlayerFormData(prev => ({
-                              ...prev,
-                              strategy: {
-                                ...prev.strategy,
-                                [key]: parseInt(e.target.value)
-                              }
-                            }));
-                          }}
-                          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                        />
-                        <div className="flex justify-between text-xs text-gray-500 mt-1">
-                          <span>0</span>
-                          <span>50</span>
-                          <span>100</span>
-                        </div>
-                        <div className="text-center text-sm mt-1">
-                          Current: {playerFormData.strategy?.[key] ?? 50}
-                        </div>
-                      </div>
-                    ))}
                   </div>
                 </div>
               </div>
