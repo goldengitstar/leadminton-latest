@@ -113,6 +113,17 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
     logActivity('cpu_teams_viewed');
   }, []);
 
+  const validatePlayerStats = (stats: PlayerStats, level: number, maxLevel: number): { isValid: boolean; total: number } => {
+    const statValues = Object.values(stats);
+    const totalStats = statValues.reduce((sum, value) => sum + value, 0);
+    const calculatedLevel = Math.floor(totalStats / 5) + 1;
+    
+    return {
+      isValid: calculatedLevel <= maxLevel,
+      total: totalStats
+    };
+  };
+
   const loadCpuTeams = async () => {
     try {
       setLoading(true);
@@ -504,6 +515,17 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
 
   const handlePlayerSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Add validation check
+    const validation = validatePlayerStats(
+      playerFormData.stats, 
+      playerFormData.level || 1, 
+      playerFormData.maxLevel || 156
+    );
+    
+    if (!validation.isValid) {
+      toast.error(`Stats total (${validation.total}) exceeds maximum allowed for this player's level.`);
+      return;
+    }
     setLoading(true);
 
     try {
@@ -1358,6 +1380,35 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
 
                 <div className="pt-4 border-t border-gray-200">
                   <h3 className="text-lg font-semibold text-gray-800 mb-4">Stats</h3>
+                  <div className="mb-4">
+                    {(() => {
+                      const validation = validatePlayerStats(
+                        playerFormData.stats, 
+                        playerFormData.level || 1, 
+                        playerFormData.maxLevel || 156
+                      );
+                      return (
+                        <div className={`p-3 rounded-lg mb-4 ${validation.isValid ? 'bg-gray-50' : 'bg-red-50 border border-red-200'}`}>
+                          <div className="flex justify-between text-sm">
+                            <span className="font-medium">Stats Total:</span>
+                            <span className={validation.isValid ? 'text-gray-700' : 'text-red-600 font-semibold'}>
+                              {validation.total} (Calculated level: {Math.floor(validation.total / 5) + 1})
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-sm mt-1">
+                            <span className="font-medium">Max Allowed:</span>
+                            <span className="text-gray-700">Level {playerFormData.maxLevel || 156}</span>
+                          </div>
+                          {!validation.isValid && (
+                            <div className="text-red-600 text-xs mt-2">
+                              Stats total exceeds maximum allowed level. Reduce some stats or increase max level.
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                  
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {([
                       'endurance',
@@ -1371,28 +1422,40 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
                       'stick',
                       'slice',
                       'drop',
-                    ] as (keyof PlayerStats)[]).map((stat) => (
-                      <div key={stat}>
-                        <label className="block text-sm font-medium text-gray-700 mb-2 capitalize">
-                          {stat}
-                        </label>
-                        <input
-                          type="number"
-                          value={playerFormData.stats?.[stat] ?? 0}
-                          onChange={(e) =>
-                            setPlayerFormData((prev) => ({
-                              ...prev,
-                              stats: {
-                                ...prev.stats,
-                                [stat]: parseInt(e.target.value),
-                              },
-                            }))
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          min="0"
-                        />
-                      </div>
-                    ))}
+                    ] as (keyof PlayerStats)[]).map((stat) => {
+                      const validation = validatePlayerStats(
+                        playerFormData.stats, 
+                        playerFormData.level || 1, 
+                        playerFormData.maxLevel || 156
+                      );
+                      return (
+                        <div key={stat}>
+                          <label className="block text-sm font-medium text-gray-700 mb-2 capitalize">
+                            {stat}
+                          </label>
+                          <input
+                            type="number"
+                            value={playerFormData.stats?.[stat] ?? 0}
+                            onChange={(e) => {
+                              const newStats = {
+                                ...playerFormData.stats,
+                                [stat]: parseInt(e.target.value) || 0
+                              };
+                              setPlayerFormData(prev => ({
+                                ...prev,
+                                stats: newStats
+                              }));
+                            }}
+                            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                              !validation.isValid 
+                                ? 'border-red-300 focus:ring-red-500 bg-red-50' 
+                                : 'border-gray-300 focus:ring-blue-500'
+                            }`}
+                            min="0"
+                          />
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
