@@ -281,11 +281,23 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
           console.warn(`No level data for player ${player.id}:`, levelError.message);
         }
 
+        // Load player stats from player_levels table
+        const { data: levelsData, error: levelError2 } = await supabase
+          .from('player_levels')
+          .select('*')
+          .eq('player_id', player.id)
+          .single();
+
+        if (levelError2) {
+          console.warn(`No level data for player ${player.id}:`, levelError2.message);
+        }
+
         return {
           ...player,
           ...resourceTotals,
           maxLevel: player.maxLevel || 156,
-          stats: levelStats || {}
+          stats: levelStats || {},
+          levelsD: levelsData
         };
       }));
 
@@ -1163,7 +1175,8 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         <div className="flex items-center">
                           <span className="text-blue-500 mr-1">🔋</span>
-                          {player.stats.endurance}
+                          <span>{player.stats.endurance}</span>
+                          <span className="text-xs text-gray-500 ml-1">lv.{player.levelsD.endurance}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
