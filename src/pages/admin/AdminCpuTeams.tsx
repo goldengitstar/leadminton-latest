@@ -910,7 +910,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getSkillLevelColor(team.skillLevel)}`}>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getSkillLevelColor(team.players_rarity)}`}>
                           {team.players_rarity.charAt(0).toUpperCase() + team.players_rarity.slice(1)}
                         </span>
                       </td>
