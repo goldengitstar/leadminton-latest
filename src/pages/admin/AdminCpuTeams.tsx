@@ -556,6 +556,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
     try {
       const { stats, strategy, ...playerData } = playerFormData;
       console.log(playerFormData)
+      console.log("Editing player id ", editingPlayer?.id);
       if (editingPlayer) {
         const { error: playerError } = await supabase
           .from('players')
