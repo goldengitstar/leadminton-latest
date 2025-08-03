@@ -153,6 +153,8 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
     };
   });
 
+  console.log("Formatted rounds ", formattedRounds)
+
 
   // 👇 Add this line inside the component, near the top of SimpleTournamentBracket
   const scaleFactor =
@@ -182,6 +184,8 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
 
   const finalRound = formattedRounds[formattedRounds.length - 1];
   const earlyRounds = formattedRounds.slice(0, -1);
+  console.log("Final round ", finalRound)
+  console.log("Early round ", earlyRounds)
 
   const leftRounds: RoundProps[] = earlyRounds.map((round) => {
     const split = Math.ceil(round.seeds.length / 2);
