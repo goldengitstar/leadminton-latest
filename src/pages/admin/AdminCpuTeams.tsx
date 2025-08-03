@@ -50,7 +50,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    playerRarity:'',
+    playerRarity: 'common' as CpuTeam['players_rarity'],
     playerCount: 6,
     genderBalance: 'mixed' as CpuTeam['genderBalance'],
     isActive: true
@@ -1200,7 +1200,10 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
                     </label>
                     <select
                       value={formData.playerRarity}
-                      onChange={(e) => setFormData(prev => ({ ...prev, skillLevel: e.target.value as CpuTeam['players_rarity'] }))}
+                       onChange={(e) => setFormData(prev => ({ 
+                        ...prev, 
+                        playerRarity: e.target.value as CpuTeam['players_rarity'] // Correct property name
+                      }))}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="common">Common</option>
