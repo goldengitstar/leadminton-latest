@@ -93,7 +93,6 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
   const sortedRounds = [...rounds].sort((a, b) => a.level - b.level);
   const totalRounds = Math.ceil(Math.log2(max_participants));
 
-  // Build and format each round's seeds
   const formattedRounds: RoundProps[] = Array.from({ length: totalRounds }, (_, i) => {
     const round = sortedRounds.find(r => r.level === i + 1);
     const expectedCount = Math.ceil(max_participants / Math.pow(2, i + 1));
@@ -126,42 +125,40 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
       });
     }
 
-    return {
-      title: getReadableRoundTitle(totalRounds - i - 1),
-      seeds,
-    };
+    return { title: getReadableRoundTitle(totalRounds - i - 1), seeds };
   });
 
-  // Improved mirror-order: prioritize pairing based on loser first, then winner
+  // Mirror-order each round by sorting seeds by their earliest appearance in next-round order
   for (let r = formattedRounds.length - 2; r >= 0; r--) {
     const thisRound = formattedRounds[r];
     const nextRound = formattedRounds[r + 1];
 
+    // Build a list of child IDs in the exact order they appear in next round (loser then winner)
     const orderIds: Array<string | number> = [];
     nextRound.seeds.forEach(seed => {
-      // push loser (child not equal winner) before winner
+      // loser first
       seed.childIds.forEach(cid => {
         if (cid != null && cid !== seed.winnerId) orderIds.push(cid);
       });
+      // then winner
       if (seed.winnerId != null) orderIds.push(seed.winnerId);
     });
 
-    const reordered: typeof thisRound.seeds = [];
-    const used = new Set<number>();
-
-    orderIds.forEach(id => {
-      const idx = thisRound.seeds.findIndex((s, i) => !used.has(i) && s.childIds.includes(id));
-      if (idx === -1) return;
-      const base = idx % 2 === 0 ? idx : idx - 1;
-      reordered.push(thisRound.seeds[base], thisRound.seeds[base + 1]);
-      used.add(base).add(base + 1);
+    // Map each seed to its sort key (smallest index of its childIds in orderIds)
+    const indexMap = new Map<keyof typeof thisRound.seeds, number>();
+    thisRound.seeds.forEach((s, idx) => {
+      const indices = s.childIds
+        .map(cid => orderIds.indexOf(cid))
+        .filter(i => i >= 0);
+      indexMap.set(idx as any, indices.length ? Math.min(...indices) : Infinity);
     });
 
-    thisRound.seeds.forEach((seed, i) => {
-      if (!used.has(i)) reordered.push(seed);
+    // Sort in place by indexMap
+    thisRound.seeds.sort((a, b) => {
+      const aIdx = indexMap.get(thisRound.seeds.indexOf(a)) ?? Infinity;
+      const bIdx = indexMap.get(thisRound.seeds.indexOf(b)) ?? Infinity;
+      return aIdx - bIdx;
     });
-
-    thisRound.seeds = reordered;
   }
 
   const scaleFactor =
@@ -200,8 +197,10 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
     title: r.title,
     seeds: r.seeds.slice(0, Math.ceil(r.seeds.length / 2)),
   }));
+
   return (
     <div className="w-full bg-white rounded-xl shadow-lg p-6">
+      {/* header */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center space-x-3">
           <Trophy className="w-8 h-8 text-yellow-500" />
@@ -213,10 +212,7 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
             </div>
           )}
         </div>
-        <button
-          onClick={onBack}
-          className="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition-colors"
-        >
+        <button onClick={onBack} className="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition-colors">
           Back
         </button>
       </div>
@@ -246,30 +242,24 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
 
       <div className="w-full overflow-x-auto overflow-y-auto">
         <div className="flex min-w-fit justify-center items-start px-[10px]">
-          <div>
-            <Bracket
-              rounds={rightRounds}
-              rtl={false}
-              renderSeedComponent={props => <ThemedSeed {...props} scaleFactor={scaleFactor} />}
-              roundTitleComponent={ThemedRoundTitle}
-            />
-          </div>
-          <div>
-            <Bracket
-              rounds={[finalRound]}
-              rtl={false}
-              renderSeedComponent={props => <ThemedSeed {...props} scaleFactor={scaleFactor} />}
-              roundTitleComponent={ThemedRoundTitle}
-            />
-          </div>
-          <div>
-            <Bracket
-              rounds={leftRounds.map(r => ({ ...r, seeds: [...r.seeds].reverse() }))}
-              rtl={true}
-              renderSeedComponent={props => <ThemedSeed {...props} scaleFactor={scaleFactor} />}
-              roundTitleComponent={ThemedRoundTitle}
-            />
-          </div>
+          <Bracket
+            rounds={rightRounds}
+            rtl={false}
+            renderSeedComponent={props => <ThemedSeed {...props} scaleFactor={scaleFactor} />}
+            roundTitleComponent={ThemedRoundTitle}
+          />
+          <Bracket
+            rounds={[finalRound]}
+            rtl={false}
+            renderSeedComponent={props => <ThemedSeed {...props} scaleFactor={scaleFactor} />}
+            roundTitleComponent={ThemedRoundTitle}
+          />
+          <Bracket
+            rounds={leftRounds.map(r => ({ ...r, seeds: [...r.seeds].reverse() }))}
+            rtl={true}
+            renderSeedComponent={props => <ThemedSeed {...props} scaleFactor={scaleFactor} />}
+            roundTitleComponent={ThemedRoundTitle}
+          />
         </div>
       </div>
     </div>
