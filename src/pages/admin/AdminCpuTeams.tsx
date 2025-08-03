@@ -1549,8 +1549,8 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
                         <input
                           type="range"
                           min="0"
-                          max="100"
-                          value={playerFormData.strategy?.[key] ?? 50}
+                          max="10"
+                          value={playerFormData.strategy?.[key] ?? 0}
                           onChange={(e) => {
                             setPlayerFormData(prev => ({
                               ...prev,
