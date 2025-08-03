@@ -575,7 +575,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
         if (playerError) throw playerError;
 
         // Update stats
-        await supabase
+        const { error: statsError } = await supabase
           .from('player_stats')
           .update({
             endurance: stats.endurance,
@@ -593,42 +593,54 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
           })
           .eq('player_id', editingPlayer.id);
 
-          // Update corresponding player_levels
-          await supabase
-            .from('player_levels')
-            .update({
-              endurance: Math.floor(stats.endurance / 5),
-              strength: Math.floor(stats.strength / 5),
-              agility: Math.floor(stats.agility / 5),
-              speed: Math.floor(stats.speed / 5),
-              explosiveness: Math.floor(stats.explosiveness / 5),
-              injury_prevention: Math.floor(stats.injuryPrevention / 5),
-              smash: Math.floor(stats.smash / 5),
-              defense: Math.floor(stats.defense / 5),
-              serve: Math.floor(stats.serve / 5),
-              stick: Math.floor(stats.stick / 5),
-              slice: Math.floor(stats.slice / 5),
-              drop: Math.floor(stats.drop / 5)
+        if(statsError){
+          console.log(statsError)
+        }
+
+        // Update corresponding player_levels
+        const { error: levelsError } =  await supabase
+          .from('player_levels')
+          .update({
+            endurance: Math.floor(stats.endurance / 5),
+            strength: Math.floor(stats.strength / 5),
+            agility: Math.floor(stats.agility / 5),
+            speed: Math.floor(stats.speed / 5),
+            explosiveness: Math.floor(stats.explosiveness / 5),
+            injury_prevention: Math.floor(stats.injuryPrevention / 5),
+            smash: Math.floor(stats.smash / 5),
+            defense: Math.floor(stats.defense / 5),
+            serve: Math.floor(stats.serve / 5),
+            stick: Math.floor(stats.stick / 5),
+            slice: Math.floor(stats.slice / 5),
+            drop: Math.floor(stats.drop / 5)
             })
             .eq('player_id', editingPlayer.id);
 
-          await supabase
-            .from('player_strategy')
-            .update({
-              physical_commitment: strategy?.physicalCommitment,
-              play_style: strategy?.playStyle,
-              movement_speed: strategy?.movementSpeed,
-              fatigue_management: strategy?.fatigueManagement,
-              rally_consistency: strategy?.rallyConsistency,
-              risk_taking: strategy?.riskTaking,
-              attack: strategy?.attack,
-              soft_attack: strategy?.softAttack,
-              serving: strategy?.serving,
-              court_defense: strategy?.courtDefense,
-              mental_toughness: strategy?.mentalToughness,
-              self_confidence: strategy?.selfConfidence
-            })
-            .eq('player_id', editingPlayer.id);
+        if(levelsError){
+          console.log(levelsError)
+        }
+
+        const { error: stratError } = await supabase
+          .from('player_strategy')
+          .update({
+            physical_commitment: strategy?.physicalCommitment,
+            play_style: strategy?.playStyle,
+            movement_speed: strategy?.movementSpeed,
+            fatigue_management: strategy?.fatigueManagement,
+            rally_consistency: strategy?.rallyConsistency,
+            risk_taking: strategy?.riskTaking,
+            attack: strategy?.attack,
+            soft_attack: strategy?.softAttack,
+            serving: strategy?.serving,
+            court_defense: strategy?.courtDefense,
+            mental_toughness: strategy?.mentalToughness,
+            self_confidence: strategy?.selfConfidence
+          })
+          .eq('player_id', editingPlayer.id);
+        
+        if(stratError){
+          console.log(stratError)
+        }
 
         await logActivity('cpu_player_updated', 'player', editingPlayer.id);
         toast.success('CPU player updated successfully');
