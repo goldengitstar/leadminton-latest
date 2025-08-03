@@ -63,7 +63,7 @@ const CountdownTimer = memo(({
   }, [tournament.start_date, tournament.next_round_start_time, tournament.status]);
 
   const formatTimeLeft = (ms: number): string => {
-    if (ms <= 0) return 'Tournament Started!';
+    if (ms <= 0) return 'Tournament Ongoing!';
 
     const seconds = Math.floor(ms / 1000) % 60;
     const minutes = Math.floor(ms / (1000 * 60)) % 60;
@@ -110,7 +110,7 @@ const CountdownTimer = memo(({
           'text-blue-600'
         }`}>
           {hasStarted ? 
-            (tournament.status === 'ongoing' && tournament.next_round_start_time ? 'Round Ready!' : 'Tournament Started!') : 
+            (tournament.status === 'ongoing' && tournament.next_round_start_time ? 'Round Ongoing!' : 'Tournament Ongoing!') : 
             (tournament.status === 'ongoing' && tournament.next_round_start_time ? 'Until Next Round' : 'Until Tournament Starts')
           }
         </div>
