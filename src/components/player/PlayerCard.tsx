@@ -474,7 +474,6 @@ export default function PlayerCard({
           playerEquipment={player.equipment}
           onEquip={(equipment: Equipment) => {
             onEquipItem(player.id, equipment);
-            setShowCustomization(false);
           }}
           resources={resources}
         />
