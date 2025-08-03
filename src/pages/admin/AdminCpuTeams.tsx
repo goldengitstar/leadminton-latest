@@ -198,31 +198,24 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
     }
   };
 
-  const BATCH_SIZE = 10;
-  const [batchIndex, setBatchIndex] = useState(0); // Add this in your component state
-
-  const loadCpuPlayers = async () => {
+    const loadCpuPlayers = async () => {
     try {
       setLoading(true);
 
-      const start = batchIndex * BATCH_SIZE;
-      const end = start + BATCH_SIZE - 1;
-
-      // Step 1: Load a batch of CPU players
+      // Step 1: Load CPU players
       const { data: playersData, error: playersError } = await supabase
         .from('players')
         .select('*')
         .eq('is_cpu', true)
-        .order('name')
-        .range(start, end); // Fetch only a batch of 10
+        .order('name');
 
       if (playersError) {
         console.error('Error loading CPU players:', playersError);
         return;
       }
 
-      if (!playersData || playersData.length === 0) {
-        console.log("No more players to load");
+      if (!playersData) {
+        setCpuPlayers([]);
         return;
       }
 
@@ -237,6 +230,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
           meals: 0
         };
 
+        // Load resource data
         const { data: resourceData } = await supabase
           .from('resource_transactions')
           .select('amount, resource_type')
@@ -246,19 +240,32 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
         if (resourceData) {
           for (const { amount, resource_type } of resourceData) {
             switch (resource_type) {
-              case 'diamond': resourceTotals.diamonds += amount; break;
-              case 'coins': resourceTotals.coins += amount; break;
-              case 'shuttlecocks': resourceTotals.shuttlecocks += amount; break;
-              case 'meals': resourceTotals.meals += amount; break;
+              case 'diamond':
+                resourceTotals.diamonds += amount;
+                break;
+              case 'coins':
+                resourceTotals.coins += amount;
+                break;
+              case 'shuttlecocks':
+                resourceTotals.shuttlecocks += amount;
+                break;
+              case 'meals':
+                resourceTotals.meals += amount;
+                break;
             }
           }
         }
 
-        const { data: levelStats } = await supabase
+        // Load player stats from player_levels table
+        const { data: levelStats, error: levelError } = await supabase
           .from('player_levels')
           .select('*')
           .eq('player_id', player.id)
           .single();
+
+        if (levelError) {
+          console.warn(`No level data for player ${player.id}:`, levelError.message);
+        }
 
         return {
           ...player,
@@ -268,10 +275,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
         };
       }));
 
-      // You can choose to append or replace
-      setCpuPlayers((prev) => [...prev, ...playersWithResources]);
-      setBatchIndex((prev) => prev + 1); // Move to next batch
-
+      setCpuPlayers(playersWithResources);
     } catch (error) {
       console.error('Error loading CPU players:', error);
     } finally {
