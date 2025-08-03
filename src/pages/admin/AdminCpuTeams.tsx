@@ -60,18 +60,18 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
     is_cpu: boolean;
     stats: PlayerStats;
     strategy: {
-      physicalCommitment: number;
-      playStyle: number;
-      movementSpeed: number;
-      fatigueManagement: number;
-      rallyConsistency: number;
-      riskTaking: number;
+      physical_commitment: number;
+      play_style: number;
+      movement_speed: number;
+      fatigue_management: number;
+      rally_consistency: number;
+      risk_taking: number;
       attack: number;
-      softAttack: number;
+      soft_attack: number;
       serving: number;
-      courtDefense: number;
-      mentalToughness: number;
-      selfConfidence: number;
+      court_defense: number;
+      mental_toughness: number;
+      self_confidence: number;
     };
   };
 
@@ -105,18 +105,18 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
     },
     injuries: [],
     strategy: {
-      physicalCommitment: 0,
-      playStyle: 0,
-      movementSpeed: 0,
-      fatigueManagement: 0,
-      rallyConsistency: 0,
-      riskTaking: 0,
+      physical_commitment: 0,
+      play_style: 0,
+      movement_speed: 0,
+      fatigue_management: 0,
+      rally_consistency: 0,
+      risk_taking: 0,
       attack: 0,
-      softAttack: 0,
+      soft_attack: 0,
       serving: 0,
-      courtDefense: 0,
-      mentalToughness: 0,
-      selfConfidence: 0
+      court_defense: 0,
+      mental_toughness: 0,
+      self_confidence: 0
     },
     best: []
   });
@@ -1535,18 +1535,18 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
                   <h3 className="text-lg font-semibold text-gray-800 mb-4">Strategy</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {([
-                      { key: 'physicalCommitment', label: 'Physical Commitment' },
-                      { key: 'playStyle', label: 'Play Style' },
-                      { key: 'movementSpeed', label: 'Movement Speed' },
-                      { key: 'fatigueManagement', label: 'Fatigue Management' },
-                      { key: 'rallyConsistency', label: 'Rally Consistency' },
+                      { key: 'physical_commitment', label: 'Physical Commitment' },
+                      { key: 'play_style', label: 'Play Style' },
+                      { key: 'movement_speed', label: 'Movement Speed' },
+                      { key: 'fatigue_management', label: 'Fatigue Management' },
+                      { key: 'rally_consistency', label: 'Rally Consistency' },
                       { key: 'riskTaking', label: 'Risk Taking' },
                       { key: 'attack', label: 'Attack' },
-                      { key: 'softAttack', label: 'Soft Attack' },
+                      { key: 'soft_attack', label: 'Soft Attack' },
                       { key: 'serving', label: 'Serving' },
-                      { key: 'courtDefense', label: 'Court Defense' },
-                      { key: 'mentalToughness', label: 'Mental Toughness' },
-                      { key: 'selfConfidence', label: 'Self Confidence' },
+                      { key: 'court_defense', label: 'Court Defense' },
+                      { key: 'mental_toughness', label: 'Mental Toughness' },
+                      { key: 'self_confidence', label: 'Self Confidence' },
                     ] as const).map(({ key, label }) => (
                       <div key={key}>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1570,8 +1570,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
                         />
                         <div className="flex justify-between text-xs text-gray-500 mt-1">
                           <span>0</span>
-                          <span>50</span>
-                          <span>100</span>
+                          <span>10</span>
                         </div>
                         <div className="text-center text-sm mt-1">
                           Current: {playerFormData.strategy?.[key] ?? 50}
