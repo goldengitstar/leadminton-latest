@@ -3,7 +3,7 @@ import { useGame } from '../contexts/GameContext';
 import { supabase } from '../lib/supabase';
 import { Tournament } from '../types/tournament';
 import { Player } from '../types/game';
-import { Trophy, Users, Clock, Coins, CheckCircle, AlertCircle, Calendar, ArrowLeft, Timer } from 'lucide-react';
+import { Trophy, Users, Clock, Coins, CheckCircle, AlertCircle, Calendar, ArrowLeft, Timer, Coffee, Box, Gift} from 'lucide-react';
 import { TournamentService } from '../services/database/tournamentService';
 import PlayerSelectionModal from '../components/tournaments/PlayerSelectionModal';
 import TournamentResults from '../components/tournaments/TournamentResults';
