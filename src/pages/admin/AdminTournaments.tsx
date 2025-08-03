@@ -11,6 +11,7 @@ import { TournamentService } from '@/services/database/tournamentService';
 const tournamentService = new TournamentService(supabase);
 
 interface AdminTournamentsProps {}
+// [Previous imports remain the same...]
 
 const AdminTournaments: React.FC<AdminTournamentsProps> = () => {
   const { logActivity } = useAdmin();
@@ -27,6 +28,11 @@ const AdminTournaments: React.FC<AdminTournamentsProps> = () => {
   const [cpuPlayers, setCpuPlayers] = useState<any[]>([]);
   const [selectedCpuPlayers, setSelectedCpuPlayers] = useState<string[]>([]);
   const [selectedTournamentId, setSelectedTournamentId] = useState<string | null>(null);
+  
+  // Pagination state
+  const [currentTournamentsPage, setCurrentTournamentsPage] = useState(1);
+  const [currentRegistrationsPage, setCurrentRegistrationsPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   // Update the CPU management modal to track selected tournament
   const handleOpenCpuManagement = () => {
@@ -199,6 +205,43 @@ const AdminTournaments: React.FC<AdminTournamentsProps> = () => {
     const matchesStatus = filterStatus === 'all' || tournament.status === filterStatus;
     return matchesSearch && matchesTier && matchesStatus;
   });
+
+  // Pagination calculations for tournaments
+  const indexOfLastTournament = currentTournamentsPage * itemsPerPage;
+  const indexOfFirstTournament = indexOfLastTournament - itemsPerPage;
+  const currentTournaments = filteredTournaments.slice(indexOfFirstTournament, indexOfLastTournament);
+  const totalTournamentPages = Math.ceil(filteredTournaments.length / itemsPerPage);
+
+  // Pagination calculations for registrations
+  const allRegistrations = filteredTournaments.flatMap(tournament => 
+    tournament.registered_players?.map((player: any) => ({
+      ...player,
+      tournamentId: tournament.id,
+      tournamentName: tournament.name,
+      startDate: tournament.start_date
+    })) || []
+  );
+
+  const indexOfLastRegistration = currentRegistrationsPage * itemsPerPage;
+  const indexOfFirstRegistration = indexOfLastRegistration - itemsPerPage;
+  const currentRegistrations = allRegistrations.slice(indexOfFirstRegistration, indexOfLastRegistration);
+  const totalRegistrationPages = Math.ceil(allRegistrations.length / itemsPerPage);
+
+  // Reset tournament page when search or filters change
+  useEffect(() => {
+    setCurrentTournamentsPage(1);
+  }, [searchTerm, filterTier, filterStatus]);
+
+  // Reset registration page when search or filters change
+  useEffect(() => {
+    setCurrentRegistrationsPage(1);
+  }, [searchTerm, filterTier, filterStatus]);
+
+  // Reset both pages when tab changes
+  useEffect(() => {
+    setCurrentTournamentsPage(1);
+    setCurrentRegistrationsPage(1);
+  }, [activeTab]);
 
   const getTierBadgeColor = (tier: TournamentTier) => {
     switch (tier) {
@@ -390,14 +433,20 @@ const AdminTournaments: React.FC<AdminTournamentsProps> = () => {
       {/* Content based on active tab */}
       {activeTab === 'tournaments' ? (
         <TournamentTableView 
-          tournaments={filteredTournaments} 
+          tournaments={currentTournaments} 
+          currentPage={currentTournamentsPage}
+          totalPages={totalTournamentPages}
+          onPageChange={setCurrentTournamentsPage}
           onEdit={handleEditTournament}
           onManage={handleManageTournament}
           onDelete={handleDeleteTournament}
         />
       ) : (
         <RegistrationsView 
-          tournaments={filteredTournaments} 
+          registrations={currentRegistrations}
+          currentPage={currentRegistrationsPage}
+          totalPages={totalRegistrationPages}
+          onPageChange={setCurrentRegistrationsPage}
           onRemoveRegistration={handleRemoveRegistration}
         />
       )}
@@ -543,8 +592,19 @@ const AdminTournaments: React.FC<AdminTournamentsProps> = () => {
 };
 
 // Separate component for tournaments table view
-const TournamentTableView = ({ tournaments, onEdit, onManage, onDelete }: {
+const TournamentTableView = ({ 
+  tournaments, 
+  currentPage, 
+  totalPages,
+  onPageChange,
+  onEdit, 
+  onManage, 
+  onDelete 
+}: {
   tournaments: any[];
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
   onEdit: (tournament: any) => void;
   onManage: (tournament: any) => void;
   onDelete: (id: string) => void;
@@ -655,12 +715,30 @@ const TournamentTableView = ({ tournaments, onEdit, onManage, onDelete }: {
         </tbody>
       </table>
     </div>
+    {totalPages > 1 && (
+      <div className="px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+        <PaginationControls 
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={onPageChange}
+        />
+      </div>
+    )}
   </div>
 );
 
 // Separate component for registrations view
-const RegistrationsView = ({ tournaments, onRemoveRegistration }: {
-  tournaments: any[];
+const RegistrationsView = ({ 
+  registrations, 
+  currentPage, 
+  totalPages,
+  onPageChange,
+  onRemoveRegistration 
+}: {
+  registrations: any[];
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
   onRemoveRegistration: (tournamentId: string, playerId: string) => void;
 }) => (
   <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -676,7 +754,7 @@ const RegistrationsView = ({ tournaments, onRemoveRegistration }: {
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          {tournaments.length === 0 ? (
+          {registrations.length === 0 ? (
             <tr>
               <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
                 <Users className="w-12 h-12 mx-auto text-gray-300 mb-4" />
@@ -684,45 +762,125 @@ const RegistrationsView = ({ tournaments, onRemoveRegistration }: {
               </td>
             </tr>
           ) : (
-            tournaments.flatMap(tournament => 
-              tournament.registered_players?.map((player: any) => (
-                <tr key={`${tournament.id}-${player.player_id}`} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{tournament.name}</div>
-                    <div className="text-xs text-gray-500">
-                      {new Date(tournament.start_date).toLocaleDateString()}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {player.player_name || 'CPU Player'}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {player.team_name || 'No Team'}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {new Date(player.registered_at).toLocaleString()}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      onClick={() => onRemoveRegistration(tournament.id, player.player_id)}
-                      className="text-red-600 hover:text-red-900 p-1"
-                      title="Remove Registration"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </td>
-                </tr>
-              )) || []
-            )
+            registrations.map((registration) => (
+              <tr key={`${registration.tournamentId}-${registration.player_id}`} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm font-medium text-gray-900">{registration.tournamentName}</div>
+                  <div className="text-xs text-gray-500">
+                    {new Date(registration.startDate).toLocaleDateString()}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900">
+                    {registration.player_name || 'CPU Player'}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900">
+                    {registration.team_name || 'No Team'}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900">
+                    {new Date(registration.registered_at).toLocaleString()}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <button
+                    onClick={() => onRemoveRegistration(registration.tournamentId, registration.player_id)}
+                    className="text-red-600 hover:text-red-900 p-1"
+                    title="Remove Registration"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </td>
+              </tr>
+            ))
           )}
         </tbody>
       </table>
+    </div>
+    {totalPages > 1 && (
+      <div className="px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+        <PaginationControls 
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={onPageChange}
+        />
+      </div>
+    )}
+  </div>
+);
+
+// Reusable pagination controls component
+const PaginationControls = ({ 
+  currentPage, 
+  totalPages, 
+  onPageChange 
+}: {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}) => (
+  <div className="flex-1 flex items-center justify-between sm:justify-end">
+    <div className="flex items-center space-x-2">
+      <button
+        onClick={() => onPageChange(1)}
+        disabled={currentPage === 1}
+        className="px-2 py-1 border border-gray-300 rounded-md text-sm font-medium disabled:opacity-50"
+      >
+        First
+      </button>
+      <button
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        className="px-2 py-1 border border-gray-300 rounded-md text-sm font-medium disabled:opacity-50"
+      >
+        Previous
+      </button>
+      
+      {/* Page numbers */}
+      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+        let pageNum;
+        if (totalPages <= 5) {
+          pageNum = i + 1;
+        } else if (currentPage <= 3) {
+          pageNum = i + 1;
+        } else if (currentPage >= totalPages - 2) {
+          pageNum = totalPages - 4 + i;
+        } else {
+          pageNum = currentPage - 2 + i;
+        }
+        
+        return (
+          <button
+            key={pageNum}
+            onClick={() => onPageChange(pageNum)}
+            className={`px-3 py-1 border text-sm font-medium ${
+              currentPage === pageNum
+                ? 'bg-blue-50 border-blue-500 text-blue-600'
+                : 'border-gray-300 text-gray-500 hover:bg-gray-50'
+            }`}
+          >
+            {pageNum}
+          </button>
+        );
+      })}
+
+      <button
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className="px-2 py-1 border border-gray-300 rounded-md text-sm font-medium disabled:opacity-50"
+      >
+        Next
+      </button>
+      <button
+        onClick={() => onPageChange(totalPages)}
+        disabled={currentPage === totalPages}
+        className="px-2 py-1 border border-gray-300 rounded-md text-sm font-medium disabled:opacity-50"
+      >
+        Last
+      </button>
     </div>
   </div>
 );
