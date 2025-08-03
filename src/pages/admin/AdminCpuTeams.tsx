@@ -1156,89 +1156,48 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
                   filteredPlayers.map((player) => (
                     <tr key={player.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
-                          {player.name}
-                        </div>
+                        <div className="text-sm font-medium text-gray-900">{player.name}</div>
                       </td>
+
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {player.level}/{player.max_level}
                       </td>
+
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {player.rank_label}
                       </td>
+
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         <div className="flex items-center">
                           <span className="mr-1">{getGenderIcon(player.gender ?? 'male')}</span>
                           {(player.gender ?? 'male').charAt(0).toUpperCase() + (player.gender ?? 'male').slice(1)}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <div className="flex items-center">
-                          <span className="text-blue-500 mr-1">🔋</span>
-                          <span>{player.stats.endurance}</span>
-                          <span className="text-xs text-gray-500 ml-1">lv.{player.levelsD.endurance}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <div className="flex items-center">
-                          <span className="text-blue-500 mr-1">💪</span>
-                          {player.stats.strength}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <div className="flex items-center">
-                          <span className="text-green-500 mr-1">🏃</span>
-                          {player.stats.agility}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <div className="flex items-center">
-                          <span className="text-purple-500 mr-1">⚡</span>
-                          {player.stats.speed}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <div className="flex items-center">
-                          <span className="text-red-500 mr-1">💥</span>
-                          {player.stats.explosiveness}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <div className="flex items-center">
-                          <span className="text-indigo-500 mr-1">🏸</span>
-                          {player.stats.smash}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <div className="flex items-center">
-                          <span className="text-gray-500 mr-1">🛡️</span>
-                          {player.stats.defense}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <div className="flex items-center">
-                          <span className="text-cyan-500 mr-1">🎯</span>
-                          {player.stats.serve}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <div className="flex items-center">
-                          <span className="text-orange-500 mr-1">📏</span>
-                          {player.stats.stick}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <div className="flex items-center">
-                          <span className="text-pink-500 mr-1">🌀</span>
-                          {player.stats.slice}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <div className="flex items-center">
-                          <span className="text-lime-500 mr-1">🫳</span>
-                          {player.stats.drop}
-                        </div>
-                      </td>
+
+                      {[
+                        { icon: '🔋', color: 'text-blue-500', key: 'endurance' },
+                        { icon: '💪', color: 'text-blue-500', key: 'strength' },
+                        { icon: '🏃', color: 'text-green-500', key: 'agility' },
+                        { icon: '⚡', color: 'text-purple-500', key: 'speed' },
+                        { icon: '💥', color: 'text-red-500', key: 'explosiveness' },
+                        { icon: '🏸', color: 'text-indigo-500', key: 'smash' },
+                        { icon: '🛡️', color: 'text-gray-500', key: 'defense' },
+                        { icon: '🎯', color: 'text-cyan-500', key: 'serve' },
+                        { icon: '📏', color: 'text-orange-500', key: 'stick' },
+                        { icon: '🌀', color: 'text-pink-500', key: 'slice' },
+                        { icon: '🫳', color: 'text-lime-500', key: 'drop' }
+                      ].map(({ icon, color, key }) => (
+                        <td key={key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <div className="flex items-center">
+                            <span className={`${color} mr-1`}>{icon}</span>
+                            <span>{player.stats?.[key]}</span>
+                            {player.levelsD?.[key] !== undefined && (
+                              <span className="text-xs text-gray-500 ml-1">lv.{player.levelsD[key]}</span>
+                            )}
+                          </div>
+                        </td>
+                      ))}
+
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end space-x-2">
                           <button
@@ -1258,7 +1217,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
                         </div>
                       </td>
                     </tr>
-                  ))
+                                      ))
                 )}
               </tbody>
             </table>
