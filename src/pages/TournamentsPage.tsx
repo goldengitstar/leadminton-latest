@@ -471,7 +471,7 @@ export default function TournamentsPage() {
                     <span className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
                     <span className="font-medium">1st:</span>
                   </div>
-                    <div className="ml-4 space-y-1">
+                    <div className="ml-4 space-y-1 flex">
                       <div className="flex items-center">
                         <Coins className="w-4 h-4 text-yellow-500 mr-2" />
                         <span>{detailViewTournament.prize_pool.first.coins} coins</span>
@@ -497,21 +497,21 @@ export default function TournamentsPage() {
                     <span className="w-2 h-2 bg-gray-400 rounded-full mr-2"></span>
                     <span className="font-medium">2nd:</span>
                   </div>
-                  <div className="ml-4 space-y-1">
+                  <div className="ml-4 space-y-1 flex">
                     <div className="flex items-center">
                       <Coins className="w-4 h-4 text-yellow-500 mr-2" />
                       <span>{detailViewTournament.prize_pool.second.coins} coins</span>
                     </div>
                     <div className="flex items-center">
-                      <Coffee className="w-4 h-4 text-red-500 mr-2" />
+                      <UtensilsCrossed className="w-4 h-4 text-red-500 mr-2" />
                       <span>{detailViewTournament.prize_pool.second.meals} meals</span>
                     </div>
                     <div className="flex items-center">
-                      <Box className="w-4 h-4 text-green-500 mr-2" />
+                      <Feather className="w-4 h-4 text-green-500 mr-2" />
                       <span>{detailViewTournament.prize_pool.second.shuttlecocks} shuttlecocks</span>
                     </div>
                     <div className="flex items-center">
-                      <Gift className="w-4 h-4 text-blue-500 mr-2" />
+                      <Diamond className="w-4 h-4 text-blue-500 mr-2" />
                       <span>{detailViewTournament.prize_pool.second.diamonds} diamonds</span>
                     </div>
                   </div>
@@ -523,21 +523,21 @@ export default function TournamentsPage() {
                     <span className="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
                     <span className="font-medium">3rd:</span>
                   </div>
-                  <div className="ml-4 space-y-1">
+                  <div className="ml-4 space-y-1 flex">
                     <div className="flex items-center">
                       <Coins className="w-4 h-4 text-yellow-500 mr-2" />
                       <span>{detailViewTournament.prize_pool.third.coins} coins</span>
                     </div>
                     <div className="flex items-center">
-                      <Coffee className="w-4 h-4 text-red-500 mr-2" />
+                      <UtensilsCrossed className="w-4 h-4 text-red-500 mr-2" />
                       <span>{detailViewTournament.prize_pool.third.meals} meals</span>
                     </div>
                     <div className="flex items-center">
-                      <Box className="w-4 h-4 text-green-500 mr-2" />
+                      <Feather className="w-4 h-4 text-green-500 mr-2" />
                       <span>{detailViewTournament.prize_pool.third.shuttlecocks} shuttlecocks</span>
                     </div>
                     <div className="flex items-center">
-                      <Gift className="w-4 h-4 text-blue-500 mr-2" />
+                      <Diamond className="w-4 h-4 text-blue-500 mr-2" />
                       <span>{detailViewTournament.prize_pool.third.diamonds} diamonds</span>
                     </div>
                   </div>
