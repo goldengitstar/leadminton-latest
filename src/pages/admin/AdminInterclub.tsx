@@ -2371,7 +2371,6 @@ const handleCpuRegistrationSubmit = async () => {
                         <button
                           onClick={() => {
                             setEditingClub(club);
-                            setResourceForm(club.resources);
                           }}
                           className="text-blue-600 hover:text-blue-900"
                         >
