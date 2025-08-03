@@ -132,17 +132,18 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
     };
   });
 
-  // Mirror-order each round based on next-round winner & loser IDs
+  // Improved mirror-order: prioritize pairing based on loser first, then winner
   for (let r = formattedRounds.length - 2; r >= 0; r--) {
     const thisRound = formattedRounds[r];
     const nextRound = formattedRounds[r + 1];
 
     const orderIds: Array<string | number> = [];
     nextRound.seeds.forEach(seed => {
-      if (seed.winnerId != null) orderIds.push(seed.winnerId);
+      // push loser (child not equal winner) before winner
       seed.childIds.forEach(cid => {
         if (cid != null && cid !== seed.winnerId) orderIds.push(cid);
       });
+      if (seed.winnerId != null) orderIds.push(seed.winnerId);
     });
 
     const reordered: typeof thisRound.seeds = [];
@@ -163,7 +164,6 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
     thisRound.seeds = reordered;
   }
 
-  // Layout scale factor
   const scaleFactor =
     formattedRounds.length >= 7 ? 0.6 :
     formattedRounds.length >= 6 ? 0.75 :
@@ -180,7 +180,6 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
     );
   }
 
-  // Final match and champion
   const finalRoundOrig = sortedRounds[sortedRounds.length - 1];
   const finalMatch = finalRoundOrig.matches.find(m => m.winnerId);
   const champion = finalMatch
@@ -201,7 +200,6 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
     title: r.title,
     seeds: r.seeds.slice(0, Math.ceil(r.seeds.length / 2)),
   }));
-
   return (
     <div className="w-full bg-white rounded-xl shadow-lg p-6">
       <div className="flex justify-between items-center mb-6">
