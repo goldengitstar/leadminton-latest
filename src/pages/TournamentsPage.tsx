@@ -3,7 +3,7 @@ import { useGame } from '../contexts/GameContext';
 import { supabase } from '../lib/supabase';
 import { Tournament } from '../types/tournament';
 import { Player } from '../types/game';
-import { Trophy, Users, Clock, Coins, CheckCircle, AlertCircle, Calendar, ArrowLeft, Timer, Coffee, Box, Gift} from 'lucide-react';
+import { Trophy, Users, Clock, Coins, CheckCircle, AlertCircle, Calendar, ArrowLeft, Timer, Coffee, Box, Gift, Diamond} from 'lucide-react';
 import { TournamentService } from '../services/database/tournamentService';
 import PlayerSelectionModal from '../components/tournaments/PlayerSelectionModal';
 import TournamentResults from '../components/tournaments/TournamentResults';
@@ -440,32 +440,24 @@ export default function TournamentsPage() {
               <div>
               <h3 className="font-semibold text-gray-900 mb-2">Entry Fee</h3>
               <div className="space-y-1">
-                {detailViewTournament.entry_fee.coins > 0 && (
-                  <div className="flex items-center">
-                    <Coins className="w-4 h-4 text-yellow-500 mr-2" />
-                    <span>{detailViewTournament.entry_fee.coins} coins</span>
-                  </div>
-                )}
-                {detailViewTournament.entry_fee.meals > 0 && (
-                  <div className="flex items-center">
-                    <Coffee className="w-4 h-4 text-red-500 mr-2" />
-                    <span>{detailViewTournament.entry_fee.meals} meals</span>
-                  </div>
-                )}
-                {detailViewTournament.entry_fee.shuttlecocks > 0 && (
-                  <div className="flex items-center">
-                    <Box className="w-4 h-4 text-green-500 mr-2" />
-                    <span>{detailViewTournament.entry_fee.shuttlecocks} shuttlecocks</span>
-                  </div>
-                )}
-                {detailViewTournament.entry_fee.diamonds > 0 && (
-                  <div className="flex items-center">
-                    <Gift className="w-4 h-4 text-blue-500 mr-2" />
-                    <span>{detailViewTournament.entry_fee.diamonds} diamonds</span>
-                  </div>
-                )}
+                <div className="flex items-center">
+                  <Coins className="w-4 h-4 text-yellow-500 mr-2" />
+                  <span>{detailViewTournament.entry_fee.coins} coins</span>
+                </div>
+                <div className="flex items-center">
+                  <Coffee className="w-4 h-4 text-red-500 mr-2" />
+                  <span>{detailViewTournament.entry_fee.meals} meals</span>
+                </div>
+                <div className="flex items-center">
+                  <Box className="w-4 h-4 text-green-500 mr-2" />
+                  <span>{detailViewTournament.entry_fee.shuttlecocks} shuttlecocks</span>
+                </div>
+                <div className="flex items-center">
+                  <Gift className="w-4 h-4 text-blue-500 mr-2" />
+                  <span>{detailViewTournament.entry_fee.diamonds} diamonds</span>
+                </div>
               </div>
-            </div>
+              </div>
             )}
 
             {/* Prize Pool */}
@@ -474,7 +466,7 @@ export default function TournamentsPage() {
               <div className="space-y-4 text-sm">
 
                 {/* 1st Place */}
-                <div>
+                <div className='flex'>
                   <div className="flex items-center mb-1">
                     <span className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
                     <span className="font-medium">1st:</span>
@@ -500,7 +492,7 @@ export default function TournamentsPage() {
                 </div>
 
                 {/* 2nd Place */}
-                <div>
+                <div className='flex'>
                   <div className="flex items-center mb-1">
                     <span className="w-2 h-2 bg-gray-400 rounded-full mr-2"></span>
                     <span className="font-medium">2nd:</span>
@@ -526,7 +518,7 @@ export default function TournamentsPage() {
                 </div>
 
                 {/* 3rd Place */}
-                <div>
+                <div className='flex'>
                   <div className="flex items-center mb-1">
                     <span className="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
                     <span className="font-medium">3rd:</span>
