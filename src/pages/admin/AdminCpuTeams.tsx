@@ -59,6 +59,20 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
   type PlayerForm = Omit<Partial<Player>, 'stats'> & {
     is_cpu: boolean;
     stats: PlayerStats;
+    strategy: {
+      physicalCommitment: number;
+      playStyle: number;
+      movementSpeed: number;
+      fatigueManagement: number;
+      rallyConsistency: number;
+      riskTaking: number;
+      attack: number;
+      softAttack: number;
+      serving: number;
+      courtDefense: number;
+      mentalToughness: number;
+      selfConfidence: number;
+    };
   };
 
   const [playerFormData, setPlayerFormData] = useState<PlayerForm>({
@@ -198,7 +212,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
     }
   };
 
-    const loadCpuPlayers = async () => {
+  const loadCpuPlayers = async () => {
     try {
       setLoading(true);
 
@@ -541,7 +555,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
 
     try {
       const { stats, strategy, ...playerData } = playerFormData;
-
+      console.log(playerFormData)
       if (editingPlayer) {
         const { error: playerError } = await supabase
           .from('players')
@@ -558,10 +572,13 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
           })
           .eq('id', editingPlayer.id);
 
-        if (playerError) throw playerError;
-
+        if (playerError) {
+           playerError;
+        } else {
+          console.log("Players updated successfully")
+        }
         // Update stats
-        await supabase
+        const { error: statsError } = await supabase
           .from('player_stats')
           .update({
             endurance: stats.endurance,
@@ -579,8 +596,14 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
           })
           .eq('player_id', editingPlayer.id);
 
-          // Update corresponding player_levels
-          await supabase
+        if(statsError){
+          console.log(statsError)
+        } else {
+          console.log("stats updated successfully")
+        }
+
+        // Update corresponding player_levels
+        const { error: levelsError } = await supabase
             .from('player_levels')
             .update({
               endurance: Math.floor(stats.endurance / 5),
@@ -598,7 +621,13 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
             })
             .eq('player_id', editingPlayer.id);
 
-          await supabase
+        if(levelsError){
+          console.log(levelsError)
+        } else {
+          console.log("levels updated successfully")
+        }
+
+        const { error: stratError } =  await supabase
             .from('player_strategy')
             .update({
               physical_commitment: strategy?.physicalCommitment,
@@ -615,6 +644,12 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
               self_confidence: strategy?.selfConfidence
             })
             .eq('player_id', editingPlayer.id);
+        
+        if(stratError){
+          console.log(stratError)
+        } else {
+          console.log("strategy updated successfully")
+        }
 
         await logActivity('cpu_player_updated', 'player', editingPlayer.id);
         toast.success('CPU player updated successfully');
@@ -1426,6 +1461,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
                   </div>
                 </div>
 
+                {/* Stats Section */}
                 <div className="pt-4 border-t border-gray-200">
                   <h3 className="text-lg font-semibold text-gray-800 mb-4">Stats</h3>
                   <div className="mb-4">
@@ -1506,6 +1542,57 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
                         </div>
                       );
                     })}
+                  </div>
+                </div>
+
+                {/* Strategy Section */}
+                <div className="pt-4 border-t border-gray-200">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Strategy</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {([
+                      { key: 'physicalCommitment', label: 'Physical Commitment' },
+                      { key: 'playStyle', label: 'Play Style' },
+                      { key: 'movementSpeed', label: 'Movement Speed' },
+                      { key: 'fatigueManagement', label: 'Fatigue Management' },
+                      { key: 'rallyConsistency', label: 'Rally Consistency' },
+                      { key: 'riskTaking', label: 'Risk Taking' },
+                      { key: 'attack', label: 'Attack' },
+                      { key: 'softAttack', label: 'Soft Attack' },
+                      { key: 'serving', label: 'Serving' },
+                      { key: 'courtDefense', label: 'Court Defense' },
+                      { key: 'mentalToughness', label: 'Mental Toughness' },
+                      { key: 'selfConfidence', label: 'Self Confidence' },
+                    ] as const).map(({ key, label }) => (
+                      <div key={key}>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          {label}
+                        </label>
+                        <input
+                          type="range"
+                          min="0"
+                          max="10"
+                          value={playerFormData.strategy?.[key] ?? 0}
+                          onChange={(e) => {
+                            setPlayerFormData(prev => ({
+                              ...prev,
+                              strategy: {
+                                ...prev.strategy,
+                                [key]: parseInt(e.target.value)
+                              }
+                            }));
+                          }}
+                          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                        />
+                        <div className="flex justify-between text-xs text-gray-500 mt-1">
+                          <span>0</span>
+                          <span>50</span>
+                          <span>100</span>
+                        </div>
+                        <div className="text-center text-sm mt-1">
+                          Current: {playerFormData.strategy?.[key] ?? 50}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
