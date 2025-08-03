@@ -44,33 +44,47 @@ const ThemedRoundTitle = (title: string) => (
   </div>
 );
 
-const ThemedSeed = ({ seed, breakpoint, scaleFactor }: any) => {
+const ThemedSeed = ({ seed, breakpoint, scaleFactor, isFinalRound = false }: any) => {
   const fontSize = customTheme.fonts.size;
   const padding = `${4 * scaleFactor}px ${6 * scaleFactor}px`;
+
+  const isEmptySeed = seed.teams.every((t: any) => !t.name);
+
   return (
     <Seed mobileBreakpoint={breakpoint}>
-      <SeedItem style={{
-        backgroundColor: customTheme.matchBackground.default,
-        border: `1px solid ${customTheme.matchBorderColor}`,
-        fontFamily: customTheme.fonts.family,
-        fontSize,
-        fontWeight: customTheme.fonts.weight,
-        color: customTheme.textColor.main,
-      }}>
+      <SeedItem
+        style={{
+          backgroundColor: isEmptySeed
+            ? '#fef9c3' // yellow-100
+            : customTheme.matchBackground.default,
+          border: `1px solid ${customTheme.matchBorderColor}`,
+          fontFamily: customTheme.fonts.family,
+          fontSize,
+          fontWeight: customTheme.fonts.weight,
+          color: customTheme.textColor.main,
+        }}
+      >
         {seed.teams.map((team: any, i: number) => {
           const isWinner = seed.winnerId === team.id;
+          const showTrophy = isWinner && isFinalRound;
           return (
             <SeedTeam
               key={i}
               style={{
-                backgroundColor: isWinner
+                backgroundColor: isEmptySeed
+                  ? '#fef9c3'
+                  : isWinner
                   ? customTheme.matchBackground.won
                   : seed.winnerId != null
                   ? customTheme.matchBackground.lost
                   : customTheme.matchBackground.default,
                 padding,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
               }}
             >
+              {showTrophy && <Trophy className="w-4 h-4 text-yellow-500" />}
               {team.name}
             </SeedTeam>
           );
@@ -251,7 +265,7 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
           <Bracket
             rounds={[finalRound]}
             rtl={false}
-            renderSeedComponent={props => <ThemedSeed {...props} scaleFactor={scaleFactor} />}
+            renderSeedComponent={props => <ThemedSeed {...props} scaleFactor={scaleFactor} isFinalRound />}
             roundTitleComponent={ThemedRoundTitle}
           />
           <Bracket
