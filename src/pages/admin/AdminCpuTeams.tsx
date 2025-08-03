@@ -557,7 +557,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
       const { stats, strategy, ...playerData } = playerFormData;
 
       if (editingPlayer) {
-        console.log("player data ", playerData)
+        console.log("player data ", playerData, stats, strategy)
         console.log("Editing player true")
         const { error: playerError } = await supabase
           .from('players')
@@ -648,7 +648,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
         toast.success('CPU player updated successfully');
       } else {
         console.log("Editing player false")
-        console.log("player data ", playerData)
+         console.log("player form data ", playerFormData)
         // Get current user
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('No authenticated user');
