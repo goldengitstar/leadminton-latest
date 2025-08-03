@@ -1471,8 +1471,20 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={loading}
+                  className={`px-6 py-2 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed ${
+                    validatePlayerStats(
+                      playerFormData.stats, 
+                      playerFormData.level || 1, 
+                      playerFormData.maxLevel || 156
+                    ).isValid 
+                      ? 'bg-blue-600 hover:bg-blue-700' 
+                      : 'bg-red-600 hover:bg-red-700'
+                  }`}
+                  disabled={loading || !validatePlayerStats(
+                    playerFormData.stats, 
+                    playerFormData.level || 1, 
+                    playerFormData.maxLevel || 156
+                  ).isValid}
                 >
                   {loading ? 'Saving...' : (editingPlayer ? 'Update Player' : 'Create Player')}
                 </button>
