@@ -13,6 +13,8 @@ interface SimpleTournamentBracketProps {
   onBack: () => void;
 }
 
+
+
 function getReadableRoundTitle(indexFromEnd: number): string {
   switch (indexFromEnd) {
     case 0: return 'Final';
@@ -43,6 +45,7 @@ const customTheme = {
   },
 };
 
+// Custom round title
 const ThemedRoundTitle = (title: string, roundIndex: number) => (
   <div
     style={{
@@ -60,6 +63,7 @@ const ThemedRoundTitle = (title: string, roundIndex: number) => (
 
 const ThemedSeed = ({ seed, breakpoint, scaleFactor }: any) => {
   const winnerId = seed.winnerId;
+
   const fontSize = customTheme.fonts.size;
   const padding = `${4 * scaleFactor}px ${6 * scaleFactor}px`;
 
@@ -98,6 +102,7 @@ const ThemedSeed = ({ seed, breakpoint, scaleFactor }: any) => {
   );
 };
 
+
 const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
   registeredPlayers,
   tournamentName,
@@ -110,6 +115,7 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
   const playerMap = Object.fromEntries(registeredPlayers.map((p) => [p.id, p]));
 
   const sortedRounds = [...rounds].sort((a, b) => a.level - b.level);
+  console.log("Current rounds ", sortedRounds)
   const totalRounds = Math.ceil(Math.log2(max_participants));
 
   const formattedRounds: RoundProps[] = Array.from({ length: totalRounds }, (_, i) => {
@@ -127,6 +133,7 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
       ],
     })) || [];
 
+    // Add blank seeds to fill layout
     while (seeds.length < expectedSeedCount) {
       seeds.push({
         id: Math.floor(Math.random() * 1e8),
@@ -146,11 +153,14 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
     };
   });
 
+
+  // 👇 Add this line inside the component, near the top of SimpleTournamentBracket
   const scaleFactor =
     formattedRounds.length >= 7 ? 0.6 :
     formattedRounds.length >= 6 ? 0.75 :
     formattedRounds.length >= 5 ? 0.9 :
     1.0;
+
 
   if (!formattedRounds.length) {
     return (
@@ -169,6 +179,19 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
     : null;
 
   const tournamentCompleted = status === 'completed';
+
+  const finalRound = formattedRounds[formattedRounds.length - 1];
+  const earlyRounds = formattedRounds.slice(0, -1);
+
+  const leftRounds: RoundProps[] = earlyRounds.map((round) => {
+    const split = Math.ceil(round.seeds.length / 2);
+    return { title: round.title, seeds: round.seeds.slice(split) };
+  });
+
+  const rightRounds: RoundProps[] = earlyRounds.map((round) => {
+    const split = Math.ceil(round.seeds.length / 2);
+    return { title: round.title, seeds: round.seeds.slice(0, split) };
+  });
 
   return (
     <div className="w-full bg-white rounded-xl shadow-lg p-6">
@@ -219,16 +242,34 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
       )}
 
       <div className="w-full overflow-x-auto overflow-y-auto">
-        <div className="flex min-w-fit justify-center items-start px-[10px] space-x-6">
-          {formattedRounds.map((round, i) => (
+        <div className="flex min-w-fit justify-center items-start px-[10px]">
+          <div>
             <Bracket
-              key={i}
-              rounds={[round]}
+              rounds={rightRounds}
               rtl={false}
               renderSeedComponent={(props) => <ThemedSeed {...props} scaleFactor={scaleFactor} />}
               roundTitleComponent={ThemedRoundTitle}
             />
-          ))}
+          </div>
+          <div>
+            <Bracket
+              rounds={[finalRound]}
+              rtl={false}
+              renderSeedComponent={(props) => <ThemedSeed {...props} scaleFactor={scaleFactor} />}
+              roundTitleComponent={ThemedRoundTitle}
+            />
+          </div>
+          <div>
+            <Bracket
+              rounds={leftRounds.map((r) => ({
+                ...r,
+                seeds: [...r.seeds].reverse(),
+              }))}
+              rtl={true}
+              renderSeedComponent={(props) => <ThemedSeed {...props} scaleFactor={scaleFactor} />}
+              roundTitleComponent={ThemedRoundTitle}
+            />
+          </div>
         </div>
       </div>
     </div>
