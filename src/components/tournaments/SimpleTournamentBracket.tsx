@@ -44,7 +44,12 @@ const ThemedRoundTitle = (title: string) => (
   </div>
 );
 
-const ThemedSeed = ({ seed, breakpoint, scaleFactor, isFinalRound = false }: any) => {
+const ThemedSeed = ({
+  seed,
+  breakpoint,
+  scaleFactor,
+  isFinalRound = false,
+}: any) => {
   const fontSize = customTheme.fonts.size;
   const padding = `${4 * scaleFactor}px ${6 * scaleFactor}px`;
 
@@ -55,7 +60,7 @@ const ThemedSeed = ({ seed, breakpoint, scaleFactor, isFinalRound = false }: any
       <SeedItem
         style={{
           backgroundColor: isEmptySeed
-            ? '#fef9c3' // yellow-100
+            ? '#fef9c3' // yellow-100 for empty
             : customTheme.matchBackground.default,
           border: `1px solid ${customTheme.matchBorderColor}`,
           fontFamily: customTheme.fonts.family,
@@ -66,7 +71,7 @@ const ThemedSeed = ({ seed, breakpoint, scaleFactor, isFinalRound = false }: any
       >
         {seed.teams.map((team: any, i: number) => {
           const isWinner = seed.winnerId === team.id;
-          const showTrophy = isWinner && isFinalRound;
+          const showTrophy = isWinner && isFinalRound && !!team.id;
           return (
             <SeedTeam
               key={i}
@@ -84,7 +89,9 @@ const ThemedSeed = ({ seed, breakpoint, scaleFactor, isFinalRound = false }: any
                 gap: '6px',
               }}
             >
-              {showTrophy && <Trophy className="w-4 h-4 text-yellow-500" />}
+              {showTrophy && (
+                <Trophy className="w-4 h-4 text-yellow-500" />
+              )}
               {team.name}
             </SeedTeam>
           );
