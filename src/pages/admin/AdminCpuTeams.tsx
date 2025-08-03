@@ -292,12 +292,24 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
           console.warn(`No level data for player ${player.id}:`, levelError2.message);
         }
 
+        // Load player stats from player_levels table
+        const { data: strategyData, error: strategyError2 } = await supabase
+          .from('player_strategy')
+          .select('*')
+          .eq('player_id', player.id)
+          .single();
+
+        if (strategyError2) {
+          console.warn(`No level data for player ${player.id}:`, strategyError2.message);
+        }
+
         return {
           ...player,
           ...resourceTotals,
           maxLevel: player.maxLevel || 156,
           stats: levelStats || {},
-          levelsD: levelsData
+          levelsD: levelsData,
+          strategy: strategyData
         };
       }));
 
