@@ -272,7 +272,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
 
         // Load player stats from player_levels table
         const { data: levelStats, error: levelError } = await supabase
-          .from('player_levels')
+          .from('player_stats')
           .select('*')
           .eq('player_id', player.id)
           .single();
