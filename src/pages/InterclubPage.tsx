@@ -526,7 +526,7 @@ const InterclubPage: React.FC = () => {
                       <div className="grid grid-cols-2 gap-2 text-xs">
                         <div className={`flex items-center space-x-1 ${gameState.players.length >= 5 ? 'text-green-600' : 'text-red-600'}`}>
                           <Users className="w-3 h-3" />
-                          <span>5 players</span>
+                          <span>7 players atlest (4 men and 3 women)</span>
                         </div>
                         <div className={`flex items-center space-x-1 ${resources.coins >= tierInfo.requirements.coins ? 'text-green-600' : 'text-red-600'}`}>
                           <Coins className="w-3 h-3" />
@@ -674,7 +674,7 @@ if (currentView === 'registration' && selectedSeason) {
 
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    Select your players ({selectedPlayers.length}/7 'atleast 4 men, 3 women' )
+                    Select your players ({selectedPlayers.length}/7) atleast 4 men, 3 women
                   </label>
                   <div className="max-h-64 overflow-y-auto border border-gray-200 rounded-lg">
                     {gameState.players.map((player) => (
