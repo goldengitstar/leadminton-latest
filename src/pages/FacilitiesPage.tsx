@@ -71,7 +71,10 @@ export default function FacilitiesPage() {
 
       {/* Installations */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {gameState.facilities.map((facility) => (
+        {gameState.facilities
+        .slice()
+        .sort((a, b) => a.id.localeCompare(b.id))
+        .map((facility) => (
           <FacilityCard
             key={facility.id}
             facility={facility}
