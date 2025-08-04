@@ -28,16 +28,16 @@ function calculateBaseProductionRate(facility: Facility, level: number): number 
 
   // Base rates for each facility type
   const baseRates = {
-    'shuttlecock-machine': 1,
-    'canteen': 1,
-    'sponsors': 2,
+    'shuttlecock-machine': 2.5,
+    'canteen': 2.5,
+    'sponsors': 2.5,
   };
 
   // Get base rate for this facility type
   const baseRate = baseRates[facility.type as keyof typeof baseRates] || 1;
 
   // Production increases by 50% per level
-  return Math.ceil(baseRate * (1 + (level - 1) * 2.5));
+  return Math.ceil(baseRate * (1 + (level - 1) * 1));
 }
 
 // Calcule le taux de production final avec bonus de manager
@@ -50,6 +50,8 @@ export function calculateProductionRate(
 
   // Calculer d'abord le taux de base pour ce niveau
   const baseRate = calculateBaseProductionRate(facility, level);
+
+  console.log(facility.name, " base rate : ", baseRate)
 
   // Trouver le manager actif pour cette installation
   const manager = activeManagers.find(m => m.facilityType === facility.type && m.active);
