@@ -37,7 +37,7 @@ function calculateBaseProductionRate(facility: Facility, level: number): number 
   const baseRate = baseRates[facility.type as keyof typeof baseRates] || 1;
 
   // Production increases by 50% per level
-  return Math.ceil(baseRate * (1 + (level - 1) * 0.5));
+  return Math.ceil(baseRate * (1 + (level - 1) * 2.5));
 }
 
 // Calcule le taux de production final avec bonus de manager

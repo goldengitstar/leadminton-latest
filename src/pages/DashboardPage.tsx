@@ -22,7 +22,8 @@ export default function DashboardPage() {
     const baseRate = calculateProductionRate(facility, facility.level, []);
     const totalRate = calculateProductionRate(facility, facility.level, activeManagers);
     const bonus = totalRate - baseRate;
-
+    console.log(facility.name, " production base rate : ", baseRate, "total rate : ", totalRate, "bonus : ", bonus)
+    
     return {
       current: baseRate,
       bonus,
