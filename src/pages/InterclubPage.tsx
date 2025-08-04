@@ -674,7 +674,7 @@ if (currentView === 'registration' && selectedSeason) {
 
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    Select your players ({selectedPlayers.length}/5 minimum)
+                    Select your players ({selectedPlayers.length}/7 'atleast 4 men, 3 women' )
                   </label>
                   <div className="max-h-64 overflow-y-auto border border-gray-200 rounded-lg">
                     {gameState.players.map((player) => (
