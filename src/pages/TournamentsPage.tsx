@@ -712,30 +712,22 @@ export default function TournamentsPage() {
                 <div className="mb-4">
                   <p className="text-sm font-medium text-gray-700 mb-1">Entry Fee</p>
                   <div className="flex items-center space-x-3 text-sm">
-                    {tournament.entry_fee.coins > 0 && (
-                      <div className="flex items-center">
-                        <Coins className="w-4 h-4 text-yellow-500 mr-1" />
-                        <span>{tournament.entry_fee.coins} coins</span>
-                      </div>
-                    )}
-                    {tournament.entry_fee.meals > 0 && (
-                      <div className="flex items-center">
-                        <Coffee className="w-4 h-4 text-red-500 mr-1" />
-                        <span>{tournament.entry_fee.meals} meals</span>
-                      </div>
-                    )}
-                    {tournament.entry_fee.shuttlecocks > 0 && (
-                      <div className="flex items-center">
-                        <Box className="w-4 h-4 text-green-500 mr-1" />
-                        <span>{tournament.entry_fee.shuttlecocks} shuttlecocks</span>
-                      </div>
-                    )}
-                    {tournament.entry_fee.diamonds > 0 && (
-                      <div className="flex items-center">
-                        <Gift className="w-4 h-4 text-blue-500 mr-1" />
-                        <span>{tournament.entry_fee.diamonds} diamonds</span>
-                      </div>
-                    )}
+                    <div className="flex items-center">
+                      <Coins className="w-4 h-4 text-yellow-500 mr-1" />
+                      <span>{tournament.entry_fee.coins} coins</span>
+                    </div>
+                    <div className="flex items-center">
+                      <UtensilsCrossed className="w-4 h-4 text-red-500 mr-1" />
+                      <span>{tournament.entry_fee.meals} meals</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Feather className="w-4 h-4 text-green-500 mr-1" />
+                      <span>{tournament.entry_fee.shuttlecocks} shuttlecocks</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Diamond className="w-4 h-4 text-blue-500 mr-1" />
+                      <span>{tournament.entry_fee.diamonds} diamonds</span>
+                    </div>
                   </div>
                 </div>
               )}
