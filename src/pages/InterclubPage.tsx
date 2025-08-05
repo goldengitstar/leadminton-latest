@@ -44,6 +44,7 @@ const InterclubPage: React.FC = () => {
   const { gameState, resources, refreshGameState } = useGame();
   const { user } = useAuth();
   const [interclubService] = useState(() => new InterclubService(supabase));
+  const [seasonStartCountdown, setSeasonStartCountdown] = useState<string>('');
   
   // State management
   const [currentView, setCurrentView] = useState<PageView>('selection');
@@ -64,6 +65,44 @@ const InterclubPage: React.FC = () => {
   const [scheduleLoading, setScheduleLoading] = useState(false);
   const [hasSubmittedTeam, setHasSubmittedTeam] = useState(false);
   const [isRemovingTeam, setIsRemovingTeam] = useState(false);
+
+    useEffect(() => {
+    if (!selectedSeason?.start_date) return;
+
+    const updateSeasonCountdown = () => {
+      const now = new Date();
+      const startDate = new Date(selectedSeason.start_date);
+      const diff = startDate.getTime() - now.getTime();
+
+      if (diff <= 0) {
+        setSeasonStartCountdown('Season started');
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      const segments: string[] = [];
+      if (days > 0) {
+        segments.push(`${days}d`);
+      }
+      if (hours > 0 || segments.length > 0) {
+        segments.push(`${hours}h`);
+      }
+      if (minutes > 0 || segments.length > 0) {
+        segments.push(`${minutes}m`);
+      }
+      segments.push(`${seconds}s`);
+
+      setSeasonStartCountdown(segments.join(' '));
+    };
+
+    updateSeasonCountdown();
+    const interval = setInterval(updateSeasonCountdown, 1000);
+    return () => clearInterval(interval);
+  }, [selectedSeason]);
 
   // Check if user has already submitted a team for this season
   useEffect(() => {
@@ -643,6 +682,9 @@ if (currentView === 'registration' && selectedSeason) {
                   <div className="flex items-center">
                     <CheckCircle className="w-5 h-5 mr-2" />
                     <span>Team already submitted for this season</span>
+                  </div>
+                  <div className="mt-2 text-sm">
+                    Season starts in: <span className="font-medium">{seasonStartCountdown}</span>
                   </div>
                 </div>
                 
