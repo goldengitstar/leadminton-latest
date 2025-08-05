@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAdmin } from '../../contexts/AdminContext';
-import { User, ChevronDown, ChevronUp, AlertCircle} from 'lucide-react';
+import { User, ChevronDown, ChevronUp, AlertCircle, DoorOpen} from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { InterclubService } from '../../services/database/interclubService';
 import { 
@@ -1424,13 +1424,23 @@ const handleCpuRegistrationSubmit = async () => {
                         </button>
                         
                         {season.status === 'registration_closed' && (
-                          <button
-                            onClick={() => generateInterclubSchedule(season.id)}
-                            className="text-green-600 hover:text-green-900"
-                            title="Generate schedule"
-                          >
-                            <Play className="w-4 h-4" />
-                          </button>
+                          matches.some(m => m.season_id === season.id) ? (
+                            <button
+                              onClick={() => updateSeasonStatus(season.id, 'active')}
+                              className="text-green-600 hover:text-green-900"
+                              title="Open Season"
+                            >
+                              <DoorOpen className="w-4 h-4" />
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => generateInterclubSchedule(season.id)}
+                              className="text-green-600 hover:text-green-900"
+                              title="Generate schedule"
+                            >
+                              <Play className="w-4 h-4" />
+                            </button>
+                          )
                         )}
                         
                         {season.status === 'draft' && (
