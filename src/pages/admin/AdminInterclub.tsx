@@ -1069,6 +1069,7 @@ const handleCpuRegistrationSubmit = async () => {
 
     logActivity('interclub_schedule_generated', 'season', seasonId);
     await loadSeasons();
+    await loadMatches();
   }
 
   const handleResourceChange = (section: 'entry_fee' | 'prize_pool', position: string | null, resource: keyof { coins: number; shuttlecocks: number; meals: number; diamonds: number }, value: number) => {
