@@ -116,27 +116,17 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
     if (allFinalMatchesCompleted && finalRound.matches.length > 0) {
       // For single elimination, the winner is the winner of the last match in the final round
       const finalMatch = finalRound.matches[finalRound.matches.length - 1];
-      console.log('Admin - Final match winner:', finalMatch.winner);
 
-      // Load registered players if not already loaded
-      if (registeredPlayers.length === 0) {
-        const players = await loadRegisteredPlayers();
-        setRegisteredPlayers(players);
-        
-        for(let i = 0; i < players.length; i++) {
-          if(players[i].id === finalMatch.winner) {
-            setTournamentWinner(players[i].name);
-            return;
-          }
-        }
+      let winnerName: string;
+
+      if (finalMatch.winner_id === finalMatch.player1_id) {
+        winnerName = finalMatch.player1_name;
+      } else if (finalMatch.winner_id === finalMatch.player2_id) {
+        winnerName = finalMatch.player2_name;
       } else {
-        for(let i = 0; i < registeredPlayers.length; i++) {
-          if(registeredPlayers[i].id === finalMatch.winner) {
-            setTournamentWinner(registeredPlayers[i].name);
-            return;
-          }
-        }
+        winnerName = "unknown"
       }
+      setTournamentWinner(winnerName)
     }
     
     setTournamentWinner('');
