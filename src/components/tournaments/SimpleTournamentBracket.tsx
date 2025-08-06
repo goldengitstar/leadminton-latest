@@ -1,9 +1,10 @@
 import React from 'react';
 import { Bracket, Seed, SeedItem, SeedTeam, RoundProps } from 'react-brackets';
 import { TournamentRound } from '../../types/tournament';
-import { Trophy, Crown, Star } from 'lucide-react';
+import { Trophy, Crown, Star, FanIcon} from 'lucide-react';
 
 interface SimpleTournamentBracketProps {
+  isRegistered: boolean;
   registeredPlayers: any[];
   tournamentName: string;
   rounds: TournamentRound[];
@@ -102,6 +103,7 @@ const ThemedSeed = ({
 };
 
 const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
+  isRegistered,
   registeredPlayers,
   tournamentName,
   rounds,
@@ -231,6 +233,12 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
             <div className="flex items-center bg-green-100 text-green-800 px-3 py-1 rounded-full">
               <Crown className="w-4 h-4 mr-1" />
               <span className="text-sm font-medium">Completed</span>
+            </div>
+          )}
+          {!!isRegistered && !!tournamentCompleted && (
+            <div className="flex items-center bg-green-100 text-green-800 px-3 py-1 rounded-full">
+              <FanIcon className="w-4 h-4 mr-1" />
+              <span className="text-sm font-medium">Spectator</span>
             </div>
           )}
         </div>

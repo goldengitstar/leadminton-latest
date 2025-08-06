@@ -575,10 +575,10 @@ export default function TournamentsPage() {
 
         {/* Tournament Bracket - Only show if user is registered and tournament has started OR tournament is ongoing/completed */}
         {detailViewTournament.rounds && 
-         detailViewTournament.rounds.length > 0 && 
-         isRegistered && 
+         detailViewTournament.rounds.length > 0 &&
          (detailViewTournament.status === 'ongoing' || detailViewTournament.status === 'completed' || detailViewTournament.start_date <= Date.now()) && (
           <SimpleTournamentBracket
+            isRegistered={isRegistered}
             registeredPlayers={gameState.players}
             tournamentName={detailViewTournament.name}
             rounds={detailViewTournament.rounds}
