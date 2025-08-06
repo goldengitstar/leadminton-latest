@@ -302,9 +302,7 @@ export async function recordInjuriesChange(
   console.log(updatedInjuries)
   await supabase
     .from('players')
-    .update([{
-      injuries: updatedInjuries,
-    }])
+    .update({ injuries: updatedInjuries })
     .eq('id', player.id);
 }
 
