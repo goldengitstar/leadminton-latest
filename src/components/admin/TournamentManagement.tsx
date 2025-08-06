@@ -107,8 +107,6 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
     
     // Get the final round (highest level/last round)
     const finalRound = tournament.rounds[tournament.rounds.length - 1];
-
-    console.log("Tournament : ", tournament)
     
     // Check if all matches in the final round are completed
     const allFinalMatchesCompleted = finalRound.matches.every((match: any) => match.completed);

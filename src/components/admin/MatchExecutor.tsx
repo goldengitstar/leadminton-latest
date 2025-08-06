@@ -172,7 +172,7 @@ const MatchExecutor: React.FC<MatchExecutorProps> = ({
     <div>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">Match Execution</h3>
+        <h3 className="text-lg font-semibold text-gray-900">Matches</h3>
         <button
           onClick={loadMatches}
           disabled={loading}
