@@ -143,7 +143,10 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
   // Load winner when tournament is completed
   useEffect(() => {
     if (isTournamentCompleted()) {
+      console.log("Tournament completed")
       loadTournamentWinner();
+    }else {
+      console.log("Tournament not completed")
     }
   }, [tournament.rounds, registeredPlayers]);
 
