@@ -531,19 +531,60 @@ export class UserService {
       }
 
       for (const player of players_db) {
-        const { data: equipmentData, error: equipmentError } = await this.supabase
+        // 1) fetch the equipment IDs
+        const { data: eqLinkData, error: linkErr } = await this.supabase
           .from("player_equipment")
           .select("equipment_id")
           .eq("player_id", player.id);
 
-        if (equipmentError) {
-          console.error(`Failed to fetch equipment for player ${player.id}:`, equipmentError);
+        if (linkErr) { console.error(linkErr); continue; }
+
+        const equipmentIds = eqLinkData!.map(e => e.equipment_id);
+        if (equipmentIds.length === 0) {
+          player.equipment = [];
           continue;
         }
 
-        // Extract equipment_ids into an array
-        const equipmentIds = equipmentData?.map((e) => e.equipment_id) || [];
-        player.equipment = equipmentIds;
+        // 2) fetch all the raw boost columns
+        const { data: eqRows, error: eqErr } = await this.supabase
+          .from("equipment")
+          .select(`
+            id,
+            endurance_boost,
+            strength_boost,
+            agility_boost,
+            speed_boost,
+            explosiveness_boost,
+            injury_prevention_boost,
+            smash_boost,
+            defense_boost,
+            serve_boost,
+            stick_boost,
+            slice_boost,
+            drop_boost
+          `)
+          .in("id", equipmentIds);
+
+        if (eqErr) { console.error(eqErr); continue; }
+
+        // 3) map each row into { id, stats: { …camelCased keys… } }
+        player.equipment = eqRows!.map(eq => ({
+          id: eq.id,
+          stats: {
+            endurance:            eq.endurance_boost          || 0,
+            strength:             eq.strength_boost           || 0,
+            agility:              eq.agility_boost            || 0,
+            speed:                eq.speed_boost              || 0,
+            explosiveness:        eq.explosiveness_boost      || 0,
+            injuryPrevention:     eq.injury_prevention_boost  || 0,
+            smash:                eq.smash_boost              || 0,
+            defense:              eq.defense_boost            || 0,
+            serve:                eq.serve_boost              || 0,
+            stick:                eq.stick_boost              || 0,
+            slice:                eq.slice_boost              || 0,
+            drop:                 eq.drop_boost               || 0,
+          }
+        }));
       }
             
       // Get all player IDs for this user
