@@ -22,7 +22,6 @@ import { supabase } from '@/lib/supabase';
 
 const tournamentService = new TournamentService(supabase);
 
-
 interface TournamentManagementProps {
   tournament: any;
   onTournamentUpdate: () => void;
@@ -280,7 +279,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
               }`}
             >
               <Play className="w-4 h-4 inline mr-2" />
-              Manual Execution
+              Matches
             </button>
             <button
               onClick={() => setActiveTab('info')}
