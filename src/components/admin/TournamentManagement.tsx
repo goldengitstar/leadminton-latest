@@ -128,8 +128,6 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
       }
       setTournamentWinner(winnerName)
     }
-    
-    setTournamentWinner('');
   };
 
   // Load winner when tournament is completed
