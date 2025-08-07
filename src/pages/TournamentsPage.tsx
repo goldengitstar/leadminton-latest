@@ -432,7 +432,7 @@ export default function TournamentsPage() {
                   // Wait 3 seconds then refresh data
                   setTimeout(() => {
                     loadTournamentsData();
-                  }, 3000);
+                  }, 2000);
                 }}
               />
             )}
