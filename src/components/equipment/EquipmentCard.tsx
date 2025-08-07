@@ -1,13 +1,32 @@
+import { useState } from 'react';
 import { Equipment } from '../../types/equipment';
 
 interface EquipmentCardProps {
   equipment: Equipment;
   isEquipped: boolean;
-  onEquip: (equipment: Equipment) => void;
+  onEquip: (equipment: Equipment) => Promise<void> | void;
   canAfford: boolean;
 }
 
-export default function EquipmentCard({ equipment, isEquipped, onEquip, canAfford }: EquipmentCardProps) {
+export default function EquipmentCard({
+  equipment,
+  isEquipped,
+  onEquip,
+  canAfford,
+}: EquipmentCardProps) {
+  const [isEquipping, setIsEquipping] = useState(false);
+
+  const handleEquipClick = async () => {
+    if (!canAfford || isEquipped || isEquipping) return;
+
+    setIsEquipping(true);
+    try {
+      await onEquip(equipment);
+    } finally {
+      setIsEquipping(false);
+    }
+  };
+
   return (
     <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
       <div className="aspect-w-1 aspect-h-1 mb-4">
@@ -17,9 +36,7 @@ export default function EquipmentCard({ equipment, isEquipped, onEquip, canAffor
           className="w-full h-48 object-cover rounded-lg"
         />
       </div>
-      <h3>
-        {equipment.name}
-      </h3>
+      <h3>{equipment.name}</h3>
       <div className="mt-2 space-y-1 text-sm">
         {Object.entries(equipment.stats)
           .filter(([, bonus]) => bonus && bonus > 0)
@@ -42,17 +59,25 @@ export default function EquipmentCard({ equipment, isEquipped, onEquip, canAffor
           )}
         </div>
         <button
-          onClick={() => onEquip(equipment)}
-          disabled={!canAfford || isEquipped}
+          onClick={handleEquipClick}
+          disabled={!canAfford || isEquipped || isEquipping}
           className={`px-4 py-2 rounded-lg text-sm font-medium ${
             isEquipped
               ? 'bg-green-500 text-white cursor-default'
+              : isEquipping
+              ? 'bg-blue-300 text-white cursor-wait'
               : canAfford
               ? 'bg-blue-500 text-white hover:bg-blue-600'
               : 'bg-gray-200 text-gray-500 cursor-not-allowed'
           }`}
         >
-          {isEquipped ? 'Equipped' : canAfford ? 'Equip' : 'Cannot Afford'}
+          {isEquipped
+            ? 'Equipped'
+            : isEquipping
+            ? 'Equipping...'
+            : canAfford
+            ? 'Equip'
+            : 'Cannot Afford'}
         </button>
       </div>
     </div>
