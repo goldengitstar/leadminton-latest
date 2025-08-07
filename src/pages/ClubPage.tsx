@@ -19,9 +19,11 @@ import { Equipment } from "../types/equipment";
 import { useGame } from "@/contexts/GameContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { PlayerService } from "@/services/database/playerService";
+import { UserService } from "@/services/database";
 import { supabase } from "@/lib/supabase";
 
 const playerService = new PlayerService(supabase);
+const userService = new UserService(supabase)
 
 export default function ClubPage() {
   const {
@@ -111,6 +113,8 @@ export default function ClubPage() {
     );
 
     await recordEquipmentChange(player, equipment, "equip");
+
+    await userService.loadGameState(player.user_id)
 
     dispatchGameState({ type: "EQUIP_ITEM", payload: { playerId, equipment } });
   };

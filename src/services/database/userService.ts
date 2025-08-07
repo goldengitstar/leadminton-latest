@@ -523,7 +523,7 @@ export class UserService {
     }
 
     try {
-      const { data: players_db, error: playersError } = await this.supabase.from("players").select("*").eq('user_id', userId).eq('is_cpu', false).order('created_at', { ascending: true });
+      const { data: players_db, error: playersError } = await this.supabase.from("players").select("*, user_id").eq('user_id', userId).eq('is_cpu', false).order('created_at', { ascending: true });
       
       if (playersError || !players_db) {
         console.error("Failed to fetch players:", playersError);

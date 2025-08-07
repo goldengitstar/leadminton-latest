@@ -8,12 +8,6 @@ interface EquipmentCardProps {
 }
 
 export default function EquipmentCard({ equipment, isEquipped, onEquip, canAfford }: EquipmentCardProps) {
-  const RARITY_COLORS = {
-    common: 'text-gray-500',
-    rare: 'text-blue-500',
-    epic: 'text-purple-500',
-    legendary: 'text-yellow-500',
-  };
 
   return (
     <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
