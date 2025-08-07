@@ -30,7 +30,6 @@ export default function CustomizationModal({
   const [filteredEquipment, setFilteredEquipment] = useState<Equipment[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
-  console.log("Player equipments ", playerEquipment)
   const equippedIds = Array.isArray(playerEquipment)
   ? playerEquipment.map(pe => pe.id)
   : [];
@@ -84,9 +83,6 @@ export default function CustomizationModal({
       resources.shuttlecocks >= equipment.price_shuttlecocks
     );
   };
-
-  console.log("Player equipment ", playerEquipment)
-  console.log("Filered equipment ", filteredEquipment)
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
