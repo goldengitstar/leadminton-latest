@@ -30,6 +30,7 @@ export default function CustomizationModal({
   const [filteredEquipment, setFilteredEquipment] = useState<Equipment[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
+
   useEffect(() => {
     const fetchEquipment = async () => {
       setLoading(true); // start loading
