@@ -235,12 +235,6 @@ const SimpleTournamentBracket: React.FC<SimpleTournamentBracketProps> = ({
               <span className="text-sm font-medium">Completed</span>
             </div>
           )}
-          {!!isRegistered && !!tournamentCompleted && (
-            <div className="flex items-center bg-green-100 text-green-800 px-3 py-1 rounded-full">
-              <FanIcon className="w-4 h-4 mr-1" />
-              <span className="text-sm font-medium">Spectator</span>
-            </div>
-          )}
         </div>
         <button onClick={onBack} className="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition-colors">
           Back
