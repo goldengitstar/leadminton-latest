@@ -7,7 +7,7 @@ import { supabase } from '../../lib/supabase';
 
 interface CustomizationModalProps {
   onClose: () => void;
-  playerEquipment: string[];
+  playerEquipment: Equipment[];
   onEquip: (equipment: Equipment) => void;
   resources: Resources;
 }
@@ -30,7 +30,7 @@ export default function CustomizationModal({
   const [filteredEquipment, setFilteredEquipment] = useState<Equipment[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const equippedIds = playerEquipment.map(peId => peId);
+  const equippedIds = playerEquipment.map(pe => pe.id);
 
   useEffect(() => {
     const fetchEquipment = async () => {
@@ -132,7 +132,7 @@ export default function CustomizationModal({
               <EquipmentCard
                 key={equipment.id}
                 equipment={equipment}
-                isEquipped={Array.isArray(equippedIds) && equippedIds.includes(equipment.id)}
+                isEquipped={equippedIds.includes(equipment.id)}
                 onEquip={onEquip}
                 canAfford={canAfford(equipment)}
               />
