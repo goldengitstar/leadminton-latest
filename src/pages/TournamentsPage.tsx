@@ -3,7 +3,7 @@ import { useGame } from '../contexts/GameContext';
 import { supabase } from '../lib/supabase';
 import { Tournament } from '../types/tournament';
 import { Player } from '../types/game';
-import { Trophy, Users, Clock, Coins, CheckCircle, AlertCircle, Calendar, ArrowLeft, Timer, Coffee, Box, Gift, Diamond, UtensilsCrossed, Feather} from 'lucide-react';
+import { Trophy, Users, Clock, Coins, CheckCircle, AlertCircle, Calendar, ArrowLeft, Timer, Info, Diamond, UtensilsCrossed, Feather} from 'lucide-react';
 import { TournamentService } from '../services/database/tournamentService';
 import PlayerSelectionModal from '../components/tournaments/PlayerSelectionModal';
 import TournamentResults from '../components/tournaments/TournamentResults';
@@ -30,10 +30,12 @@ interface Round {
 // Separate countdown timer component to isolate timer state updates
 const CountdownTimer = memo(({ 
   tournament, 
-  className 
+  className,
+  onCountdownEnd
 }: { 
   tournament: Tournament; 
-  className?: string 
+  className?: string;
+  onCountdownEnd?: () => void;
 }) => {
   const [timeLeft, setTimeLeft] = useState<number>(0);
 
@@ -56,6 +58,10 @@ const CountdownTimer = memo(({
 
       const diff = Math.max(0, targetTime - now);
       setTimeLeft(diff);
+
+      if (diff <= 0 && onCountdownEnd) {
+        onCountdownEnd();
+      }
     };
     updateCountdown();
     const interval = setInterval(updateCountdown, 1000);
@@ -142,7 +148,6 @@ export default function TournamentsPage() {
     try {
       const loadedTournaments = await tournamentService.getTournaments();
       
-
       const { data: players, error } = await supabase
         .from('players')
         .select('id, name, is_cpu');
@@ -161,14 +166,13 @@ export default function TournamentsPage() {
       setTournaments(loadedTournaments);
       
       const registeredTournamentIds = loadedTournaments.filter((tournament: any) => 
-        {
-          const isIncluded = tournament.registered_players.some((player: any) => gameState.players.some((userPlayer: any) => userPlayer.id === player.player_id));
-          return isIncluded;
-        }).map((tournament: any) => tournament.id);
+        tournament.registered_players.some((player: any) => 
+          gameState.players.some((userPlayer: any) => userPlayer.id === player.player_id)
+        )
+      ).map((tournament: any) => tournament.id);
 
       setRegisteredTournaments(registeredTournamentIds);
       
-      // Update detail view tournament if it exists
       if (detailViewTournament) {
         const updatedTournament = loadedTournaments.find(t => t.id === detailViewTournament.id);
         if (updatedTournament) {
@@ -179,6 +183,14 @@ export default function TournamentsPage() {
       console.error('Error loading tournaments:', error);
     } 
   }, [gameState.players, detailViewTournament]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadTournamentsData();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [loadTournamentsData]);
 
 
   const canRegisterForTournament = useCallback((tournament: Tournament): boolean => {
@@ -414,7 +426,15 @@ export default function TournamentsPage() {
             {/* Countdown Timer */}
             {(detailViewTournament.status === 'upcoming' || 
               (detailViewTournament.status === 'ongoing' && detailViewTournament.next_round_start_time)) && (
-              <CountdownTimer tournament={detailViewTournament} />
+              <CountdownTimer 
+                tournament={detailViewTournament} 
+                onCountdownEnd={() => {
+                  // Wait 3 seconds then refresh data
+                  setTimeout(() => {
+                    loadTournamentsData();
+                  }, 3000);
+                }}
+              />
             )}
           </div>
 
@@ -573,20 +593,28 @@ export default function TournamentsPage() {
         {/* User Match Countdown Component */}
         {/* <UserMatchCountdown /> */}
 
-        {/* Tournament Bracket - Only show if user is registered and tournament has started OR tournament is ongoing/completed */}
+        {/* Tournament Bracket - Show for all users if tournament has started */}
         {detailViewTournament.rounds && 
-         detailViewTournament.rounds.length > 0 &&
-         (detailViewTournament.status === 'ongoing' || detailViewTournament.status === 'completed' || detailViewTournament.start_date <= Date.now()) && (
-          <SimpleTournamentBracket
-            isRegistered={isRegistered}
-            registeredPlayers={gameState.players}
-            tournamentName={detailViewTournament.name}
-            rounds={detailViewTournament.rounds}
-            max_participants={detailViewTournament.max_participants}
-            currentPlayerId={gameState.players[0]?.id || ''}
-            status={detailViewTournament.status}
-            onBack={handleBackToList}
-          />
+        detailViewTournament.rounds.length > 0 &&
+        (detailViewTournament.status === 'ongoing' || detailViewTournament.status === 'completed') && (
+          <div>
+            {!isRegistered && (
+              <div className="mb-4 bg-blue-50 text-blue-800 p-3 rounded-lg flex items-center">
+                <Info className="w-5 h-5 mr-2" />
+                You are viewing this tournament as a spectator.
+              </div>
+            )}
+            <SimpleTournamentBracket
+              isRegistered={isRegistered}
+              registeredPlayers={gameState.players}
+              tournamentName={detailViewTournament.name}
+              rounds={detailViewTournament.rounds}
+              max_participants={detailViewTournament.max_participants}
+              currentPlayerId={gameState.players[0]?.id || ''}
+              status={detailViewTournament.status}
+              onBack={handleBackToList}
+            />
+          </div>
         )}
 
         {/* Message when bracket is not visible */}
@@ -595,8 +623,8 @@ export default function TournamentsPage() {
             <Trophy className="w-12 h-12 mx-auto text-gray-300 mb-4" />
             {!isRegistered ? (
               <div>
-                <p className="text-lg font-medium text-gray-600 mb-2">Register to View Tournament Bracket</p>
-                <p className="text-gray-500">You must be registered for this tournament to view the bracket and match details.</p>
+                <p className="text-lg font-medium text-gray-600 mb-2">Spectator Mode</p>
+                <p className="text-gray-500">You are viewing this tournament as a spectator.</p>
               </div>
             ) : (
               <div>
