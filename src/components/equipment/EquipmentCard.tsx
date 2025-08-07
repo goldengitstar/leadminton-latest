@@ -8,7 +8,7 @@ interface EquipmentCardProps {
 }
 
 export default function EquipmentCard({ equipment, isEquipped, onEquip, canAfford }: EquipmentCardProps) {
-
+  console.log("Is equiped ", isEquipped, equipment);
   return (
     <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
       <div className="aspect-w-1 aspect-h-1 mb-4">
