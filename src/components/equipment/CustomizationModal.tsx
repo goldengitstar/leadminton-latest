@@ -30,7 +30,7 @@ export default function CustomizationModal({
   const [filteredEquipment, setFilteredEquipment] = useState<Equipment[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const equippedIds = playerEquipment.map(pe => pe.id);
+  const equippedIds = playerEquipment?.map(pe => pe.id);
 
   useEffect(() => {
     const fetchEquipment = async () => {
