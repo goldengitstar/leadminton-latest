@@ -30,6 +30,7 @@ export default function CustomizationModal({
   const [filteredEquipment, setFilteredEquipment] = useState<Equipment[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
+  const equippedIds = playerEquipment.map(peId => peId);
 
   useEffect(() => {
     const fetchEquipment = async () => {
@@ -131,7 +132,7 @@ export default function CustomizationModal({
               <EquipmentCard
                 key={equipment.id}
                 equipment={equipment}
-                isEquipped={Array.isArray(playerEquipment) && playerEquipment.includes(equipment.id)}
+                isEquipped={Array.isArray(equippedIds) && equippedIds.includes(equipment.id)}
                 onEquip={onEquip}
                 canAfford={canAfford(equipment)}
               />
