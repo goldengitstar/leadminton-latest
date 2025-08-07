@@ -30,6 +30,7 @@ export default function CustomizationModal({
   const [filteredEquipment, setFilteredEquipment] = useState<Equipment[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
+  console.log("Player equipments ", playerEquipment)
   const equippedIds = playerEquipment?.map(pe => pe.id);
 
   useEffect(() => {
