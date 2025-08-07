@@ -537,7 +537,9 @@ export class UserService {
           .select("equipment_id")
           .eq("player_id", player.id);
 
-        if (linkErr) { console.error(linkErr); continue; }
+        if (linkErr) { console.log(linkErr); continue; }
+        
+        console.log("Mapping equipment ids")
 
         const equipmentIds = eqLinkData!.map(e => e.equipment_id);
         if (equipmentIds.length === 0) {
@@ -566,6 +568,8 @@ export class UserService {
           .in("id", equipmentIds);
 
         if (eqErr) { console.error(eqErr); continue; }
+            
+        console.log("Mapping boost columns")
 
         // 3) map each row into { id, stats: { …camelCased keys… } }
         player.equipment = eqRows!.map(eq => ({
@@ -605,6 +609,8 @@ export class UserService {
       const { data: play_history_db } = await this.supabase.from('player_play_history').select("*");
       const { data: season_list_db } = await this.supabase.from('season_list').select("*");
 
+      console.log("Mapping facilities")
+
       state.facilities = (facilities_db || []).map((facility_db: any): any => ({
         id: facility_db.id,
         name: facility_db.name,
@@ -617,6 +623,8 @@ export class UserService {
         upgrading: facility_db.upgrading,
       }));
 
+      console.log("Mapping managers")
+
       state.managers = (managers_db || []).map((manager_db: any): any => ({
         id: manager_db.id,
         name: manager_db.name,
@@ -627,6 +635,8 @@ export class UserService {
         cost: manager_db.cost,
         purchasing: manager_db.purchasing
       }));
+
+      console.log("Mapping seasons")
 
       state.seasons = (season_list_db || []).map((season_db: any) => ({
         id: season_db.id,
