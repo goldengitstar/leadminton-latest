@@ -31,7 +31,9 @@ export default function CustomizationModal({
   const [loading, setLoading] = useState<boolean>(false);
 
   console.log("Player equipments ", playerEquipment)
-  const equippedIds = playerEquipment?.map(pe => pe.id);
+  const equippedIds = Array.isArray(playerEquipment)
+  ? playerEquipment.map(pe => pe.id)
+  : [];
 
   useEffect(() => {
     const fetchEquipment = async () => {
