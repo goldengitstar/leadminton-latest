@@ -3286,7 +3286,12 @@ const handleCpuRegistrationSubmit = async () => {
                 </button>
                 <button
                   type="submit"
-                  disabled={loading || !groupForm.seasonId || groupForm.selectedTeams.length === 0}
+                  disabled={
+                    loading || 
+                    !groupForm.seasonId || 
+                    groupForm.selectedTeams.length === 0 ||
+                    groupForm.availableTeams.length < 4  // Add this condition
+                  }
                   className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
                 >
                   {loading ? 'Creating...' : 'Create Group'}
