@@ -274,20 +274,6 @@ export async function recordEquipmentChange(
     return;
   }
 
-  // 6. Increment player.level by total increase in level
-  if (levelIncrement > 0) {
-    const newPlayerLevel = currentPlayerRow.level + levelIncrement;
-
-    const { error: updatePlayerError } = await supabase
-      .from('players')
-      .update({ level: newPlayerLevel })
-      .eq('id', player.id);
-
-    if (updatePlayerError) {
-      console.error('Error updating players.level:', updatePlayerError);
-    }
-  }
-
   console.log('Successfully updated stats and levels.');
 }
 
