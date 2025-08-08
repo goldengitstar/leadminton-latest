@@ -1429,7 +1429,7 @@ const handleCpuRegistrationSubmit = async () => {
                             <button
                               onClick={() => updateSeasonStatus(season.id, 'active')}
                               className="text-green-600 hover:text-green-900"
-                              title="Open Season"
+                              title="Activate Season"
                             >
                               <DoorOpen className="w-4 h-4" />
                             </button>
