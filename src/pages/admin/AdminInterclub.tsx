@@ -3237,6 +3237,12 @@ const handleCpuRegistrationSubmit = async () => {
                     )}
                   </div>
                 </div>
+                {groupForm.availableTeams.length > 0 && groupForm.availableTeams.length < 4 && (
+                  <div className="text-red-500 text-sm mt-2 flex items-center">
+                    <AlertCircle className="w-4 h-4 mr-1" />
+                    At least 4 teams needed to form a group. Add CPU teams in Registrations tab first.
+                  </div>
+                )}
               </div>
 
               <div className="pt-4">
