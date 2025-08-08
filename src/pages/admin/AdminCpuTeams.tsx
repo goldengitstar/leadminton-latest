@@ -308,7 +308,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
         return {
           ...player,
           ...resourceTotals,
-          maxLevel: player.maxLevel || 156,
+          maxLevel: player.max_level || 156,
           stats: levelStats || {},
           levelsD: levelsData,
           strategy: strategyData
@@ -405,7 +405,7 @@ const AdminCpuTeams: React.FC<AdminCpuTeamsProps> = () => {
       gender: player.gender,
       level: player.level,
       rank: player.rank,
-      maxLevel: player.maxLevel,
+      maxLevel: player.max_level,
       is_cpu: true,
       stats: player.stats,
       statLevels: player.statLevels,
