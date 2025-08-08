@@ -1399,7 +1399,7 @@ const handleCpuRegistrationSubmit = async () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {registrations.filter(r => r.season_id === season.id && r.status === 'approved').length} / {season.max_teams_per_group * 4}
+                      {registrations.filter(r => r.season_id === season.id && r.status === 'approved').length}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center space-x-2">
