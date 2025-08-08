@@ -372,15 +372,45 @@ const InterclubPage: React.FC = () => {
   const fetchSeasonMatches = async (seasonId: string) => {
     setScheduleLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data: matches, error: matchesError } = await supabase
         .from('interclub_matches')
         .select('*')
         .eq('season_id', seasonId)
         .order('week_number', { ascending: true })
         .order('match_date', { ascending: true });
 
-      if (error) throw error;
-      setSeasonMatches(data || []);
+      if (matchesError) throw matchesError;
+
+      if (!matches || matches.length === 0) {
+        setSeasonMatches([]);
+        return;
+      }
+
+      const teamIds = [
+        ...new Set(
+          matches.flatMap(m => [m.home_team_id, m.away_team_id].filter(Boolean))
+        )
+      ];
+
+      const { data: teams, error: teamsError } = await supabase
+        .from('interclub_teams')
+        .select('id, name')
+        .in('id', teamIds);
+
+      if (teamsError) throw teamsError;
+
+      const teamMap = teams.reduce((acc, team) => {
+        acc[team.id] = team.name;
+        return acc;
+      }, {} as Record<string, string>);
+
+      const matchesWithNames = matches.map(match => ({
+        ...match,
+        home_team_name: teamMap[match.home_team_id] || null,
+        away_team_name: teamMap[match.away_team_id] || null
+      }));
+
+      setSeasonMatches(matchesWithNames);
     } catch (error) {
       console.error('Error fetching season matches:', error);
     } finally {
