@@ -1359,20 +1359,36 @@ if (currentView === 'registration' && selectedSeason) {
                           <td className="px-4 py-3 whitespace-nowrap">
                             {new Date(match.match_date).toLocaleDateString()}
                           </td>
-                         <td className="px-4 py-3 whitespace-nowrap">
-                            {match.home_team_id === user?.id
-                              ? `${match.home_team_name || 'Team ' + (match.home_team_id?.slice(0, 4) || '----')} (Your Team)`
-                              : `${match.home_team_name || 'Team ' + (match.home_team_id?.slice(0, 4) || '----')}${
-                                  match.home_team_type === 'cpu' ? ' (CPU Team)' : ''
-                                }`}
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            {match.home_team_id === user?.id ? (
+                              <>
+                                {match.home_team_name || 'Team ' + (match.home_team_id?.slice(0, 4) || '----')}
+                                <span className="text-xs text-gray-500"> (Your Team)</span>
+                              </>
+                            ) : (
+                              <>
+                                {match.home_team_name || 'Team ' + (match.home_team_id?.slice(0, 4) || '----')}
+                                {match.home_team_type === 'cpu' && (
+                                  <span className="text-xs text-gray-500"> (CPU Team)</span>
+                                )}
+                              </>
+                            )}
                           </td>
 
                           <td className="px-4 py-3 whitespace-nowrap">
-                            {match.away_team_id === user?.id
-                              ? `${match.away_team_name || 'Team ' + (match.away_team_id?.slice(0, 4) || '----')} (Your Team)`
-                              : `${match.away_team_name || 'Team ' + (match.away_team_id?.slice(0, 4) || '----')}${
-                                  match.away_team_type === 'cpu' ? ' (CPU Team)' : ''
-                                }`}
+                            {match.away_team_id === user?.id ? (
+                              <>
+                                {match.away_team_name || 'Team ' + (match.away_team_id?.slice(0, 4) || '----')}
+                                <span className="text-xs text-gray-500"> (Your Team)</span>
+                              </>
+                            ) : (
+                              <>
+                                {match.away_team_name || 'Team ' + (match.away_team_id?.slice(0, 4) || '----')}
+                                {match.away_team_type === 'cpu' && (
+                                  <span className="text-xs text-gray-500"> (CPU Team)</span>
+                                )}
+                              </>
+                            )}
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap">
                             <span className={`px-2 py-1 text-xs rounded-full ${
